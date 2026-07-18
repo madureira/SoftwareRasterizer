@@ -51,7 +51,7 @@ Binaries are written to `build/<type>/SoftwareRasterizer`.
 
 ## Running the web build locally
 
-After building with `./build.sh web`, serve the output via a local HTTP server:
+After building with `./build.sh web`, serve the output via a local HTTP server (requires Python 3):
 
 ```bash
 ./web_serve.sh        # serves on http://localhost:8080
