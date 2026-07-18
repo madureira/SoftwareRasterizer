@@ -1,0 +1,6 @@
+CompileFlags:
+  CompilationDatabase: build/debug
+  Add:
+    - -std=c99
+    - -include
+    - src/core/types.h

@@ -1,0 +1,28 @@
+# Set the default behavior, in case people don't have core.autocrlf set.
+* text=auto eol=lf
+
+# Explicitly declare text files you want to always be normalized and converted
+# to native line endings on checkout.
+*.c text
+*.h text
+*.txt text
+*.html text
+*.md text
+*.sh             text
+*.bat            text
+CMakeLists.txt   text
+*.cmake          text
+*.json           text
+.gitmodules      text
+
+# Denote all files that are truly binary and should not be modified.
+*.svg binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.lib binary
+*.dll binary
+*.exe binary
+*.ttf binary
+*.ico binary
