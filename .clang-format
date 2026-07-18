@@ -1,10 +1,10 @@
 ---
-Language:        C
-BasedOnStyle:    LLVM
-ColumnLimit:     120
-IndentWidth:     4
-TabWidth:        4
-UseTab:          Never
+Language: C
+BasedOnStyle: LLVM
+ColumnLimit: 120
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
 
 # Allman style: opening brace always on its own line
 BreakBeforeBraces: Allman
@@ -16,16 +16,16 @@ PointerAlignment: Left
 InsertBraces: true
 
 # No collapsing of braces or statements onto a single line
-AllowShortBlocksOnASingleLine:     Never
-AllowShortFunctionsOnASingleLine:  None
+AllowShortBlocksOnASingleLine: Never
+AllowShortFunctionsOnASingleLine: None
 AllowShortIfStatementsOnASingleLine: Never
-AllowShortLoopsOnASingleLine:      false
+AllowShortLoopsOnASingleLine: false
 
 AlignConsecutiveMacros:
-  Enabled:          true
+  Enabled: true
   AcrossEmptyLines: false
-  AcrossComments:   false
+  AcrossComments: false
 
 # Preserve existing include order; do not sort or merge blocks
-SortIncludes:    Never
-IncludeBlocks:   Preserve
+SortIncludes: Never
+IncludeBlocks: Preserve
