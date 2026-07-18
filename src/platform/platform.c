@@ -7,9 +7,9 @@
 
 struct PlatformWindow
 {
-    SDL_Window *window;
-    SDL_Renderer *renderer;
-    SDL_Texture *texture;
+    SDL_Window* window;
+    SDL_Renderer* renderer;
+    SDL_Texture* texture;
     int32 texture_width;
     int32 texture_height;
 };
@@ -24,7 +24,7 @@ void platform_shutdown(void)
     SDL_Quit();
 }
 
-PlatformWindow *platform_window_create(const char *title, int32 width, int32 height, bool resizable)
+PlatformWindow* platform_window_create(const char* title, int32 width, int32 height, bool resizable)
 {
     SDL_WindowFlags flags = 0;
 
@@ -33,7 +33,7 @@ PlatformWindow *platform_window_create(const char *title, int32 width, int32 hei
         flags |= SDL_WINDOW_RESIZABLE;
     }
 
-    PlatformWindow *win = malloc(sizeof(*win));
+    PlatformWindow* win = malloc(sizeof(*win));
     if (win == NULL)
     {
         return NULL;
@@ -70,7 +70,7 @@ PlatformWindow *platform_window_create(const char *title, int32 width, int32 hei
     return win;
 }
 
-void platform_window_destroy(PlatformWindow *window)
+void platform_window_destroy(PlatformWindow* window)
 {
     if (window == NULL)
     {
@@ -83,7 +83,7 @@ void platform_window_destroy(PlatformWindow *window)
     free(window);
 }
 
-void platform_window_set_title(PlatformWindow *window, const char *title)
+void platform_window_set_title(PlatformWindow* window, const char* title)
 {
     if (window == NULL)
     {
@@ -93,7 +93,7 @@ void platform_window_set_title(PlatformWindow *window, const char *title)
     SDL_SetWindowTitle(window->window, title);
 }
 
-void platform_window_present(PlatformWindow *window, const uint32 *pixels, int32 width, int32 height)
+void platform_window_present(PlatformWindow* window, const uint32* pixels, int32 width, int32 height)
 {
     if (window == NULL || pixels == NULL)
     {
@@ -119,7 +119,7 @@ void platform_window_present(PlatformWindow *window, const uint32 *pixels, int32
     SDL_RenderPresent(window->renderer);
 }
 
-bool platform_poll_event(PlatformEvent *event)
+bool platform_poll_event(PlatformEvent* event)
 {
     SDL_Event sdl_event;
 
@@ -161,7 +161,7 @@ bool platform_poll_event(PlatformEvent *event)
     return true;
 }
 
-void platform_run_main_loop(PlatformFrameCallback frame_cb, void *user_data)
+void platform_run_main_loop(PlatformFrameCallback frame_cb, void* user_data)
 {
     while (frame_cb(user_data))
     {
@@ -175,8 +175,8 @@ void platform_run_main_loop(PlatformFrameCallback frame_cb, void *user_data)
 #include <emscripten/html5.h>
 
 /* Implemented in platform_web.js, linked via --js-library. */
-extern void platform_js_set_title(const char *title);
-extern void platform_js_present(const uint32 *pixels, int32 width, int32 height);
+extern void platform_js_set_title(const char* title);
+extern void platform_js_present(const uint32* pixels, int32 width, int32 height);
 
 struct PlatformWindow
 {
@@ -192,12 +192,12 @@ void platform_shutdown(void)
 {
 }
 
-PlatformWindow *platform_window_create(const char *title, int32 width, int32 height, bool resizable)
+PlatformWindow* platform_window_create(const char* title, int32 width, int32 height, bool resizable)
 {
     (void)title;
     (void)resizable;
 
-    PlatformWindow *win = malloc(sizeof(*win));
+    PlatformWindow* win = malloc(sizeof(*win));
     if (win == NULL)
     {
         return NULL;
@@ -211,18 +211,18 @@ PlatformWindow *platform_window_create(const char *title, int32 width, int32 hei
     return win;
 }
 
-void platform_window_destroy(PlatformWindow *window)
+void platform_window_destroy(PlatformWindow* window)
 {
     free(window);
 }
 
-void platform_window_set_title(PlatformWindow *window, const char *title)
+void platform_window_set_title(PlatformWindow* window, const char* title)
 {
     (void)window;
     platform_js_set_title(title);
 }
 
-void platform_window_present(PlatformWindow *window, const uint32 *pixels, int32 width, int32 height)
+void platform_window_present(PlatformWindow* window, const uint32* pixels, int32 width, int32 height)
 {
     if (window == NULL || pixels == NULL)
     {
@@ -232,7 +232,7 @@ void platform_window_present(PlatformWindow *window, const uint32 *pixels, int32
     platform_js_present(pixels, width, height);
 }
 
-bool platform_poll_event(PlatformEvent *event)
+bool platform_poll_event(PlatformEvent* event)
 {
     if (event == NULL)
     {
@@ -246,7 +246,7 @@ bool platform_poll_event(PlatformEvent *event)
 typedef struct
 {
     PlatformFrameCallback cb;
-    void *user_data;
+    void* user_data;
 } EmscriptenLoopState;
 
 static EmscriptenLoopState g_loop_state;
@@ -259,7 +259,7 @@ static void emscripten_frame_wrapper(void)
     }
 }
 
-void platform_run_main_loop(PlatformFrameCallback frame_cb, void *user_data)
+void platform_run_main_loop(PlatformFrameCallback frame_cb, void* user_data)
 {
     g_loop_state.cb = frame_cb;
     g_loop_state.user_data = user_data;

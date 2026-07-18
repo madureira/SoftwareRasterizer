@@ -10,7 +10,7 @@ UseTab:          Never
 BreakBeforeBraces: Allman
 
 # Pointer/reference aligned to the right: int *p, not int* p
-PointerAlignment: Right
+PointerAlignment: Left
 
 # Always insert braces around control flow bodies
 InsertBraces: true

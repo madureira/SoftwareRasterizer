@@ -6,15 +6,15 @@
 
 struct Window
 {
-    PlatformWindow *platform_window;
+    PlatformWindow* platform_window;
     int32 width;
     int32 height;
     bool should_close;
 };
 
-Window *window_create(const WindowConfig *config)
+Window* window_create(const WindowConfig* config)
 {
-    Window *window;
+    Window* window;
 
     if (config == NULL)
     {
@@ -43,7 +43,7 @@ Window *window_create(const WindowConfig *config)
     return window;
 }
 
-void window_destroy(Window *window)
+void window_destroy(Window* window)
 {
     if (window == NULL)
     {
@@ -54,7 +54,7 @@ void window_destroy(Window *window)
     free(window);
 }
 
-void window_poll_events(Window *window)
+void window_poll_events(Window* window)
 {
     if (window == NULL)
     {
@@ -81,22 +81,22 @@ void window_poll_events(Window *window)
     }
 }
 
-bool window_should_close(const Window *window)
+bool window_should_close(const Window* window)
 {
     return window != NULL && window->should_close;
 }
 
-int32 window_get_width(const Window *window)
+int32 window_get_width(const Window* window)
 {
     return window != NULL ? window->width : 0;
 }
 
-int32 window_get_height(const Window *window)
+int32 window_get_height(const Window* window)
 {
     return window != NULL ? window->height : 0;
 }
 
-void window_set_title(Window *window, const char *title)
+void window_set_title(Window* window, const char* title)
 {
     if (window == NULL)
     {
@@ -106,7 +106,7 @@ void window_set_title(Window *window, const char *title)
     platform_window_set_title(window->platform_window, title);
 }
 
-void window_present(Window *window, const uint32 *pixels, int32 width, int32 height)
+void window_present(Window* window, const uint32* pixels, int32 width, int32 height)
 {
     if (window == NULL || pixels == NULL)
     {

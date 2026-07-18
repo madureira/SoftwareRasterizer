@@ -10,13 +10,13 @@
 
 typedef struct AppState
 {
-    Window *window;
-    uint32 *pixels;
+    Window* window;
+    uint32* pixels;
 } AppState;
 
-static bool frame(void *arg)
+static bool frame(void* arg)
 {
-    AppState *state = (AppState *)arg;
+    AppState* state = (AppState*)arg;
     window_poll_events(state->window);
     window_present(state->window, state->pixels, WINDOW_WIDTH, WINDOW_HEIGHT);
     return !window_should_close(state->window);
@@ -29,7 +29,7 @@ int app_run(void)
         return 1;
     }
 
-    Window *window = window_create(
+    Window* window = window_create(
         &(WindowConfig){.title = WINDOW_TITLE, .width = WINDOW_WIDTH, .height = WINDOW_HEIGHT, .resizable = true});
 
     if (window == NULL)
@@ -38,7 +38,7 @@ int app_run(void)
         return 1;
     }
 
-    uint32 *pixels = malloc(WINDOW_WIDTH * WINDOW_HEIGHT * sizeof(uint32));
+    uint32* pixels = malloc(WINDOW_WIDTH * WINDOW_HEIGHT * sizeof(uint32));
     if (pixels == NULL)
     {
         window_destroy(window);
