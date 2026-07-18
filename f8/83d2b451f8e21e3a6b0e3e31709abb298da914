@@ -1,0 +1,29 @@
+src/app/window.c
+  s_47099c43891368::t_db910cdd765ced 9,15,17,46,57,84,89,94,99,109
+.clang-format
+  s_47099c43891368::t_bae362f2a39688 13
+src/platform/platform.h
+  s_47099c43891368::t_db910cdd765ced 35,37,39,41,43,45,47
+src/app/window.h
+  s_47099c43891368::t_db910cdd765ced 8,14,16,18,20,22,24,26,28
+src/platform/platform.c
+  s_47099c43891368::t_db910cdd765ced 10-12,27,36,73,86,96,122,164,178-179,195,200,214,219,225,235,249,262
+src/app/app.c
+  s_47099c43891368::t_db910cdd765ced 13-14,17,19,32,41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "f883d2b451f8e21e3a6b0e3e31709abb298da914",
+  "prompts": {},
+  "sessions": {
+    "s_47099c43891368": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "32d680ff-6119-4880-a1ea-de9c43988719",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Rafael Madureira Dos Santos <rafael.madureira@mercadolivre.com>"
+    }
+  }
+}
