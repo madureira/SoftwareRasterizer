@@ -68,7 +68,9 @@ Copy the web build output to `docs/` for GitHub Pages hosting:
 
 ## VS Code
 
-Install the recommended extensions when prompted, or manually:
+Two extensions are required. Install them when prompted, or manually via the links below:
 
-- [clangd](https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.vscode-clangd) — C language support and IntelliSense
-- [CodeLLDB](https://marketplace.visualstudio.com/items?itemName=vadimcn.vscode-lldb) — debugger (required for the debug launch configuration)
+- [clangd](https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.vscode-clangd) — C language support: IntelliSense, go-to-definition, and diagnostics. Without it, Cmd+Click and symbol navigation will not work.
+- [CodeLLDB](https://marketplace.visualstudio.com/items?itemName=vadimcn.vscode-lldb) — debugger. Without it, the debug launch configuration will not work.
+
+After installing, run `./build.sh debug mac` (or `linux`) once to generate `build/debug/compile_commands.json`, which clangd uses to index the project.
