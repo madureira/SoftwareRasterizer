@@ -9,5 +9,17 @@
   ],
   "[c]": {
     "editor.defaultFormatter": "xaver.clang-format"
+  },
+  "[cpp]": {
+    "editor.defaultFormatter": "xaver.clang-format"
+  },
+  "java.import.exclusions": [
+    "**/vendors/**"
+  ],
+  "files.exclude": {
+    "**/vendors/SDL3/android-project": true
+  },
+  "files.watcherExclude": {
+    "**/vendors/SDL3/android-project/**": true
   }
 }

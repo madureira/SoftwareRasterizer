@@ -65,3 +65,10 @@ Copy the web build output to `docs/` for GitHub Pages hosting:
 ```bash
 ./web_deploy.sh
 ```
+
+## VS Code
+
+Install the recommended extensions when prompted, or manually:
+
+- [clangd](https://marketplace.visualstudio.com/items?itemName=llvm-vs-code-extensions.vscode-clangd) — C language support and IntelliSense
+- [CodeLLDB](https://marketplace.visualstudio.com/items?itemName=vadimcn.vscode-lldb) — debugger (required for the debug launch configuration)
