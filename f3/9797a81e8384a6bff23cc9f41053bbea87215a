@@ -1,0 +1,19 @@
+README.md
+  s_47099c43891368::t_7749f318744b34 71,73-76
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "f39797a81e8384a6bff23cc9f41053bbea87215a",
+  "prompts": {},
+  "sessions": {
+    "s_47099c43891368": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "32d680ff-6119-4880-a1ea-de9c43988719",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Rafael Madureira Dos Santos <rafael.madureira@mercadolivre.com>"
+    }
+  }
+}
