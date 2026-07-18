@@ -1,0 +1,144 @@
+src/platform/platform_web.js
+  h_800f224ace5aa8 19,21-22
+  s_556fb8e353a781::t_8c50a48877b95b 1-18,20,23
+.gitmodules
+  s_556fb8e353a781::t_f687b6a309ced6 1-3
+src/platform/platform.h
+  s_556fb8e353a781::t_e2f34ba81dbd06 18,35,41
+  s_556fb8e353a781::t_a0eed03665dee6 45-48
+  h_800f224ace5aa8 1-16,19-27,29-34,36-40,42-44,49
+  s_556fb8e353a781::t_362203e0ede2d7 28
+  s_556fb8e353a781::t_3027fed471b85c 17
+assets/index.html
+  h_800f224ace5aa8 1-156
+.clang-format
+  s_47099c43891368::t_4b41b328538f12 2
+  s_556fb8e353a781::t_2c46e83d6df2d3 15-17
+  s_556fb8e353a781::t_409b5b233d427e 1,3-14,18-31
+CMakeLists.txt
+  s_556fb8e353a781::t_93566f68ee54c5 108
+  s_556fb8e353a781::t_23059ea0826155 20
+  s_556fb8e353a781::t_7229a6833d2003 13-19,21-23
+  h_800f224ace5aa8 1-12,24-47,54-61,70-99,101-102,110
+  s_556fb8e353a781::t_b650c040ba40da 103-107,109
+  s_556fb8e353a781::t_7cb32a5682db86 100
+  s_556fb8e353a781::t_bce219bde9165b 48-53
+  s_556fb8e353a781::t_eaff89ab54c8f6 62-69
+.vscode/extensions.json
+  s_556fb8e353a781::t_39f06eaacedd7d 1-3,5-6
+  s_556fb8e353a781::t_cc1aa743e97e5d 4
+src/app/app.c
+  s_47099c43891368::t_e7b794261161c8 1-65
+src/app/window.h
+  s_556fb8e353a781::t_4636d6f668c044 22
+  s_556fb8e353a781::t_6ba5e38672cb82 24
+  s_556fb8e353a781::t_29b542a0deb306 10,28
+  h_800f224ace5aa8 1-8,11-21,23,25-27,29-30
+  s_556fb8e353a781::t_6fc9712559841d 9
+src/app/window.c
+  s_556fb8e353a781::t_cde833f200a6ea 89
+  h_800f224ace5aa8 1-9,12-63,65-70,72-88,90-93,95-108,110-117
+  s_556fb8e353a781::t_b6425a940a0352 10-11
+  s_47099c43891368::t_bf2e8e8817eeed 64
+  s_556fb8e353a781::t_55df4b81d99213 94
+  s_556fb8e353a781::t_ad171cb63b9fe7 109
+README.md
+  h_800f224ace5aa8 17
+  s_556fb8e353a781::t_f68cabe1ae9a03 2-16,18-50
+  s_47099c43891368::t_4fa6a6472c235d 51-67
+.gitignore
+  s_556fb8e353a781::t_565c085353dc73 59
+  h_800f224ace5aa8 56-58
+web_serve.sh
+  h_800f224ace5aa8 2,4-18,20-27
+  s_47099c43891368::t_91faa7d8e69f72 19
+  s_47099c43891368::t_19e680fa6011de 1,3
+.editorconfig
+  h_800f224ace5aa8 1-19
+src/app/app.h
+  s_47099c43891368::t_03243b0b2e9efa 1-6
+web_deploy.sh
+  s_47099c43891368::t_c829d3ed1b346c 27
+  s_47099c43891368::t_6e0cbe7a486e34 1,3
+  h_800f224ace5aa8 2,4-26,28-36
+src/core/types.h
+  s_556fb8e353a781::t_09ee9167c404e6 1-23
+src/main.c
+  h_800f224ace5aa8 2,6
+  s_47099c43891368::t_2233db5fc0b0cc 1,5
+  s_556fb8e353a781::t_c41af7877d814f 3-4
+build.sh
+  s_556fb8e353a781::t_16b5f8c52ce7f5 15,23
+  h_800f224ace5aa8 1-14,16-22,24-38,45-66,70-95,98-125,129-162,167-191
+  s_556fb8e353a781::t_a991bae5f38a7c 67-69
+  s_556fb8e353a781::t_c3ac84f2af2436 126-128
+  s_556fb8e353a781::t_33871a853c1a94 96-97
+  s_556fb8e353a781::t_69ebd22c5f5885 39-44
+  s_556fb8e353a781::t_14946fdf3f8d82 163-166
+.gitattributes
+  h_800f224ace5aa8 1-10,17-28
+  s_556fb8e353a781::t_486fe83f9b6946 11-16
+.clangd
+  s_556fb8e353a781::t_2e1a0fd136f5f4 1-2
+  s_47099c43891368::t_f01d84862fdf78 4
+  s_556fb8e353a781::t_9039e04859dea0 3,5-6
+CMakePresets.json
+  h_800f224ace5aa8 1-75,77-105
+  s_556fb8e353a781::t_f566e75aa53abb 76
+.vscode/tasks.json
+  s_556fb8e353a781::t_53b4e72443ee4a 1-34
+.vscode/settings.json
+  s_556fb8e353a781::t_9735e2f4c39f34 1-2,4-8,13
+  s_556fb8e353a781::t_341c4fb7ff8e92 9-10,12
+  s_556fb8e353a781::t_7e8829e44dff28 3
+.vscode/launch.json
+  s_556fb8e353a781::t_185a22ad6cf30c 6,11
+  s_556fb8e353a781::t_844004f8c353b8 1-5,7-10,12-15
+src/platform/platform.c
+  s_47099c43891368::t_4bd941f5d792f1 36
+  s_556fb8e353a781::t_42bc5236a4ff28 3-4,143,163,171-172,181-182,185,241,245,269
+  s_47099c43891368::t_fc1e7aeadd0f10 200
+  s_556fb8e353a781::t_08a9a95124ad06 164-170
+  s_556fb8e353a781::t_ad2bdd5893b0fb 144-145
+  s_556fb8e353a781::t_2677a05e74ae78 246-256,258,260-268
+  h_800f224ace5aa8 1-2,5,7-9,11,15,32,34,38,40,76,78,89,91,99,101,109,111,127,129,132,134,202,204,228,230,238,240,257,259
+  s_556fb8e353a781::t_f9a31a98422af6 27,195
+  s_556fb8e353a781::t_6fee6f263cadb7 173,176
+  s_556fb8e353a781::t_7dfb1b56131d84 14
+  s_556fb8e353a781::t_2f3caa892406c0 174-175,186-194,196-199,201,203,205-221,223-224,226-227,229,231,233-237,239,242-244
+  s_556fb8e353a781::t_22d96135be1888 6,10,12,16-26,28-31,33,35,37,39,41-75,77,79-88,90,92-95,97-98,100,102-108,110,112-116,118-126,128,130-131,133,135-142,146-162
+  s_556fb8e353a781::t_b95d889408e392 13
+  s_556fb8e353a781::t_adce36402bdf00 96,179,225
+  s_556fb8e353a781::t_85f01c42e7b349 177-178,180,222,232
+  s_556fb8e353a781::t_de38447ff831bc 183-184
+  s_556fb8e353a781::t_52e5262395b824 117
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "b69e20df1035a9b91f11a890ed29ccc03a2c2f26",
+  "prompts": {},
+  "humans": {
+    "h_800f224ace5aa8": {
+      "author": "Rafael Madureira Dos Santos <rafael.madureira@mercadolivre.com>"
+    }
+  },
+  "sessions": {
+    "s_47099c43891368": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "32d680ff-6119-4880-a1ea-de9c43988719",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Rafael Madureira Dos Santos <rafael.madureira@mercadolivre.com>"
+    },
+    "s_556fb8e353a781": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a091d740-86cc-404f-8178-0915d5ca30d0",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Rafael Madureira Dos Santos <rafael.madureira@mercadolivre.com>"
+    }
+  }
+}
