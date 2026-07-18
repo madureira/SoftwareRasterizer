@@ -1,0 +1,32 @@
+.vscode/settings.json
+  s_47099c43891368::t_945a693deb2b41 12-14
+  s_47099c43891368::t_c93704017dec9b 19-21,23
+  s_47099c43891368::t_3a79beadaf531c 15-18,22
+.vscode/launch.json
+  s_47099c43891368::t_93cdff49f3f2d7 6
+README.md
+  h_800f224ace5aa8 68-74
+.vscode/extensions.json
+  s_47099c43891368::t_5d3b928a932c9d 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "89f38d4ecea610e6c3a6dcd24a0dd8ad13857578",
+  "prompts": {},
+  "humans": {
+    "h_800f224ace5aa8": {
+      "author": "Rafael Madureira Dos Santos <rafael.madureira@mercadolivre.com>"
+    }
+  },
+  "sessions": {
+    "s_47099c43891368": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "32d680ff-6119-4880-a1ea-de9c43988719",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Rafael Madureira Dos Santos <rafael.madureira@mercadolivre.com>"
+    }
+  }
+}
