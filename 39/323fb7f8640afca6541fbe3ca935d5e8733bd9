@@ -1,0 +1,18 @@
+src/app/window.c
+  h_800f224ace5aa8 5
+src/app/app.c
+  h_800f224ace5aa8 5-6
+src/platform/platform.c
+  h_800f224ace5aa8 184-185,193,199
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "39323fb7f8640afca6541fbe3ca935d5e8733bd9",
+  "prompts": {},
+  "humans": {
+    "h_800f224ace5aa8": {
+      "author": "Rafael Madureira Dos Santos <rafael.madureira@mercadolivre.com>"
+    }
+  }
+}
