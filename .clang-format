@@ -27,5 +27,5 @@ AlignConsecutiveMacros:
   AcrossComments: false
 
 # Preserve existing include order; do not sort or merge blocks
-SortIncludes: Never
+SortIncludes: CaseSensitive
 IncludeBlocks: Preserve
