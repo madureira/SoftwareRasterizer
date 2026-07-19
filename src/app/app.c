@@ -47,7 +47,7 @@ int app_run(void)
         return 1;
     }
 
-    /* Solid red — XRGB8888: 0x00RRGGBB */
+    // Solid red — XRGB8888: 0x00RRGGBB
     for (int i = 0; i < WINDOW_WIDTH * WINDOW_HEIGHT; i++)
     {
         pixels[i] = 0x00FF0000;
@@ -57,7 +57,7 @@ int app_run(void)
 
     platform_run_main_loop(frame, &state);
 
-    /* Reached on desktop only; Emscripten never returns from the loop. */
+    // Reached on desktop only; Emscripten never returns from the loop.
     free(pixels);
     window_destroy(window);
     platform_shutdown();

@@ -20,4 +20,4 @@ typedef double float64;
 
 typedef unsigned char uchar;
 
-#endif
+#endif // CORE_TYPES_H

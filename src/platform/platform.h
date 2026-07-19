@@ -46,4 +46,4 @@ typedef bool (*PlatformFrameCallback)(void* user_data);
 
 void platform_run_main_loop(PlatformFrameCallback frame_cb, void* user_data);
 
-#endif
+#endif // PLATFORM_PLATFORM_H

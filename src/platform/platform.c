@@ -168,13 +168,13 @@ void platform_run_main_loop(PlatformFrameCallback frame_cb, void* user_data)
     }
 }
 
-#else /* __EMSCRIPTEN__ */
+#else // __EMSCRIPTEN__
 
 #include <stdlib.h>
 #include <emscripten.h>
 #include <emscripten/html5.h>
 
-/* Implemented in platform_web.js, linked via --js-library. */
+// Implemented in platform_web.js, linked via --js-library.
 extern void platform_js_set_title(const char* title);
 extern void platform_js_present(const uint32* pixels, int32 width, int32 height);
 
@@ -267,4 +267,4 @@ void platform_run_main_loop(PlatformFrameCallback frame_cb, void* user_data)
     emscripten_set_main_loop(emscripten_frame_wrapper, 0, 1);
 }
 
-#endif /* __EMSCRIPTEN__ */
+#endif // __EMSCRIPTEN__

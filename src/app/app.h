@@ -3,4 +3,4 @@
 
 int app_run(void);
 
-#endif
+#endif // APP_APP_H

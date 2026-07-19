@@ -27,4 +27,4 @@ void window_set_title(Window* window, const char* title);
 
 void window_present(Window* window, const uint32* pixels, int32 width, int32 height);
 
-#endif
+#endif // APP_WINDOW_H
