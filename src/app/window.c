@@ -1,8 +1,8 @@
 #include "app/window.h"
 
-#include "platform/platform.h"
-
 #include <stdlib.h>
+
+#include "platform/platform.h"
 
 struct Window
 {

@@ -1,8 +1,9 @@
 #include "app/app.h"
-#include "app/window.h"
-#include "platform/platform.h"
 
 #include <stdlib.h>
+
+#include "app/window.h"
+#include "platform/platform.h"
 
 #define WINDOW_TITLE  "Software Rasterizer"
 #define WINDOW_WIDTH  800

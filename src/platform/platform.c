@@ -178,16 +178,25 @@ void platform_run_main_loop(PlatformFrameCallback frame_cb, void* user_data)
 extern void platform_js_set_title(const char* title);
 extern void platform_js_present(const uint32* pixels, int32 width, int32 height);
 
+typedef struct
+{
+    PlatformFrameCallback cb;
+    void* user_data;
+} EmscriptenLoopState;
+
 struct PlatformWindow
 {
     int32 width;
     int32 height;
 };
 
+static EmscriptenLoopState g_loop_state;
+
 bool platform_initialize(void)
 {
     return true;
 }
+
 void platform_shutdown(void)
 {
 }
@@ -242,14 +251,6 @@ bool platform_poll_event(PlatformEvent* event)
     event->type = PLATFORM_EVENT_NONE;
     return false;
 }
-
-typedef struct
-{
-    PlatformFrameCallback cb;
-    void* user_data;
-} EmscriptenLoopState;
-
-static EmscriptenLoopState g_loop_state;
 
 static void emscripten_frame_wrapper(void)
 {
