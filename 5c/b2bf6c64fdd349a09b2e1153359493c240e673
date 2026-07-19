@@ -1,0 +1,41 @@
+src/app/app.c
+  s_20d7e6241d55ff::t_08fea358c1e8ff 19-52
+  s_20d7e6241d55ff::t_0f237473b77168 86,89,92-96
+  s_20d7e6241d55ff::t_b8865b66a2e502 6
+  s_20d7e6241d55ff::t_078e97a2bf2141 53
+  s_20d7e6241d55ff::t_0f8414ccbbc03f 97
+.clang-format
+  s_20d7e6241d55ff::t_1907014048924a 30
+src/core/types.h
+  s_20d7e6241d55ff::t_c07a97354ac923 4-5
+  h_800f224ace5aa8 24-37
+src/math/vec2.c
+  h_800f224ace5aa8 1-86
+src/math/math_config.h
+  h_800f224ace5aa8 1-56
+src/math/math_common.h
+  h_800f224ace5aa8 1-40
+src/math/vec2.h
+  h_800f224ace5aa8 1-289
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "5cb2bf6c64fdd349a09b2e1153359493c240e673",
+  "prompts": {},
+  "humans": {
+    "h_800f224ace5aa8": {
+      "author": "Rafael Madureira Dos Santos <rafael.madureira@mercadolivre.com>"
+    }
+  },
+  "sessions": {
+    "s_20d7e6241d55ff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "241bc513-d6eb-4632-a981-0215f506c5b5",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Rafael Madureira Dos Santos <rafael.madureira@mercadolivre.com>"
+    }
+  }
+}
