@@ -1,0 +1,26 @@
+src/core/types.h
+  h_800f224ace5aa8 23
+.gitignore
+  h_800f224ace5aa8 58
+src/app/app.h
+  h_800f224ace5aa8 6
+src/platform/platform.h
+  h_800f224ace5aa8 49
+src/app/window.h
+  h_800f224ace5aa8 30
+src/app/app.c
+  h_800f224ace5aa8 50,60
+src/platform/platform.c
+  h_800f224ace5aa8 171,177,270
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "a5f1297e0c178bbdc1cd42a18130903a2219e245",
+  "prompts": {},
+  "humans": {
+    "h_800f224ace5aa8": {
+      "author": "Rafael Madureira Dos Santos <rafael.madureira@mercadolivre.com>"
+    }
+  }
+}
