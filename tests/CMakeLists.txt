@@ -60,6 +60,8 @@ set_target_properties(SoftwareRasterizerTests
         RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL     "${CMAKE_BINARY_DIR}"
 )
 
+target_link_libraries(SoftwareRasterizerTests PRIVATE m)
+
 target_compile_definitions(SoftwareRasterizerTests
     PRIVATE PROJECT_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
 )
