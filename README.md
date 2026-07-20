@@ -49,6 +49,14 @@ git submodule update --init --recursive
 
 Binaries are written to `build/<type>/SoftwareRasterizer`.
 
+## Testing
+
+```bash
+./test.sh
+```
+
+Builds and runs the test suite. Results are printed to stdout; the process exits with code `1` if any test fails.
+
 ## Running the web build locally
 
 After building with `./build.sh web`, serve the output via a local HTTP server (requires Python 3):

@@ -101,6 +101,7 @@ build_desktop() {
     cmake \
         --build "${build_directory}" \
         --config "${cmake_build_type}" \
+        --target "${PROJECT_NAME}" \
         --parallel
 
     [[ -f "$executable_path" ]] ||

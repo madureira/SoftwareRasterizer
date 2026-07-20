@@ -93,6 +93,10 @@ else()
     )
 endif()
 
+if(NOT EMSCRIPTEN)
+    add_subdirectory(tests)
+endif()
+
 if(EMSCRIPTEN)
     set_target_properties(
         SoftwareRasterizer

@@ -4,3 +4,5 @@ CompileFlags:
     - -std=c99
     - -include
     - src/core/types.h
+    - -Itests
+    - -Isrc

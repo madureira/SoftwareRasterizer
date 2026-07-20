@@ -260,6 +260,48 @@ static inline bool vec2_near_squared(Vec2 a, Vec2 b, float32 maximum_distance_sq
     return actual_distance_squared <= maximum_distance_squared;
 }
 
+static inline float32 vec2_length(Vec2 vector)
+{
+    assert(vec2_is_finite(vector));
+
+    const float32 length_squared = vec2_length_squared(vector);
+
+    assert(isfinite(length_squared));
+
+    return sqrtf(length_squared);
+}
+
+static inline float32 vec2_distance(Vec2 a, Vec2 b)
+{
+    assert(vec2_is_finite(a));
+    assert(vec2_is_finite(b));
+
+    const float32 distance_squared = vec2_distance_squared(a, b);
+
+    assert(isfinite(distance_squared));
+
+    return sqrtf(distance_squared);
+}
+
+/**
+ * Returns true when the absolute difference of each corresponding
+ * component is less than or equal to epsilon.
+ */
+static inline bool vec2_equals_epsilon(Vec2 a, Vec2 b, float32 epsilon)
+{
+    assert(vec2_is_finite(a));
+    assert(vec2_is_finite(b));
+    assert(isfinite(epsilon));
+    assert(epsilon >= 0.0f);
+
+    // clang-format off
+    return (
+        fabsf(a.x - b.x) <= epsilon
+        && fabsf(a.y - b.y) <= epsilon
+    );
+    // clang-format on
+}
+
 /**
  * Operations implemented in vec2.c
  */
@@ -268,22 +310,22 @@ static inline bool vec2_near_squared(Vec2 a, Vec2 b, float32 maximum_distance_sq
  * Attempts to divide a vector by a scalar.
  *
  * Returns false when result is NULL, the vector or scalar is not
- * finite, the scalar is too close to zero, or the result overflows.
+ * finite, or the scalar is too close to zero.
  *
  * On failure, the value pointed to by result is not modified.
  */
 bool vec2_try_divide(Vec2 vector, float32 scalar, Vec2* result);
 
-float32 vec2_length(Vec2 vector);
-
-float32 vec2_distance(Vec2 a, Vec2 b);
-
 Vec2 vec2_normalize(Vec2 vector);
 
 /**
- * Returns true when the absolute difference of each corresponding
- * component is less than or equal to epsilon.
+ * Attempts to normalize a vector.
+ *
+ * Returns false when result is NULL, the vector is not finite,
+ * or the vector is too close to zero to normalize safely.
+ *
+ * On failure, the value pointed to by result is not modified.
  */
-bool vec2_equals_epsilon(Vec2 a, Vec2 b, float32 epsilon);
+bool vec2_try_normalize(Vec2 vector, Vec2* result);
 
 #endif // MATH_VEC2_H
