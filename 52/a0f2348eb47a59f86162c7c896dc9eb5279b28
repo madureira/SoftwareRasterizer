@@ -1,0 +1,38 @@
+tests/CMakeLists.txt
+  s_97d7a55b336493::t_545677f0dc6b61 77
+  s_97d7a55b336493::t_45bd724470278f 76,78-87
+.clang-tidy
+  s_97d7a55b336493::t_57e57796312edd 5
+  s_97d7a55b336493::t_2bba9c948ab100 1-4,6,8-13
+  s_97d7a55b336493::t_f8c48e69d4972c 7
+.github/workflows/ci.yml
+  s_97d7a55b336493::t_7b59183a95cb54 1-53
+src/app/app.c
+  s_97d7a55b336493::t_d0ac63dacc71f4 78
+CMakeLists.txt
+  s_97d7a55b336493::t_e5c75b9e97472e 96
+  s_97d7a55b336493::t_8da1b6e91798b9 97-107
+test.sh
+  s_97d7a55b336493::t_199256b1fb5eb7 30
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "52a0f2348eb47a59f86162c7c896dc9eb5279b28",
+  "prompts": {},
+  "humans": {
+    "h_800f224ace5aa8": {
+      "author": "Rafael Madureira Dos Santos <rafael.madureira@mercadolivre.com>"
+    }
+  },
+  "sessions": {
+    "s_97d7a55b336493": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7dc8c14f-257e-4c86-892a-01fee2dea757",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Rafael Madureira Dos Santos <rafael.madureira@mercadolivre.com>"
+    }
+  }
+}
