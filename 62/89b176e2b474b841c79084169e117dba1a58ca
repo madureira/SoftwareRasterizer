@@ -1,0 +1,33 @@
+.clang-format
+  s_97d7a55b336493::t_9e71a905ccfa47 38-40,43
+  s_97d7a55b336493::t_76f5432ab85522 30-37,41-42
+format.sh
+  s_97d7a55b336493::t_a67a9302db2f7d 1-2
+  s_97d7a55b336493::t_a4b77346ae2250 7,9-14
+  s_97d7a55b336493::t_482d4b07e6d754 3-6,8,15-17
+src/math/vec2.c
+  h_800f224ace5aa8 1
+src/platform/platform.c
+  h_800f224ace5aa8 1,7,175
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "6289b176e2b474b841c79084169e117dba1a58ca",
+  "prompts": {},
+  "humans": {
+    "h_800f224ace5aa8": {
+      "author": "Rafael Madureira Dos Santos <rafael.madureira@mercadolivre.com>"
+    }
+  },
+  "sessions": {
+    "s_97d7a55b336493": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7dc8c14f-257e-4c86-892a-01fee2dea757",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Rafael Madureira Dos Santos <rafael.madureira@mercadolivre.com>"
+    }
+  }
+}
