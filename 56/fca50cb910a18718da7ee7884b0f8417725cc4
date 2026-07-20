@@ -1,0 +1,24 @@
+tests/CMakeLists.txt
+  s_97d7a55b336493::t_ecae79798b8e40 63-64
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "56fca50cb910a18718da7ee7884b0f8417725cc4",
+  "prompts": {},
+  "humans": {
+    "h_800f224ace5aa8": {
+      "author": "Rafael Madureira Dos Santos <rafael.madureira@mercadolivre.com>"
+    }
+  },
+  "sessions": {
+    "s_97d7a55b336493": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7dc8c14f-257e-4c86-892a-01fee2dea757",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Rafael Madureira Dos Santos <rafael.madureira@mercadolivre.com>"
+    }
+  }
+}
