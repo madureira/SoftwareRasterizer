@@ -75,7 +75,7 @@ int app_run(void)
         return 1;
     }
 
-    uint32* pixels = malloc(WINDOW_WIDTH * WINDOW_HEIGHT * sizeof(uint32));
+    uint32* pixels = malloc((size_t)WINDOW_WIDTH * WINDOW_HEIGHT * sizeof(uint32));
     if (pixels == NULL)
     {
         window_destroy(window);

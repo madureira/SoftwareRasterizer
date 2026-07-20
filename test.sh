@@ -27,4 +27,4 @@ echo ""
 echo "Running tests..."
 echo "----------------------------------------"
 
-"${TEST_BINARY}"
+MallocNanoZone=0 "${TEST_BINARY}"

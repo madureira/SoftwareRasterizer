@@ -1,0 +1,13 @@
+Checks: >
+  clang-diagnostic-*,
+  clang-analyzer-*,
+  bugprone-*,
+  -bugprone-easily-swappable-parameters,
+  cert-*,
+  -cert-err33-c,
+  misc-*,
+  performance-*,
+  readability-braces-around-statements,
+  readability-redundant-preprocessor
+HeaderFilterRegex: 'src/.*'
+WarningsAsErrors: ''

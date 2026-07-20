@@ -93,6 +93,18 @@ else()
     )
 endif()
 
+if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    if(CMAKE_C_COMPILER_ID MATCHES "Clang|GNU")
+        target_compile_options(SoftwareRasterizer PRIVATE
+            -fsanitize=address,undefined
+            -fno-omit-frame-pointer
+        )
+        target_link_options(SoftwareRasterizer PRIVATE
+            -fsanitize=address,undefined
+        )
+    endif()
+endif()
+
 if(NOT EMSCRIPTEN)
     add_subdirectory(tests)
 endif()
