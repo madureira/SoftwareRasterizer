@@ -1,0 +1,85 @@
+tests/math/test_vec2.c
+  h_800f224ace5aa8 59,294,385
+  s_db18a25b0fa491::t_0244642fa4da9a 1-58,60-126,128-132,134-139,142-145,147-155,157-163,165-168,170-178,181-185,188-192,194-198,200-204,206-213,215-218,220-225,227-232,234-237,239-242,244-293,295-384
+  s_35136b350abc85::t_79e2cc5ea0eb85 156,164,169
+  s_35136b350abc85::t_e8c6eaca733141 127
+  s_35136b350abc85::t_bf41c99fdeccfd 179-180,186-187,193,199,205
+  s_35136b350abc85::t_e268aa0a85be5d 214,219,226,233,238,243
+  s_35136b350abc85::t_fd54e16d217515 133,140-141,146
+tests/CMakeLists.txt
+  s_35136b350abc85::t_98b6699b0cca73 29
+  s_35136b350abc85::t_609ef26b466e65 23
+  s_35136b350abc85::t_09ff6268b2c344 63-66
+  s_35136b350abc85::t_cd3846e4eca123 1-22,24-28,30-32,36-38
+  s_db18a25b0fa491::t_18d75677fd79a4 33-35,39-62,67-75
+tests/math/test_math_common.c
+  s_db18a25b0fa491::t_fa89caea04413a 1-16,18-49,51-80
+  h_800f224ace5aa8 17,50,81
+test.sh
+  s_35136b350abc85::t_6e3e2ffca01294 1-30
+tests/main.c
+  s_db18a25b0fa491::t_b8326c3854f1ca 1-2,5-12,15-20
+  s_35136b350abc85::t_318aaa4afdff2c 3-4,13-14
+src/math/vec2.c
+  s_db18a25b0fa491::t_56eaab1714accf 44,46-49,51-60
+  h_800f224ace5aa8 20
+tests/test.c
+  s_35136b350abc85::t_cff7254019d842 30-32
+  s_db18a25b0fa491::t_dfc994b9a367df 1-2,4,6,28-29,52-54,91-118
+  s_35136b350abc85::t_3fcc58b9f969c5 7-8,11,13,15,21-22
+  s_35136b350abc85::t_107b2d4365ea45 9-10,16-20,23-27,33-51,55-56,62-87
+  s_35136b350abc85::t_4f320e748030f1 3
+  s_35136b350abc85::t_2dcbfeaa118762 5
+  h_800f224ace5aa8 12,14
+  s_35136b350abc85::t_a3149069481731 57-59,88-90
+  s_35136b350abc85::t_d69ec501fd87eb 60-61
+tests/test.h
+  s_35136b350abc85::t_6e74f11c33b267 7,14,16-17,22,24-25,27,29,31-32,34-40,44-68,71,76,78-107,109-118
+  s_35136b350abc85::t_76356314e77672 77
+  s_35136b350abc85::t_c38eba0271ea60 72-75
+  s_db18a25b0fa491::t_7a8e7353b1c1a0 1-6,8-13,15,18-21,41-43,69-70,119-121
+  s_35136b350abc85::t_855838ad6297ce 28
+  s_35136b350abc85::t_7bd7cbc9ced53a 108
+  h_800f224ace5aa8 23,26,30,33
+.clangd
+  s_db18a25b0fa491::t_9720a815f4d04b 7-8
+README.md
+  h_800f224ace5aa8 58-59
+  s_35136b350abc85::t_32d4f5dd033457 52-57
+src/math/vec2.h
+  s_db18a25b0fa491::t_652e07c941f541 263-304,322-327,329
+  s_db18a25b0fa491::t_3f1cbad4a612d6 313
+build.sh
+  s_35136b350abc85::t_4dff3cca236be0 104
+CMakeLists.txt
+  s_db18a25b0fa491::t_ba858d49bc33c0 96-99
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "94929e60778e3f90ef2f951961c753e13bc2cdf7",
+  "prompts": {},
+  "humans": {
+    "h_800f224ace5aa8": {
+      "author": "Rafael Madureira Dos Santos <rafael.madureira@mercadolivre.com>"
+    }
+  },
+  "sessions": {
+    "s_35136b350abc85": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b255dd82-a0c3-407b-87bd-d2cb682aea0d",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Rafael Madureira Dos Santos <rafael.madureira@mercadolivre.com>"
+    },
+    "s_db18a25b0fa491": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9a3b6d53-f4a0-4b65-ade1-d1900e9c2b00",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Rafael Madureira Dos Santos <rafael.madureira@mercadolivre.com>"
+    }
+  }
+}
