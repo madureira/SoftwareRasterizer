@@ -26,6 +26,18 @@ AlignConsecutiveMacros:
   AcrossEmptyLines: false
   AcrossComments: false
 
-# Preserve existing include order; do not sort or merge blocks
 SortIncludes: CaseSensitive
-IncludeBlocks: Preserve
+IncludeBlocks: Regroup
+IncludeCategories:
+  # Vendors / third-party (SDL3, emscripten, etc.)
+  - Regex: '^<(SDL3|emscripten).*>'
+    Priority: 2
+  # STD / C system headers
+  - Regex: '^<.*>'
+    Priority: 1
+  # Test infrastructure
+  - Regex: '^"test\.h"'
+    Priority: 3
+  # Project headers
+  - Regex: '^".*"'
+    Priority: 4

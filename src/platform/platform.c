@@ -1,9 +1,10 @@
-#include "platform.h"
+#include "platform/platform.h"
 
 #ifndef __EMSCRIPTEN__
 
-#include <SDL3/SDL.h>
 #include <stdlib.h>
+
+#include <SDL3/SDL.h>
 
 struct PlatformWindow
 {
@@ -171,6 +172,7 @@ void platform_run_main_loop(PlatformFrameCallback frame_cb, void* user_data)
 #else // __EMSCRIPTEN__
 
 #include <stdlib.h>
+
 #include <emscripten.h>
 #include <emscripten/html5.h>
 
