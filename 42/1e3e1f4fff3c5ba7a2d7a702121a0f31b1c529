@@ -1,0 +1,24 @@
+.github/workflows/ci.yml
+  s_97d7a55b336493::t_f911f9b739ddd0 22-29
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "421e3e1f4fff3c5ba7a2d7a702121a0f31b1c529",
+  "prompts": {},
+  "humans": {
+    "h_800f224ace5aa8": {
+      "author": "Rafael Madureira Dos Santos <rafael.madureira@mercadolivre.com>"
+    }
+  },
+  "sessions": {
+    "s_97d7a55b336493": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7dc8c14f-257e-4c86-892a-01fee2dea757",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Rafael Madureira Dos Santos <rafael.madureira@mercadolivre.com>"
+    }
+  }
+}
