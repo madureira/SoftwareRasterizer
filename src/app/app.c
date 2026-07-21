@@ -37,7 +37,7 @@ static void draw_triangle(uint32* pixels, int width, int height, Vec2 v0, Vec2 v
     {
         for (int x = x_min; x <= x_max; x++)
         {
-            Vec2 p = vec2_create((float32)x + 0.5f, (float32)y + 0.5f);
+            Vec2 p = vec2((float32)x + 0.5f, (float32)y + 0.5f);
 
             float32 w0 = edge(v1, v2, p);
             float32 w1 = edge(v2, v0, p);
@@ -89,9 +89,9 @@ int app_run(void)
         pixels[i] = 0x00222222;
     }
 
-    Vec2 v0 = vec2_create(400.0f, 100.0f);
-    Vec2 v1 = vec2_create(650.0f, 500.0f);
-    Vec2 v2 = vec2_create(150.0f, 500.0f);
+    Vec2 v0 = vec2(400.0f, 100.0f);
+    Vec2 v1 = vec2(650.0f, 500.0f);
+    Vec2 v2 = vec2(150.0f, 500.0f);
 
     draw_triangle(pixels, WINDOW_WIDTH, WINDOW_HEIGHT, v0, v1, v2, 0x0000AAFF);
 

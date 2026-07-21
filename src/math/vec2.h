@@ -13,24 +13,18 @@ typedef struct Vec2
  * Construction
  */
 
-static inline Vec2 vec2_create(float32 x, float32 y)
-{
-    // clang-format off
-    return (Vec2){
-        .x = x,
-        .y = y
-    };
-    // clang-format on
-}
+// clang-format off
+#define vec2(x_, y_) (Vec2){.x = (x_), .y = (y_)}
+// clang-format on
 
 static inline Vec2 vec2_zero(void)
 {
-    return vec2_create(0.0f, 0.0f);
+    return vec2(0.0f, 0.0f);
 }
 
 static inline Vec2 vec2_one(void)
 {
-    return vec2_create(1.0f, 1.0f);
+    return vec2(1.0f, 1.0f);
 }
 
 /**
@@ -49,7 +43,7 @@ static inline bool vec2_is_finite(Vec2 vector)
 static inline Vec2 vec2_add(Vec2 a, Vec2 b)
 {
     // clang-format off
-    return vec2_create(
+    return vec2(
         a.x + b.x,
         a.y + b.y
     );
@@ -59,7 +53,7 @@ static inline Vec2 vec2_add(Vec2 a, Vec2 b)
 static inline Vec2 vec2_subtract(Vec2 a, Vec2 b)
 {
     // clang-format off
-    return vec2_create(
+    return vec2(
         a.x - b.x,
         a.y - b.y
     );
@@ -69,7 +63,7 @@ static inline Vec2 vec2_subtract(Vec2 a, Vec2 b)
 static inline Vec2 vec2_multiply(Vec2 vector, float32 scalar)
 {
     // clang-format off
-    return vec2_create(
+    return vec2(
         vector.x * scalar,
         vector.y * scalar
     );
@@ -99,7 +93,7 @@ static inline Vec2 vec2_divide(Vec2 vector, float32 scalar)
 static inline Vec2 vec2_negate(Vec2 vector)
 {
     // clang-format off
-    return vec2_create(
+    return vec2(
         -vector.x,
         -vector.y
     );
@@ -139,7 +133,7 @@ static inline Vec2 vec2_lerp(Vec2 from, Vec2 to, float32 amount)
     assert(isfinite(amount));
 
     // clang-format off
-    return vec2_create(
+    return vec2(
         math_lerp_float32(from.x, to.x, amount),
         math_lerp_float32(from.y, to.y, amount)
     );
