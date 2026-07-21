@@ -14,6 +14,8 @@ typedef struct AppState
 {
     Window* window;
     uint32* pixels;
+    int32 width;
+    int32 height;
 } AppState;
 
 static float32 edge(Vec2 a, Vec2 b, Vec2 p)
@@ -55,13 +57,52 @@ static bool frame(void* arg)
 {
     AppState* state = (AppState*)arg;
     window_poll_events(state->window);
-    window_present(state->window, state->pixels, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+    int32 w = window_get_width(state->window);
+    int32 h = window_get_height(state->window);
+
+    if (w != state->width || h != state->height)
+    {
+        uint32* resized = realloc(state->pixels, (size_t)w * (size_t)h * sizeof(uint32));
+        if (resized == NULL)
+        {
+            return false;
+        }
+        state->pixels = resized;
+        state->width = w;
+        state->height = h;
+    }
+
+    const float32 rotation_speed = 1.0f; // radians per second
+
+    float32 angle = (float32)(platform_get_time_seconds() * rotation_speed);
+    float32 radius = (float32)(w < h ? w : h) * 0.25f;
+
+    Vec2 center = vec2((float32)w * 0.5f, (float32)h * 0.5f);
+
+    float32 a0 = angle;
+    float32 a1 = angle + (2.0f * (float32)MATH_PI / 3.0f);
+    float32 a2 = angle + (4.0f * (float32)MATH_PI / 3.0f);
+
+    Vec2 v0 = vec2(center.x + radius * cosf(a0), center.y + radius * sinf(a0));
+    Vec2 v1 = vec2(center.x + radius * cosf(a1), center.y + radius * sinf(a1));
+    Vec2 v2 = vec2(center.x + radius * cosf(a2), center.y + radius * sinf(a2));
+
+    for (int i = 0; i < w * h; i++)
+    {
+        state->pixels[i] = 0x00222222;
+    }
+
+    draw_triangle(state->pixels, w, h, v0, v1, v2, 0x0000AAFF);
+
+    window_present(state->window, state->pixels, w, h);
+
     return !window_should_close(state->window);
 }
 
 int app_run(void)
 {
-    if (!platform_initialize())
+    if (!platform_init())
     {
         return 1;
     }
@@ -83,24 +124,11 @@ int app_run(void)
         return 1;
     }
 
-    // Background: dark gray
-    for (int i = 0; i < WINDOW_WIDTH * WINDOW_HEIGHT; i++)
-    {
-        pixels[i] = 0x00222222;
-    }
-
-    Vec2 v0 = vec2(400.0f, 100.0f);
-    Vec2 v1 = vec2(650.0f, 500.0f);
-    Vec2 v2 = vec2(150.0f, 500.0f);
-
-    draw_triangle(pixels, WINDOW_WIDTH, WINDOW_HEIGHT, v0, v1, v2, 0x0000AAFF);
-
-    AppState state = {.window = window, .pixels = pixels};
+    AppState state = {.window = window, .pixels = pixels, .width = WINDOW_WIDTH, .height = WINDOW_HEIGHT};
 
     platform_run_main_loop(frame, &state);
 
-    // Reached on desktop only; Emscripten never returns from the loop.
-    free(pixels);
+    free(state.pixels);
     window_destroy(window);
     platform_shutdown();
 

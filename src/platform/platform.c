@@ -15,7 +15,7 @@ struct PlatformWindow
     int32 texture_height;
 };
 
-bool platform_initialize(void)
+bool platform_init(void)
 {
     return SDL_Init(SDL_INIT_VIDEO);
 }
@@ -169,6 +169,11 @@ void platform_run_main_loop(PlatformFrameCallback frame_cb, void* user_data)
     }
 }
 
+float64 platform_get_time_seconds(void)
+{
+    return (float64)SDL_GetTicks() / 1000.0;
+}
+
 #else // __EMSCRIPTEN__
 
 #include <stdlib.h>
@@ -194,7 +199,7 @@ struct PlatformWindow
 
 static EmscriptenLoopState g_loop_state;
 
-bool platform_initialize(void)
+bool platform_init(void)
 {
     return true;
 }
@@ -267,6 +272,11 @@ void platform_run_main_loop(PlatformFrameCallback frame_cb, void* user_data)
     g_loop_state.cb = frame_cb;
     g_loop_state.user_data = user_data;
     emscripten_set_main_loop(emscripten_frame_wrapper, 0, 1);
+}
+
+float64 platform_get_time_seconds(void)
+{
+    return emscripten_get_now() / 1000.0;
 }
 
 #endif // __EMSCRIPTEN__

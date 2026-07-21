@@ -28,7 +28,7 @@ typedef struct PlatformEvent
     } data;
 } PlatformEvent;
 
-bool platform_initialize(void);
+bool platform_init(void);
 
 void platform_shutdown(void);
 
@@ -45,5 +45,7 @@ bool platform_poll_event(PlatformEvent* event);
 typedef bool (*PlatformFrameCallback)(void* user_data);
 
 void platform_run_main_loop(PlatformFrameCallback frame_cb, void* user_data);
+
+float64 platform_get_time_seconds(void);
 
 #endif // PLATFORM_PLATFORM_H

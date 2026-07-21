@@ -5,6 +5,12 @@
 #include <math.h>
 
 /*
+ * Constants
+ */
+
+#define MATH_PI 3.14159265358979323846
+
+/*
  * Scalar helpers
  */
 
