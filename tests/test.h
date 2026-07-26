@@ -44,40 +44,40 @@ void print_summary(int total_tests, int tests_failed);
 
 // clang-format off
 
-#define TEST_ASSERT(ctx, expr)                                   \
-    do {                                                         \
-        if (!(expr))                                             \
-        {                                                        \
-            test_context_fail((ctx), __FILE__, __LINE__, #expr); \
-        }                                                        \
+#define TEST_ASSERT(ctx, expr)                                               \
+    do {                                                                     \
+        if (!(expr))                                                         \
+        {                                                                    \
+            test_context_fail((ctx), __FILE__, __LINE__, #expr);             \
+        }                                                                    \
     } while (0)
 
-#define TEST_ASSERT_TRUE(ctx, expr)                                   \
-    do {                                                              \
-        int _v = !!(expr);                                            \
-        if (!_v)                                                      \
-        {                                                             \
-            test_bool_fail((ctx), __FILE__, __LINE__, #expr, _v, 1);  \
-        }                                                             \
+#define TEST_ASSERT_TRUE(ctx, expr)                                          \
+    do {                                                                     \
+        int _v = !!(expr);                                                   \
+        if (!_v)                                                             \
+        {                                                                    \
+            test_bool_fail((ctx), __FILE__, __LINE__, #expr, _v, 1);         \
+        }                                                                    \
     } while (0)
 
-#define TEST_ASSERT_FALSE(ctx, expr)                                  \
-    do {                                                              \
-        int _v = !!(expr);                                            \
-        if (_v)                                                       \
-        {                                                             \
-            test_bool_fail((ctx), __FILE__, __LINE__, #expr, _v, 0);  \
-        }                                                             \
+#define TEST_ASSERT_FALSE(ctx, expr)                                         \
+    do {                                                                     \
+        int _v = !!(expr);                                                   \
+        if (_v)                                                              \
+        {                                                                    \
+            test_bool_fail((ctx), __FILE__, __LINE__, #expr, _v, 0);         \
+        }                                                                    \
     } while (0)
 
-#define TEST_ASSERT_FLOAT_EQ(ctx, a, b, eps)                               \
-    do {                                                                   \
-        float _a = (a);                                                    \
-        float _b = (b);                                                    \
-        if (!test_floats_equal(_a, _b, (eps)))                             \
-        {                                                                  \
-            test_float_eq_fail((ctx), __FILE__, __LINE__, #a, _a, #b, _b); \
-        }                                                                  \
+#define TEST_ASSERT_FLOAT_EQ(ctx, a, b, eps)                                 \
+    do {                                                                     \
+        float _a = (a);                                                      \
+        float _b = (b);                                                      \
+        if (!test_floats_equal(_a, _b, (eps)))                               \
+        {                                                                    \
+            test_float_eq_fail((ctx), __FILE__, __LINE__, #a, _a, #b, _b);   \
+        }                                                                    \
     } while (0)
 
 #define TEST_ASSERT_DOUBLE_EQ(ctx, a, b, eps)                                \
@@ -100,22 +100,22 @@ void print_summary(int total_tests, int tests_failed);
         }                                                                    \
     } while (0)
 
-#define TEST_ASSERT_NULL(ctx, ptr)                                      \
-    do {                                                                \
-        const void* _p = (const void*)(ptr);                            \
-        if (_p != NULL)                                                 \
-        {                                                               \
-            test_ptr_fail((ctx), __FILE__, __LINE__, #ptr, _p, 1);      \
-        }                                                               \
+#define TEST_ASSERT_NULL(ctx, ptr)                                           \
+    do {                                                                     \
+        const void* _p = (const void*)(ptr);                                 \
+        if (_p != NULL)                                                      \
+        {                                                                    \
+            test_ptr_fail((ctx), __FILE__, __LINE__, #ptr, _p, 1);           \
+        }                                                                    \
     } while (0)
 
-#define TEST_ASSERT_NOT_NULL(ctx, ptr)                                  \
-    do {                                                                \
-        const void* _p = (const void*)(ptr);                            \
-        if (_p == NULL)                                                 \
-        {                                                               \
-            test_ptr_fail((ctx), __FILE__, __LINE__, #ptr, _p, 0);      \
-        }                                                               \
+#define TEST_ASSERT_NOT_NULL(ctx, ptr)                                       \
+    do {                                                                     \
+        const void* _p = (const void*)(ptr);                                 \
+        if (_p == NULL)                                                      \
+        {                                                                    \
+            test_ptr_fail((ctx), __FILE__, __LINE__, #ptr, _p, 0);           \
+        }                                                                    \
     } while (0)
 
 // clang-format on
