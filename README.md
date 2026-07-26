@@ -1,5 +1,10 @@
 # SoftwareRasterizer
 
+[![CI](https://github.com/madureira/SoftwareRasterizer/actions/workflows/ci.yml/badge.svg)](https://github.com/madureira/SoftwareRasterizer/actions/workflows/ci.yml)
+![Language](https://img.shields.io/badge/language-C99-blue)
+![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20WebAssembly-lightgrey)
+![License](https://img.shields.io/github/license/madureira/SoftwareRasterizer)
+
 A 3D software rasterizer built from scratch in C99, using SDL3 for windowing.
 
 ## Prerequisites
