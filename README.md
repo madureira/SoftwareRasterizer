@@ -52,12 +52,24 @@ git submodule update --init --recursive
 ./build.sh web
 ```
 
-Binaries are written to `build/<type>/SoftwareRasterizer`.
+```bat
+:: Windows
+build.bat debug win
+build.bat release win
+```
+
+Binaries are written to `build/<type>/SoftwareRasterizer` (or `.exe` on Windows).
 
 ## Testing
 
 ```bash
+# macOS / Linux
 ./test.sh
+```
+
+```bat
+:: Windows
+test.bat
 ```
 
 Builds and runs the test suite. Results are printed to stdout; the process exits with code `1` if any test fails.

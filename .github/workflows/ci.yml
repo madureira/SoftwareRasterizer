@@ -31,6 +31,23 @@ jobs:
       - name: Build and run tests
         run: ./test.sh
 
+  windows-build-and-test:
+    name: Build & Test (Windows)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Configure (Debug)
+        run: cmake --preset windows-debug
+
+      - name: Build tests
+        run: cmake --build --preset windows-debug --target SoftwareRasterizerTests --parallel
+
+      - name: Run tests
+        run: build\debug\SoftwareRasterizerTests.exe
+
   web-build:
     name: Web Build (Emscripten)
     runs-on: ubuntu-latest
