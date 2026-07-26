@@ -39,11 +39,14 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Set up MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+
       - name: Configure (Debug)
-        run: cmake --preset windows-debug
+        run: cmake -B build/debug -G Ninja -DCMAKE_BUILD_TYPE=Debug
 
       - name: Build tests
-        run: cmake --build --preset windows-debug --target SoftwareRasterizerTests --parallel
+        run: cmake --build build/debug --target SoftwareRasterizerTests --parallel
 
       - name: Run tests
         run: build\debug\SoftwareRasterizerTests.exe
