@@ -1,19 +1,50 @@
 # top-most EditorConfig file
 root = true
 
-# Unix-style newlines with a newline ending every file
+# Unix-style newlines with a newline at the end of every file
 [*]
 end_of_line = lf
 insert_final_newline = true
 trim_trailing_whitespace = true
-max_line_length = 120
+max_line_length = 100
 
 [*.{h,c,sh}]
 charset = utf-8
-indent_style = space
 indent_size = 4
+indent_style = space
+insert_final_newline = true
+trim_trailing_whitespace = true
 
 [*.{js,json,html,css,md}]
 charset = utf-8
-indent_style = space
 indent_size = 2
+indent_style = space
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# CMake convention is 2 spaces
+[CMakeLists.txt]
+indent_size = 2
+indent_style = space
+
+[*.cmake]
+indent_size = 2
+indent_style = space
+
+# Makefiles require tabs — spaces will break make
+[Makefile]
+indent_style = tab
+
+# Binary WASM output — skip newline normalization
+[*.wasm]
+insert_final_newline = false
+trim_trailing_whitespace = false
+
+# Image and font assets — prevent editor corruption on save
+[*.{png,jpg,jpeg,gif,bmp,ico,webp}]
+insert_final_newline = false
+trim_trailing_whitespace = false
+
+[*.{ttf,otf,woff,woff2}]
+insert_final_newline = false
+trim_trailing_whitespace = false

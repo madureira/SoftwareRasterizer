@@ -23,7 +23,8 @@ static float32 edge(Vec2 a, Vec2 b, Vec2 p)
     return (b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x);
 }
 
-static void draw_triangle(uint32* pixels, int width, int height, Vec2 v0, Vec2 v1, Vec2 v2, uint32 color)
+static void draw_triangle(uint32* pixels, int width, int height, Vec2 v0, Vec2 v1, Vec2 v2,
+                          uint32 color)
 {
     int x_min = (int)fminf(v0.x, fminf(v1.x, v2.x));
     int y_min = (int)fminf(v0.y, fminf(v1.y, v2.y));
@@ -107,8 +108,8 @@ int app_run(void)
         return 1;
     }
 
-    Window* window = window_create(
-        &(WindowConfig){.title = WINDOW_TITLE, .width = WINDOW_WIDTH, .height = WINDOW_HEIGHT, .resizable = true});
+    Window* window = window_create(&(WindowConfig){
+        .title = WINDOW_TITLE, .width = WINDOW_WIDTH, .height = WINDOW_HEIGHT, .resizable = true});
 
     if (window == NULL)
     {
@@ -124,7 +125,14 @@ int app_run(void)
         return 1;
     }
 
-    AppState state = {.window = window, .pixels = pixels, .width = WINDOW_WIDTH, .height = WINDOW_HEIGHT};
+    // clang-format off
+    AppState state = {
+        .window = window,
+        .pixels = pixels,
+        .width = WINDOW_WIDTH,
+        .height = WINDOW_HEIGHT
+    };
+    // clang-format on
 
     platform_run_main_loop(frame, &state);
 

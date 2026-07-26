@@ -44,15 +44,15 @@ init_submodules() {
 
 normalize_build_type() {
     case "$1" in
-        debug)
-            echo "Debug"
-            ;;
-        release)
-            echo "Release"
-            ;;
-        *)
-            fail "Invalid build type '$1'. Expected 'debug' or 'release'."
-            ;;
+    debug)
+        echo "Debug"
+        ;;
+    release)
+        echo "Release"
+        ;;
+    *)
+        fail "Invalid build type '$1'. Expected 'debug' or 'release'."
+        ;;
     esac
 }
 
@@ -72,19 +72,19 @@ build_desktop() {
     executable_path="${build_directory}/${PROJECT_NAME}"
 
     case "$requested_platform" in
-        mac)
-            [[ "$(uname -s)" == "Darwin" ]] ||
-                fail "The 'mac' target must be built on macOS."
-            ;;
+    mac)
+        [[ "$(uname -s)" == "Darwin" ]] ||
+            fail "The 'mac' target must be built on macOS."
+        ;;
 
-        linux)
-            [[ "$(uname -s)" == "Linux" ]] ||
-                fail "The 'linux' target must be built on Linux."
-            ;;
+    linux)
+        [[ "$(uname -s)" == "Linux" ]] ||
+            fail "The 'linux' target must be built on Linux."
+        ;;
 
-        *)
-            fail "Unsupported desktop platform '$requested_platform'."
-            ;;
+    *)
+        fail "Unsupported desktop platform '$requested_platform'."
+        ;;
     esac
 
     echo "Configuring ${requested_platform} ${cmake_build_type} build..."
@@ -161,32 +161,32 @@ command_exists cmake ||
     fail "CMake was not found."
 
 case "$BUILD_TYPE" in
-    init)
-        init_submodules
-        ;;
+init)
+    init_submodules
+    ;;
 
-    debug | release)
-        [[ -n "$PLATFORM" ]] || {
-            print_usage
-            exit 1
-        }
-
-        build_desktop "$BUILD_TYPE" "$PLATFORM"
-        ;;
-
-    web)
-        [[ -z "$PLATFORM" ]] ||
-            fail "The web target does not accept a platform argument. Use: ./build.sh web"
-
-        build_web
-        ;;
-
-    -h | --help | help | "")
+debug | release)
+    [[ -n "$PLATFORM" ]] || {
         print_usage
-        ;;
+        exit 1
+    }
 
-    *)
-        print_usage
-        fail "Unknown build target '$BUILD_TYPE'."
-        ;;
+    build_desktop "$BUILD_TYPE" "$PLATFORM"
+    ;;
+
+web)
+    [[ -z "$PLATFORM" ]] ||
+        fail "The web target does not accept a platform argument. Use: ./build.sh web"
+
+    build_web
+    ;;
+
+-h | --help | help | "")
+    print_usage
+    ;;
+
+*)
+    print_usage
+    fail "Unknown build target '$BUILD_TYPE'."
+    ;;
 esac

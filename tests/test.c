@@ -33,7 +33,8 @@ void test_context_fail(TestContext* ctx, const char* file, int line, const char*
     ctx->failures++;
 }
 
-void test_bool_fail(TestContext* ctx, const char* file, int line, const char* expr, int actual, int expected_true)
+void test_bool_fail(TestContext* ctx, const char* file, int line, const char* expr, int actual,
+                    int expected_true)
 {
     fprintf(stdout, "  FAIL  %s\n", ctx->test_name);
     fprintf(stdout, "          %s:%d\n", relative_path(file), line);
@@ -42,8 +43,8 @@ void test_bool_fail(TestContext* ctx, const char* file, int line, const char* ex
     ctx->failures++;
 }
 
-void test_float_eq_fail(TestContext* ctx, const char* file, int line, const char* actual_expr, float actual,
-                        const char* expected_expr, float expected)
+void test_float_eq_fail(TestContext* ctx, const char* file, int line, const char* actual_expr,
+                        float actual, const char* expected_expr, float expected)
 {
     fprintf(stdout, "  FAIL  %s\n", ctx->test_name);
     fprintf(stdout, "          %s:%d\n", relative_path(file), line);
@@ -52,8 +53,8 @@ void test_float_eq_fail(TestContext* ctx, const char* file, int line, const char
     ctx->failures++;
 }
 
-void test_double_eq_fail(TestContext* ctx, const char* file, int line, const char* actual_expr, double actual,
-                         const char* expected_expr, double expected)
+void test_double_eq_fail(TestContext* ctx, const char* file, int line, const char* actual_expr,
+                         double actual, const char* expected_expr, double expected)
 {
     fprintf(stdout, "  FAIL  %s\n", ctx->test_name);
     fprintf(stdout, "          %s:%d\n", relative_path(file), line);
@@ -62,8 +63,8 @@ void test_double_eq_fail(TestContext* ctx, const char* file, int line, const cha
     ctx->failures++;
 }
 
-void test_int_eq_fail(TestContext* ctx, const char* file, int line, const char* actual_expr, int actual,
-                      const char* expected_expr, int expected)
+void test_int_eq_fail(TestContext* ctx, const char* file, int line, const char* actual_expr,
+                      int actual, const char* expected_expr, int expected)
 {
     fprintf(stdout, "  FAIL  %s\n", ctx->test_name);
     fprintf(stdout, "          %s:%d\n", relative_path(file), line);
@@ -72,7 +73,8 @@ void test_int_eq_fail(TestContext* ctx, const char* file, int line, const char* 
     ctx->failures++;
 }
 
-void test_ptr_fail(TestContext* ctx, const char* file, int line, const char* expr, const void* ptr, int expect_null)
+void test_ptr_fail(TestContext* ctx, const char* file, int line, const char* expr, const void* ptr,
+                   int expect_null)
 {
     fprintf(stdout, "  FAIL  %s\n", ctx->test_name);
     fprintf(stdout, "          %s:%d\n", relative_path(file), line);

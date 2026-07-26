@@ -28,7 +28,8 @@ Window* window_create(const WindowConfig* config)
         return NULL;
     }
 
-    window->platform_window = platform_window_create(config->title, config->width, config->height, config->resizable);
+    window->platform_window =
+        platform_window_create(config->title, config->width, config->height, config->resizable);
 
     if (window->platform_window == NULL)
     {

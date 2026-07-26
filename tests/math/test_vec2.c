@@ -202,7 +202,8 @@ static void test_lerp_clamped_above_one(TestContext* ctx)
 static void test_lerp_clamped_below_zero(TestContext* ctx)
 {
     Vec2 from = vec2_zero();
-    TEST_ASSERT_TRUE(ctx, vec2_equals_exact(vec2_lerp_clamped(from, vec2(10.0f, 10.0f), -1.0f), from));
+    TEST_ASSERT_TRUE(ctx,
+                     vec2_equals_exact(vec2_lerp_clamped(from, vec2(10.0f, 10.0f), -1.0f), from));
 }
 
 /*

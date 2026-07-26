@@ -22,7 +22,7 @@ mkdir -p "$DEPLOY_DIR"
 
 # Copy output files
 cp "$BUILD_DIR/index.html" "$DEPLOY_DIR/"
-cp "$BUILD_DIR/index.js"   "$DEPLOY_DIR/"
+cp "$BUILD_DIR/index.js" "$DEPLOY_DIR/"
 cp "$BUILD_DIR/index.wasm" "$DEPLOY_DIR/"
 [[ -f "$BUILD_DIR/index.data" ]] && cp "$BUILD_DIR/index.data" "$DEPLOY_DIR/"
 

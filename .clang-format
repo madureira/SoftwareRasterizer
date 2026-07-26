@@ -1,7 +1,7 @@
 ---
 Language: C
 BasedOnStyle: LLVM
-ColumnLimit: 120
+ColumnLimit: 100
 IndentWidth: 4
 TabWidth: 4
 UseTab: Never
@@ -26,14 +26,33 @@ AlignConsecutiveMacros:
   AcrossEmptyLines: false
   AcrossComments: false
 
+AlignTrailingComments:
+  Kind: Always
+  OverEmptyLines: 0
+
+# Break before binary operators to improve readability of math expressions
+BreakBeforeBinaryOperators: NonAssignment
+
+# Space before control flow parentheses: if (x) not if(x)
+SpaceBeforeParens: ControlStatements
+
+# No spaces inside square brackets: arr[i] not arr[ i ]
+SpacesInSquareBrackets: false
+
+# No space after C-style cast: (int)x not (int) x
+SpaceAfterCStyleCast: false
+
+InsertNewlineAtEOF: true
+LineEnding: LF
+
 SortIncludes: CaseSensitive
 IncludeBlocks: Regroup
 IncludeCategories:
   # Vendors / third-party (SDL3, emscripten, etc.)
-  - Regex: '^<(SDL3|emscripten).*>'
+  - Regex: "^<(SDL3|emscripten).*>"
     Priority: 2
   # STD / C system headers
-  - Regex: '^<.*>'
+  - Regex: "^<.*>"
     Priority: 1
   # Test infrastructure
   - Regex: '^"test\.h"'

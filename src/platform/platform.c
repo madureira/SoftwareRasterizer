@@ -55,8 +55,8 @@ PlatformWindow* platform_window_create(const char* title, int32 width, int32 hei
         return NULL;
     }
 
-    win->texture =
-        SDL_CreateTexture(win->renderer, SDL_PIXELFORMAT_XRGB8888, SDL_TEXTUREACCESS_STREAMING, width, height);
+    win->texture = SDL_CreateTexture(win->renderer, SDL_PIXELFORMAT_XRGB8888,
+                                     SDL_TEXTUREACCESS_STREAMING, width, height);
     if (win->texture == NULL)
     {
         SDL_DestroyRenderer(win->renderer);
@@ -94,7 +94,8 @@ void platform_window_set_title(PlatformWindow* window, const char* title)
     SDL_SetWindowTitle(window->window, title);
 }
 
-void platform_window_present(PlatformWindow* window, const uint32* pixels, int32 width, int32 height)
+void platform_window_present(PlatformWindow* window, const uint32* pixels, int32 width,
+                             int32 height)
 {
     if (window == NULL || pixels == NULL)
     {
@@ -104,8 +105,8 @@ void platform_window_present(PlatformWindow* window, const uint32* pixels, int32
     if (width != window->texture_width || height != window->texture_height)
     {
         SDL_DestroyTexture(window->texture);
-        window->texture =
-            SDL_CreateTexture(window->renderer, SDL_PIXELFORMAT_XRGB8888, SDL_TEXTUREACCESS_STREAMING, width, height);
+        window->texture = SDL_CreateTexture(window->renderer, SDL_PIXELFORMAT_XRGB8888,
+                                            SDL_TEXTUREACCESS_STREAMING, width, height);
         if (window->texture == NULL)
         {
             return;
@@ -238,7 +239,8 @@ void platform_window_set_title(PlatformWindow* window, const char* title)
     platform_js_set_title(title);
 }
 
-void platform_window_present(PlatformWindow* window, const uint32* pixels, int32 width, int32 height)
+void platform_window_present(PlatformWindow* window, const uint32* pixels, int32 width,
+                             int32 height)
 {
     if (window == NULL || pixels == NULL)
     {

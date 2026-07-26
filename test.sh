@@ -7,7 +7,10 @@ BUILD_DIR="${PROJECT_ROOT}/build/debug"
 TEST_BINARY="${BUILD_DIR}/SoftwareRasterizerTests"
 
 [[ -f "${PROJECT_ROOT}/vendors/SDL3/CMakeLists.txt" ]] ||
-    { echo "Error: SDL3 submodule not found. Run './build.sh init' first." >&2; exit 1; }
+    {
+        echo "Error: SDL3 submodule not found. Run './build.sh init' first." >&2
+        exit 1
+    }
 
 cmake \
     -S "${PROJECT_ROOT}" \

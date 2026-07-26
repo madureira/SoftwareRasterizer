@@ -32,13 +32,15 @@ bool platform_init(void);
 
 void platform_shutdown(void);
 
-PlatformWindow* platform_window_create(const char* title, int32 width, int32 height, bool resizable);
+PlatformWindow* platform_window_create(const char* title, int32 width, int32 height,
+                                       bool resizable);
 
 void platform_window_destroy(PlatformWindow* window);
 
 void platform_window_set_title(PlatformWindow* window, const char* title);
 
-void platform_window_present(PlatformWindow* window, const uint32* pixels, int32 width, int32 height);
+void platform_window_present(PlatformWindow* window, const uint32* pixels, int32 width,
+                             int32 height);
 
 bool platform_poll_event(PlatformEvent* event);
 

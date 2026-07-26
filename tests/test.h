@@ -21,20 +21,22 @@ void test_context_fail(TestContext* ctx, const char* file, int line, const char*
 
 int test_floats_equal(float a, float b, float eps);
 
-void test_float_eq_fail(TestContext* ctx, const char* file, int line, const char* actual_expr, float actual,
-                        const char* expected_expr, float expected);
+void test_float_eq_fail(TestContext* ctx, const char* file, int line, const char* actual_expr,
+                        float actual, const char* expected_expr, float expected);
 
-void test_bool_fail(TestContext* ctx, const char* file, int line, const char* expr, int actual, int expected_true);
+void test_bool_fail(TestContext* ctx, const char* file, int line, const char* expr, int actual,
+                    int expected_true);
 
 int test_doubles_equal(double a, double b, double eps);
 
-void test_double_eq_fail(TestContext* ctx, const char* file, int line, const char* actual_expr, double actual,
-                         const char* expected_expr, double expected);
+void test_double_eq_fail(TestContext* ctx, const char* file, int line, const char* actual_expr,
+                         double actual, const char* expected_expr, double expected);
 
-void test_int_eq_fail(TestContext* ctx, const char* file, int line, const char* actual_expr, int actual,
-                      const char* expected_expr, int expected);
+void test_int_eq_fail(TestContext* ctx, const char* file, int line, const char* actual_expr,
+                      int actual, const char* expected_expr, int expected);
 
-void test_ptr_fail(TestContext* ctx, const char* file, int line, const char* expr, const void* ptr, int expect_null);
+void test_ptr_fail(TestContext* ctx, const char* file, int line, const char* expr, const void* ptr,
+                   int expect_null);
 
 int run_suite(const TestSuite* suite);
 

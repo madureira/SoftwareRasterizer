@@ -9,5 +9,5 @@ Checks: >
   performance-*,
   readability-braces-around-statements,
   readability-redundant-preprocessor
-HeaderFilterRegex: 'src/.*'
-WarningsAsErrors: ''
+HeaderFilterRegex: "src/.*"
+WarningsAsErrors: ""
