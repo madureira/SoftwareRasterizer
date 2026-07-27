@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 #include "app/window.h"
-#include "math/vec2.h"
+#include "math/vec2f.h"
 #include "platform/platform.h"
 
 #define WINDOW_TITLE  "Software Rasterizer"
@@ -18,12 +18,12 @@ typedef struct AppState
     int32 height;
 } AppState;
 
-static float32 edge(Vec2 a, Vec2 b, Vec2 p)
+static float32 edge(Vec2f a, Vec2f b, Vec2f p)
 {
     return (b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x);
 }
 
-static void draw_triangle(uint32* pixels, int width, int height, Vec2 v0, Vec2 v1, Vec2 v2,
+static void draw_triangle(uint32* pixels, int width, int height, Vec2f v0, Vec2f v1, Vec2f v2,
                           uint32 color)
 {
     int x_min = (int)fminf(v0.x, fminf(v1.x, v2.x));
@@ -40,7 +40,7 @@ static void draw_triangle(uint32* pixels, int width, int height, Vec2 v0, Vec2 v
     {
         for (int x = x_min; x <= x_max; x++)
         {
-            Vec2 p = vec2((float32)x + 0.5f, (float32)y + 0.5f);
+            Vec2f p = vec2f((float32)x + 0.5f, (float32)y + 0.5f);
 
             float32 w0 = edge(v1, v2, p);
             float32 w1 = edge(v2, v0, p);
@@ -79,15 +79,15 @@ static bool frame(void* arg)
     float32 angle = (float32)(platform_get_time_seconds() * rotation_speed);
     float32 radius = (float32)(w < h ? w : h) * 0.25f;
 
-    Vec2 center = vec2((float32)w * 0.5f, (float32)h * 0.5f);
+    Vec2f center = vec2f((float32)w * 0.5f, (float32)h * 0.5f);
 
     float32 a0 = angle;
     float32 a1 = angle + (2.0f * (float32)MATH_PI / 3.0f);
     float32 a2 = angle + (4.0f * (float32)MATH_PI / 3.0f);
 
-    Vec2 v0 = vec2(center.x + radius * cosf(a0), center.y + radius * sinf(a0));
-    Vec2 v1 = vec2(center.x + radius * cosf(a1), center.y + radius * sinf(a1));
-    Vec2 v2 = vec2(center.x + radius * cosf(a2), center.y + radius * sinf(a2));
+    Vec2f v0 = vec2f(center.x + radius * cosf(a0), center.y + radius * sinf(a0));
+    Vec2f v1 = vec2f(center.x + radius * cosf(a1), center.y + radius * sinf(a1));
+    Vec2f v2 = vec2f(center.x + radius * cosf(a2), center.y + radius * sinf(a2));
 
     for (int i = 0; i < w * h; i++)
     {
