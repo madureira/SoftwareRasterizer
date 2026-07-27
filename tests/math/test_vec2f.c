@@ -42,34 +42,34 @@ static void test_add(TestContext* ctx)
 
 static void test_subtract(TestContext* ctx)
 {
-    Vec2f r = vec2f_subtract(vec2f(5.0f, 7.0f), vec2f(2.0f, 3.0f));
+    Vec2f r = vec2f_sub(vec2f(5.0f, 7.0f), vec2f(2.0f, 3.0f));
     TEST_ASSERT(ctx, r.x == 3.0f);
     TEST_ASSERT(ctx, r.y == 4.0f);
 }
 
-static void test_multiply(TestContext* ctx)
+static void test_scale(TestContext* ctx)
 {
-    Vec2f r = vec2f_multiply(vec2f(2.0f, 3.0f), 4.0f);
+    Vec2f r = vec2f_scale(vec2f(2.0f, 3.0f), 4.0f);
     TEST_ASSERT(ctx, r.x == 8.0f);
     TEST_ASSERT(ctx, r.y == 12.0f);
 }
 
 static void test_divide(TestContext* ctx)
 {
-    Vec2f r = vec2f_divide(vec2f(6.0f, 9.0f), 3.0f);
+    Vec2f r = vec2f_div(vec2f(6.0f, 9.0f), 3.0f);
     TEST_ASSERT_FLOAT_EQ(ctx, r.x, 2.0f, EPS);
     TEST_ASSERT_FLOAT_EQ(ctx, r.y, 3.0f, EPS);
 }
 
 static void test_negate(TestContext* ctx)
 {
-    Vec2f r = vec2f_negate(vec2f(1.0f, -2.0f));
+    Vec2f r = vec2f_neg(vec2f(1.0f, -2.0f));
     TEST_ASSERT(ctx, r.x == -1.0f);
     TEST_ASSERT(ctx, r.y == 2.0f);
 }
 
 /*
- * Vector operations
+ * Dot product
  */
 
 static void test_dot_orthogonal(TestContext* ctx)
@@ -82,14 +82,71 @@ static void test_dot_parallel(TestContext* ctx)
     TEST_ASSERT_FLOAT_EQ(ctx, vec2f_dot(vec2f(1.0f, 0.0f), vec2f(1.0f, 0.0f)), 1.0f, EPS);
 }
 
+/*
+ * Cross product
+ */
+
+static void test_cross_perpendicular_counter_clockwise(TestContext* ctx)
+{
+    TEST_ASSERT_FLOAT_EQ(ctx, vec2f_cross(vec2f(1.0f, 0.0f), vec2f(0.0f, 1.0f)), 1.0f, EPS);
+}
+
+static void test_cross_perpendicular_clockwise(TestContext* ctx)
+{
+    TEST_ASSERT_FLOAT_EQ(ctx, vec2f_cross(vec2f(0.0f, 1.0f), vec2f(1.0f, 0.0f)), -1.0f, EPS);
+}
+
+static void test_cross_parallel_same_direction(TestContext* ctx)
+{
+    TEST_ASSERT_FLOAT_EQ(ctx, vec2f_cross(vec2f(1.0f, 0.0f), vec2f(2.0f, 0.0f)), 0.0f, EPS);
+}
+
+static void test_cross_parallel_opposite_direction(TestContext* ctx)
+{
+    TEST_ASSERT_FLOAT_EQ(ctx, vec2f_cross(vec2f(1.0f, 0.0f), vec2f(-2.0f, 0.0f)), 0.0f, EPS);
+}
+
+static void test_cross_same_vector(TestContext* ctx)
+{
+    const Vec2f vector = vec2f(3.0f, 4.0f);
+
+    TEST_ASSERT_FLOAT_EQ(ctx, vec2f_cross(vector, vector), 0.0f, EPS);
+}
+
+static void test_cross_general_vectors(TestContext* ctx)
+{
+    /*
+     * (2 * 4) - (3 * -1)
+     * 8 + 3 = 11
+     */
+    TEST_ASSERT_FLOAT_EQ(ctx, vec2f_cross(vec2f(2.0f, 3.0f), vec2f(-1.0f, 4.0f)), 11.0f, EPS);
+}
+
+static void test_cross_anti_commutative(TestContext* ctx)
+{
+    const Vec2f a = vec2f(2.0f, 3.0f);
+    const Vec2f b = vec2f(-1.0f, 4.0f);
+
+    TEST_ASSERT_FLOAT_EQ(ctx, vec2f_cross(a, b), -vec2f_cross(b, a), EPS);
+}
+
+static void test_cross_zero_vector(TestContext* ctx)
+{
+    TEST_ASSERT_FLOAT_EQ(ctx, vec2f_cross(vec2f_zero(), vec2f(3.0f, 4.0f)), 0.0f, EPS);
+}
+
+/*
+ * Length
+ */
+
 static void test_length_squared(TestContext* ctx)
 {
-    TEST_ASSERT_FLOAT_EQ(ctx, vec2f_length_squared(vec2f(3.0f, 4.0f)), 25.0f, EPS);
+    TEST_ASSERT_FLOAT_EQ(ctx, vec2f_len_sq(vec2f(3.0f, 4.0f)), 25.0f, EPS);
 }
 
 static void test_length(TestContext* ctx)
 {
-    TEST_ASSERT_FLOAT_EQ(ctx, vec2f_length(vec2f(3.0f, 4.0f)), 5.0f, EPS);
+    TEST_ASSERT_FLOAT_EQ(ctx, vec2f_len(vec2f(3.0f, 4.0f)), 5.0f, EPS);
 }
 
 /*
@@ -98,17 +155,17 @@ static void test_length(TestContext* ctx)
 
 static void test_distance_squared(TestContext* ctx)
 {
-    TEST_ASSERT_FLOAT_EQ(ctx, vec2f_distance_squared(vec2f_zero(), vec2f(3.0f, 4.0f)), 25.0f, EPS);
+    TEST_ASSERT_FLOAT_EQ(ctx, vec2f_dist_sq(vec2f_zero(), vec2f(3.0f, 4.0f)), 25.0f, EPS);
 }
 
 static void test_distance(TestContext* ctx)
 {
-    TEST_ASSERT_FLOAT_EQ(ctx, vec2f_distance(vec2f_zero(), vec2f(3.0f, 4.0f)), 5.0f, EPS);
+    TEST_ASSERT_FLOAT_EQ(ctx, vec2f_dist(vec2f_zero(), vec2f(3.0f, 4.0f)), 5.0f, EPS);
 }
 
 static void test_distance_same_point(TestContext* ctx)
 {
-    TEST_ASSERT_FLOAT_EQ(ctx, vec2f_distance(vec2f(2.0f, 3.0f), vec2f(2.0f, 3.0f)), 0.0f, EPS);
+    TEST_ASSERT_FLOAT_EQ(ctx, vec2f_dist(vec2f(2.0f, 3.0f), vec2f(2.0f, 3.0f)), 0.0f, EPS);
 }
 
 /*
@@ -118,27 +175,27 @@ static void test_distance_same_point(TestContext* ctx)
 static void test_normalize_unit_length(TestContext* ctx)
 {
     Vec2f n = vec2f_normalize(vec2f(3.0f, 4.0f));
-    TEST_ASSERT_FLOAT_EQ(ctx, vec2f_length(n), 1.0f, EPS);
+    TEST_ASSERT_FLOAT_EQ(ctx, vec2f_len(n), 1.0f, EPS);
 }
 
 static void test_normalize_near_zero_returns_zero(TestContext* ctx)
 {
     Vec2f n = vec2f_normalize(vec2f_zero());
-    TEST_ASSERT_TRUE(ctx, vec2f_equals_exact(n, vec2f_zero()));
+    TEST_ASSERT_TRUE(ctx, vec2f_eq(n, vec2f_zero()));
 }
 
 static void test_try_normalize_success(TestContext* ctx)
 {
     Vec2f result = vec2f_zero();
     TEST_ASSERT_TRUE(ctx, vec2f_try_normalize(vec2f(3.0f, 4.0f), &result));
-    TEST_ASSERT_FLOAT_EQ(ctx, vec2f_length(result), 1.0f, EPS);
+    TEST_ASSERT_FLOAT_EQ(ctx, vec2f_len(result), 1.0f, EPS);
 }
 
 static void test_try_normalize_near_zero_returns_false(TestContext* ctx)
 {
     Vec2f result = vec2f(1.0f, 0.0f);
     TEST_ASSERT_FALSE(ctx, vec2f_try_normalize(vec2f_zero(), &result));
-    TEST_ASSERT_TRUE(ctx, vec2f_equals_exact(result, vec2f(1.0f, 0.0f)));
+    TEST_ASSERT_TRUE(ctx, vec2f_eq(result, vec2f(1.0f, 0.0f)));
 }
 
 static void test_try_normalize_null_returns_false(TestContext* ctx)
@@ -153,7 +210,7 @@ static void test_try_normalize_null_returns_false(TestContext* ctx)
 static void test_try_divide_success(TestContext* ctx)
 {
     Vec2f result = vec2f_zero();
-    TEST_ASSERT_TRUE(ctx, vec2f_try_divide(vec2f(6.0f, 9.0f), 3.0f, &result));
+    TEST_ASSERT_TRUE(ctx, vec2f_try_div(vec2f(6.0f, 9.0f), 3.0f, &result));
     TEST_ASSERT_FLOAT_EQ(ctx, result.x, 2.0f, EPS);
     TEST_ASSERT_FLOAT_EQ(ctx, result.y, 3.0f, EPS);
 }
@@ -161,12 +218,12 @@ static void test_try_divide_success(TestContext* ctx)
 static void test_try_divide_near_zero_returns_false(TestContext* ctx)
 {
     Vec2f result = vec2f_zero();
-    TEST_ASSERT_FALSE(ctx, vec2f_try_divide(vec2f(1.0f, 1.0f), 0.0f, &result));
+    TEST_ASSERT_FALSE(ctx, vec2f_try_div(vec2f(1.0f, 1.0f), 0.0f, &result));
 }
 
 static void test_try_divide_null_returns_false(TestContext* ctx)
 {
-    TEST_ASSERT_FALSE(ctx, vec2f_try_divide(vec2f(1.0f, 0.0f), 2.0f, NULL));
+    TEST_ASSERT_FALSE(ctx, vec2f_try_div(vec2f(1.0f, 0.0f), 2.0f, NULL));
 }
 
 /*
@@ -177,33 +234,32 @@ static void test_lerp_at_zero(TestContext* ctx)
 {
     Vec2f from = vec2f_zero();
     Vec2f to = vec2f(10.0f, 10.0f);
-    TEST_ASSERT_TRUE(ctx, vec2f_equals_exact(vec2f_lerp(from, to, 0.0f), from));
+    TEST_ASSERT_TRUE(ctx, vec2f_eq(vec2f_lerp(from, to, 0.0f), from));
 }
 
 static void test_lerp_at_one(TestContext* ctx)
 {
     Vec2f from = vec2f_zero();
     Vec2f to = vec2f(10.0f, 10.0f);
-    TEST_ASSERT_TRUE(ctx, vec2f_equals_exact(vec2f_lerp(from, to, 1.0f), to));
+    TEST_ASSERT_TRUE(ctx, vec2f_eq(vec2f_lerp(from, to, 1.0f), to));
 }
 
 static void test_lerp_at_midpoint(TestContext* ctx)
 {
     Vec2f r = vec2f_lerp(vec2f_zero(), vec2f(10.0f, 10.0f), 0.5f);
-    TEST_ASSERT_TRUE(ctx, vec2f_equals_epsilon(r, vec2f(5.0f, 5.0f), EPS));
+    TEST_ASSERT_TRUE(ctx, vec2f_eq_eps(r, vec2f(5.0f, 5.0f), EPS));
 }
 
 static void test_lerp_clamped_above_one(TestContext* ctx)
 {
     Vec2f to = vec2f(10.0f, 10.0f);
-    TEST_ASSERT_TRUE(ctx, vec2f_equals_exact(vec2f_lerp_clamped(vec2f_zero(), to, 2.0f), to));
+    TEST_ASSERT_TRUE(ctx, vec2f_eq(vec2f_lerp_clamp(vec2f_zero(), to, 2.0f), to));
 }
 
 static void test_lerp_clamped_below_zero(TestContext* ctx)
 {
     Vec2f from = vec2f_zero();
-    TEST_ASSERT_TRUE(
-        ctx, vec2f_equals_exact(vec2f_lerp_clamped(from, vec2f(10.0f, 10.0f), -1.0f), from));
+    TEST_ASSERT_TRUE(ctx, vec2f_eq(vec2f_lerp_clamp(from, vec2f(10.0f, 10.0f), -1.0f), from));
 }
 
 /*
@@ -212,26 +268,26 @@ static void test_lerp_clamped_below_zero(TestContext* ctx)
 
 static void test_equals_exact_equal(TestContext* ctx)
 {
-    TEST_ASSERT_TRUE(ctx, vec2f_equals_exact(vec2f(1.0f, 2.0f), vec2f(1.0f, 2.0f)));
+    TEST_ASSERT_TRUE(ctx, vec2f_eq(vec2f(1.0f, 2.0f), vec2f(1.0f, 2.0f)));
 }
 
 static void test_equals_exact_different(TestContext* ctx)
 {
-    TEST_ASSERT_FALSE(ctx, vec2f_equals_exact(vec2f(1.0f, 2.0f), vec2f(1.0f, 2.1f)));
+    TEST_ASSERT_FALSE(ctx, vec2f_eq(vec2f(1.0f, 2.0f), vec2f(1.0f, 2.1f)));
 }
 
 static void test_equals_epsilon_within(TestContext* ctx)
 {
     Vec2f a = vec2f(1.0f, 2.0f);
     Vec2f b = vec2f(1.0f + 1e-7f, 2.0f);
-    TEST_ASSERT_TRUE(ctx, vec2f_equals_epsilon(a, b, 1e-6f));
+    TEST_ASSERT_TRUE(ctx, vec2f_eq_eps(a, b, 1e-6f));
 }
 
 static void test_equals_epsilon_outside(TestContext* ctx)
 {
     Vec2f a = vec2f(1.0f, 2.0f);
     Vec2f b = vec2f(1.0f + 1e-4f, 2.0f);
-    TEST_ASSERT_FALSE(ctx, vec2f_equals_epsilon(a, b, 1e-6f));
+    TEST_ASSERT_FALSE(ctx, vec2f_eq_eps(a, b, 1e-6f));
 }
 
 static void test_near_within_distance(TestContext* ctx)
@@ -259,7 +315,7 @@ static void test_add_inplace(TestContext* ctx)
 static void test_subtract_inplace(TestContext* ctx)
 {
     Vec2f v = vec2f(5.0f, 7.0f);
-    vec2f_subtract_inplace(&v, vec2f(2.0f, 3.0f));
+    vec2f_sub_inplace(&v, vec2f(2.0f, 3.0f));
     TEST_ASSERT(ctx, v.x == 3.0f);
     TEST_ASSERT(ctx, v.y == 4.0f);
 }
@@ -267,7 +323,7 @@ static void test_subtract_inplace(TestContext* ctx)
 static void test_multiply_inplace(TestContext* ctx)
 {
     Vec2f v = vec2f(2.0f, 3.0f);
-    vec2f_multiply_inplace(&v, 4.0f);
+    vec2f_scale_inplace(&v, 4.0f);
     TEST_ASSERT(ctx, v.x == 8.0f);
     TEST_ASSERT(ctx, v.y == 12.0f);
 }
@@ -275,7 +331,7 @@ static void test_multiply_inplace(TestContext* ctx)
 static void test_divide_inplace(TestContext* ctx)
 {
     Vec2f v = vec2f(6.0f, 9.0f);
-    vec2f_divide_inplace(&v, 3.0f);
+    vec2f_div_inplace(&v, 3.0f);
     TEST_ASSERT_FLOAT_EQ(ctx, v.x, 2.0f, EPS);
     TEST_ASSERT_FLOAT_EQ(ctx, v.y, 3.0f, EPS);
 }
@@ -283,7 +339,7 @@ static void test_divide_inplace(TestContext* ctx)
 static void test_negate_inplace(TestContext* ctx)
 {
     Vec2f v = vec2f(1.0f, -2.0f);
-    vec2f_negate_inplace(&v);
+    vec2f_neg_inplace(&v);
     TEST_ASSERT(ctx, v.x == -1.0f);
     TEST_ASSERT(ctx, v.y == 2.0f);
 }
@@ -292,95 +348,90 @@ static void test_negate_inplace(TestContext* ctx)
  * Suite registration
  */
 
-// clang-format off
-static const char *test_names[] = {
-    "test_create",
-    "test_zero",
-    "test_one",
-    "test_add",
-    "test_subtract",
-    "test_multiply",
-    "test_divide",
-    "test_negate",
-    "test_dot_orthogonal",
-    "test_dot_parallel",
-    "test_length_squared",
-    "test_length",
-    "test_distance_squared",
-    "test_distance",
-    "test_distance_same_point",
-    "test_normalize_unit_length",
-    "test_normalize_near_zero_returns_zero",
-    "test_try_normalize_success",
-    "test_try_normalize_near_zero_returns_false",
-    "test_try_normalize_null_returns_false",
-    "test_try_divide_success",
-    "test_try_divide_near_zero_returns_false",
-    "test_try_divide_null_returns_false",
-    "test_lerp_at_zero",
-    "test_lerp_at_one",
-    "test_lerp_at_midpoint",
-    "test_lerp_clamped_above_one",
-    "test_lerp_clamped_below_zero",
-    "test_equals_exact_equal",
-    "test_equals_exact_different",
-    "test_equals_epsilon_within",
-    "test_equals_epsilon_outside",
-    "test_near_within_distance",
-    "test_near_outside_distance",
-    "test_add_inplace",
-    "test_subtract_inplace",
-    "test_multiply_inplace",
-    "test_divide_inplace",
-    "test_negate_inplace",
-};
+static TestRegistry reg;
 
-static TestFn tests[] = {
-    test_create,
-    test_zero,
-    test_one,
-    test_add,
-    test_subtract,
-    test_multiply,
-    test_divide,
-    test_negate,
-    test_dot_orthogonal,
-    test_dot_parallel,
-    test_length_squared,
-    test_length,
-    test_distance_squared,
-    test_distance,
-    test_distance_same_point,
-    test_normalize_unit_length,
-    test_normalize_near_zero_returns_zero,
-    test_try_normalize_success,
-    test_try_normalize_near_zero_returns_false,
-    test_try_normalize_null_returns_false,
-    test_try_divide_success,
-    test_try_divide_near_zero_returns_false,
-    test_try_divide_null_returns_false,
-    test_lerp_at_zero,
-    test_lerp_at_one,
-    test_lerp_at_midpoint,
-    test_lerp_clamped_above_one,
-    test_lerp_clamped_below_zero,
-    test_equals_exact_equal,
-    test_equals_exact_different,
-    test_equals_epsilon_within,
-    test_equals_epsilon_outside,
-    test_near_within_distance,
-    test_near_outside_distance,
-    test_add_inplace,
-    test_subtract_inplace,
-    test_multiply_inplace,
-    test_divide_inplace,
-    test_negate_inplace,
-};
+static void setup(void)
+{
+    describe("construction")
+    {
+        test(test_create);
+        test(test_zero);
+        test(test_one);
+    }
+    describe("arithmetic")
+    {
+        test(test_add);
+        test(test_subtract);
+        test(test_scale);
+        test(test_divide);
+        test(test_negate);
+    }
+    describe("dot")
+    {
+        test(test_dot_orthogonal);
+        test(test_dot_parallel);
+    }
+    describe("cross")
+    {
+        test(test_cross_perpendicular_counter_clockwise);
+        test(test_cross_perpendicular_clockwise);
+        test(test_cross_parallel_same_direction);
+        test(test_cross_parallel_opposite_direction);
+        test(test_cross_same_vector);
+        test(test_cross_general_vectors);
+        test(test_cross_anti_commutative);
+        test(test_cross_zero_vector);
+    }
+    describe("length")
+    {
+        test(test_length_squared);
+        test(test_length);
+    }
+    describe("distance")
+    {
+        test(test_distance_squared);
+        test(test_distance);
+        test(test_distance_same_point);
+    }
+    describe("normalize")
+    {
+        test(test_normalize_unit_length);
+        test(test_normalize_near_zero_returns_zero);
+        test(test_try_normalize_success);
+        test(test_try_normalize_near_zero_returns_false);
+        test(test_try_normalize_null_returns_false);
+    }
+    describe("try_div")
+    {
+        test(test_try_divide_success);
+        test(test_try_divide_near_zero_returns_false);
+        test(test_try_divide_null_returns_false);
+    }
+    describe("lerp")
+    {
+        test(test_lerp_at_zero);
+        test(test_lerp_at_one);
+        test(test_lerp_at_midpoint);
+        test(test_lerp_clamped_above_one);
+        test(test_lerp_clamped_below_zero);
+    }
+    describe("eq")
+    {
+        test(test_equals_exact_equal);
+        test(test_equals_exact_different);
+        test(test_equals_epsilon_within);
+        test(test_equals_epsilon_outside);
+        test(test_near_within_distance);
+        test(test_near_outside_distance);
+    }
+    describe("inplace")
+    {
+        test(test_add_inplace);
+        test(test_subtract_inplace);
+        test(test_multiply_inplace);
+        test(test_divide_inplace);
+        test(test_negate_inplace);
+    }
+}
 
-const TestSuite vec2f_suite = {
-    "vec2f",
-    test_names,
-    tests,
-    (int)(sizeof(tests) / sizeof(tests[0])),
-};
-// clang-format on
+const TestSuite vec2f_suite = {"vec2f", setup, &reg};

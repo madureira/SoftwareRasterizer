@@ -9,13 +9,38 @@ typedef struct TestContext
 
 typedef void (*TestFn)(TestContext* ctx);
 
-typedef struct TestSuite
+typedef struct TestGroup
 {
     const char* name;
     const char** test_names;
     TestFn* tests;
     int count;
+} TestGroup;
+
+#define TEST_MAX_GROUPS    16
+#define TEST_MAX_PER_GROUP 32
+
+typedef struct TestRegistry
+{
+    TestGroup groups[TEST_MAX_GROUPS];
+    const char* test_names[TEST_MAX_GROUPS][TEST_MAX_PER_GROUP];
+    TestFn test_fns[TEST_MAX_GROUPS][TEST_MAX_PER_GROUP];
+    int group_count;
+    int current_group;
+} TestRegistry;
+
+typedef struct TestSuite
+{
+    const char* name;
+    void (*setup)(void);
+    TestRegistry* registry;
 } TestSuite;
+
+typedef struct RunResult
+{
+    int total;
+    int failed;
+} RunResult;
 
 void test_context_fail(TestContext* ctx, const char* file, int line, const char* expr);
 
@@ -38,11 +63,20 @@ void test_int_eq_fail(TestContext* ctx, const char* file, int line, const char* 
 void test_ptr_fail(TestContext* ctx, const char* file, int line, const char* expr, const void* ptr,
                    int expect_null);
 
-int run_suite(const TestSuite* suite);
+void test_describe_begin(const char* name);
+void test_describe_end(void);
+void test_register(const char* name, TestFn fn);
+
+RunResult run_suite(const TestSuite* suite);
 
 void print_summary(int total_tests, int tests_failed);
 
 // clang-format off
+
+#define describe(name) \
+    for (int _d = (test_describe_begin(name), 1); _d; _d = (test_describe_end(), 0))
+
+#define test(fn) test_register(#fn, fn)
 
 #define TEST_ASSERT(ctx, expr)                                               \
     do {                                                                     \

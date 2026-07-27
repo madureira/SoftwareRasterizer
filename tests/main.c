@@ -10,8 +10,9 @@ int main(void)
 
     for (int i = 0; i < suite_count; i++)
     {
-        total_tests += suites[i]->count;
-        total_failed += run_suite(suites[i]);
+        RunResult r = run_suite(suites[i]);
+        total_tests += r.total;
+        total_failed += r.failed;
     }
 
     print_summary(total_tests, total_failed);

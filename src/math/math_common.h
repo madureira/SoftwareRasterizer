@@ -14,7 +14,7 @@
  * Scalar helpers
  */
 
-static inline float32 math_clamp_float32(float32 value, float32 minimum, float32 maximum)
+static inline float32 math_clamp_f32(float32 value, float32 minimum, float32 maximum)
 {
     assert(isfinite(value));
     assert(isfinite(minimum));
@@ -34,7 +34,7 @@ static inline float32 math_clamp_float32(float32 value, float32 minimum, float32
     return value;
 }
 
-static inline float32 math_lerp_float32(float32 from, float32 to, float32 amount)
+static inline float32 math_lerp_f32(float32 from, float32 to, float32 amount)
 {
     assert(isfinite(from));
     assert(isfinite(to));

@@ -20,7 +20,7 @@ typedef struct AppState
 
 static float32 edge(Vec2f a, Vec2f b, Vec2f p)
 {
-    return (b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x);
+    return vec2f_cross(vec2f_sub(b, a), vec2f_sub(p, a));
 }
 
 static void draw_triangle(uint32* pixels, int width, int height, Vec2f v0, Vec2f v1, Vec2f v2,
