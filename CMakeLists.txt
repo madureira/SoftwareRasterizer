@@ -122,5 +122,6 @@ if(EMSCRIPTEN)
     PRIVATE
     "SHELL:--shell-file ${CMAKE_CURRENT_SOURCE_DIR}/assets/index.html"
     "SHELL:--js-library ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/platform_web.js"
+    "SHELL:-sALLOW_MEMORY_GROWTH=1"
   )
 endif()

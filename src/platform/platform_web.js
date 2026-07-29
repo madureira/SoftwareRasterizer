@@ -1,4 +1,8 @@
 addToLibrary({
+  platform_js_get_window_width: () => window.innerWidth,
+
+  platform_js_get_window_height: () => window.innerHeight,
+
   platform_js_set_title: (titlePtr) => {
     document.title = UTF8ToString(titlePtr);
   },

@@ -183,6 +183,8 @@ float64 platform_get_time_seconds(void)
 #include <emscripten/html5.h>
 
 // Implemented in platform_web.js, linked via --js-library.
+extern int32 platform_js_get_window_width(void);
+extern int32 platform_js_get_window_height(void);
 extern void platform_js_set_title(const char* title);
 extern void platform_js_present(const uint32* pixels, int32 width, int32 height);
 
@@ -200,6 +202,27 @@ struct PlatformWindow
 
 static EmscriptenLoopState g_loop_state;
 
+static int32 g_canvas_width = 0;
+static int32 g_canvas_height = 0;
+static bool g_resize_pending = false;
+
+static EM_BOOL on_window_resize(int event_type, const EmscriptenUiEvent* ui_event, void* user_data)
+{
+    (void)event_type;
+    (void)user_data;
+
+    const int32 new_width = (int32)ui_event->windowInnerWidth;
+    const int32 new_height = (int32)ui_event->windowInnerHeight;
+
+    emscripten_set_canvas_element_size("#canvas", new_width, new_height);
+
+    g_canvas_width = new_width;
+    g_canvas_height = new_height;
+    g_resize_pending = true;
+
+    return EM_TRUE;
+}
+
 bool platform_init(void)
 {
     return true;
@@ -212,6 +235,8 @@ void platform_shutdown(void)
 PlatformWindow* platform_window_create(const char* title, int32 width, int32 height, bool resizable)
 {
     (void)title;
+    (void)width;
+    (void)height;
     (void)resizable;
 
     PlatformWindow* win = malloc(sizeof(*win));
@@ -220,10 +245,19 @@ PlatformWindow* platform_window_create(const char* title, int32 width, int32 hei
         return NULL;
     }
 
-    win->width = width;
-    win->height = height;
+    const int32 actual_width = platform_js_get_window_width();
+    const int32 actual_height = platform_js_get_window_height();
 
-    emscripten_set_canvas_element_size("#canvas", width, height);
+    win->width = actual_width;
+    win->height = actual_height;
+
+    emscripten_set_canvas_element_size("#canvas", actual_width, actual_height);
+
+    g_canvas_width = actual_width;
+    g_canvas_height = actual_height;
+    g_resize_pending = true;
+
+    emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, NULL, 0, on_window_resize);
 
     return win;
 }
@@ -255,6 +289,15 @@ bool platform_poll_event(PlatformEvent* event)
     if (event == NULL)
     {
         return false;
+    }
+
+    if (g_resize_pending)
+    {
+        event->type = PLATFORM_EVENT_WINDOW_RESIZED;
+        event->data.window.width = g_canvas_width;
+        event->data.window.height = g_canvas_height;
+        g_resize_pending = false;
+        return true;
     }
 
     event->type = PLATFORM_EVENT_NONE;
