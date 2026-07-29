@@ -9,10 +9,13 @@ A 3D software rasterizer built from scratch in C99, using SDL3 for windowing.
 
 ## Prerequisites
 
-- CMake 3.25+
 - C99-compatible compiler (GCC, Clang, or MSVC)
+- CMake 3.25+
 - Git
-- **Web builds only:** [Emscripten SDK](https://emscripten.org/docs/getting_started/downloads.html)
+- [Emscripten SDK](https://emscripten.org/docs/getting_started/downloads.html) (Web builds only)
+
+\
+[![Live Demo](docs/live_demo_badge.svg)](https://madureira.github.io/SoftwareRasterizer)
 
 ## Getting started
 
