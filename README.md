@@ -7,6 +7,8 @@
 
 A 3D software rasterizer built from scratch in C99, using SDL3 for windowing.
 
+> **Note:** This project is in early development. Features, performance and behavior may change significantly.
+
 ## Prerequisites
 
 - C99-compatible compiler (GCC, Clang, or MSVC)
