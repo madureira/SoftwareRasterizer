@@ -4,8 +4,8 @@ set -euo pipefail
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-BUILD_TYPE="${1:-}"
-PLATFORM="${2:-}"
+PLATFORM="${1:-}"
+BUILD_TYPE="${2:-}"
 
 PROJECT_NAME="SoftwareRasterizer"
 
@@ -13,16 +13,16 @@ print_usage() {
     cat <<EOF
 Usage:
   ./build.sh init
-  ./build.sh debug mac
-  ./build.sh release mac
-  ./build.sh debug linux
-  ./build.sh release linux
+  ./build.sh mac debug
+  ./build.sh mac release
+  ./build.sh linux debug
+  ./build.sh linux release
   ./build.sh web
 
 Examples:
   ./build.sh init
-  ./build.sh debug mac
-  ./build.sh release mac
+  ./build.sh mac debug
+  ./build.sh mac release
   ./build.sh web
 EOF
 }
@@ -160,13 +160,13 @@ build_web() {
 command_exists cmake ||
     fail "CMake was not found."
 
-case "$BUILD_TYPE" in
+case "$PLATFORM" in
 init)
     init_submodules
     ;;
 
-debug | release)
-    [[ -n "$PLATFORM" ]] || {
+mac | linux)
+    [[ -n "$BUILD_TYPE" ]] || {
         print_usage
         exit 1
     }
@@ -175,8 +175,8 @@ debug | release)
     ;;
 
 web)
-    [[ -z "$PLATFORM" ]] ||
-        fail "The web target does not accept a platform argument. Use: ./build.sh web"
+    [[ -z "$BUILD_TYPE" ]] ||
+        fail "The web target does not accept a build type argument. Use: ./build.sh web"
 
     build_web
     ;;
@@ -187,6 +187,6 @@ web)
 
 *)
     print_usage
-    fail "Unknown build target '$BUILD_TYPE'."
+    fail "Unknown platform '$PLATFORM'."
     ;;
 esac

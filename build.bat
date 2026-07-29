@@ -5,32 +5,31 @@ set PROJECT_ROOT=%~dp0
 set PROJECT_ROOT=%PROJECT_ROOT:~0,-1%
 set PROJECT_NAME=SoftwareRasterizer
 
-set BUILD_TYPE=%1
-set PLATFORM=%2
+set PLATFORM=%1
+set BUILD_TYPE=%2
 
-if "%BUILD_TYPE%"=="" goto usage
-if "%BUILD_TYPE%"=="--help" goto usage
-if "%BUILD_TYPE%"=="-h" goto usage
-if "%BUILD_TYPE%"=="help" goto usage
+if "%PLATFORM%"=="" goto usage
+if "%PLATFORM%"=="--help" goto usage
+if "%PLATFORM%"=="-h" goto usage
+if "%PLATFORM%"=="help" goto usage
 
-if "%BUILD_TYPE%"=="init" goto init
+if "%PLATFORM%"=="init" goto init
 
-if "%BUILD_TYPE%"=="debug" goto build
-if "%BUILD_TYPE%"=="release" goto build
+if "%PLATFORM%"=="win" goto build
 
-echo Error: Unknown build target '%BUILD_TYPE%'. >&2
+echo Error: Unknown platform '%PLATFORM%'. >&2
 goto usage
 
 :usage
 echo Usage:
 echo   build.bat init
-echo   build.bat debug win
-echo   build.bat release win
+echo   build.bat win debug
+echo   build.bat win release
 echo.
 echo Examples:
 echo   build.bat init
-echo   build.bat debug win
-echo   build.bat release win
+echo   build.bat win debug
+echo   build.bat win release
 exit /b 1
 
 :init
@@ -44,12 +43,12 @@ echo Submodules initialized successfully.
 exit /b 0
 
 :build
-if "%PLATFORM%"=="" (
-    echo Error: Platform argument required. >&2
+if "%BUILD_TYPE%"=="" (
+    echo Error: Build type argument required. >&2
     goto usage
 )
-if not "%PLATFORM%"=="win" (
-    echo Error: Unsupported platform '%PLATFORM%'. Expected 'win'. >&2
+if not "%BUILD_TYPE%"=="debug" if not "%BUILD_TYPE%"=="release" (
+    echo Error: Invalid build type '%BUILD_TYPE%'. Expected 'debug' or 'release'. >&2
     exit /b 1
 )
 if not exist "%PROJECT_ROOT%\vendors\SDL3\CMakeLists.txt" (

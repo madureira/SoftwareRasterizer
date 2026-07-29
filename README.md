@@ -41,12 +41,12 @@ git submodule update --init --recursive
 
 ```bash
 # macOS
-./build.sh debug mac
-./build.sh release mac
+./build.sh mac debug
+./build.sh mac release
 
 # Linux
-./build.sh debug linux
-./build.sh release linux
+./build.sh linux debug
+./build.sh linux release
 
 # WebAssembly (requires Emscripten SDK active in the shell)
 ./build.sh web
@@ -54,8 +54,8 @@ git submodule update --init --recursive
 
 ```bat
 :: Windows
-build.bat debug win
-build.bat release win
+build.bat win debug
+build.bat win release
 ```
 
 Binaries are written to `build/<type>/SoftwareRasterizer` (or `.exe` on Windows).
