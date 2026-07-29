@@ -1,6 +1,7 @@
 #include "app/app.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "app/window.h"
 #include "math/vec2f.h"
@@ -18,7 +19,7 @@ typedef struct AppState
     int32 height;
 } AppState;
 
-static float32 edge(Vec2f a, Vec2f b, Vec2f p)
+static inline float32 edge(Vec2f a, Vec2f b, Vec2f p)
 {
     return vec2f_cross(vec2f_sub(b, a), vec2f_sub(p, a));
 }
@@ -36,21 +37,48 @@ static void draw_triangle(uint32* pixels, int width, int height, Vec2f v0, Vec2f
     x_max = x_max >= width ? width - 1 : x_max;
     y_max = y_max >= height ? height - 1 : y_max;
 
+    const Vec2f p0 = vec2f((float32)x_min + 0.5f, (float32)y_min + 0.5f);
+
+    const float32 w0_init = edge(v1, v2, p0);
+    const float32 w1_init = edge(v2, v0, p0);
+    const float32 w2_init = edge(v0, v1, p0);
+
+    const float32 w0_step_x = -(v2.y - v1.y), w0_step_y = v2.x - v1.x;
+    const float32 w1_step_x = -(v0.y - v2.y), w1_step_y = v0.x - v2.x;
+    const float32 w2_step_x = -(v1.y - v0.y), w2_step_y = v1.x - v0.x;
+
+    float32 row_w0 = w0_init;
+    float32 row_w1 = w1_init;
+    float32 row_w2 = w2_init;
+
     for (int y = y_min; y <= y_max; y++)
     {
+        float32 w0 = row_w0;
+        float32 w1 = row_w1;
+        float32 w2 = row_w2;
+
+        bool span_started = false;
+
         for (int x = x_min; x <= x_max; x++)
         {
-            Vec2f p = vec2f((float32)x + 0.5f, (float32)y + 0.5f);
-
-            float32 w0 = edge(v1, v2, p);
-            float32 w1 = edge(v2, v0, p);
-            float32 w2 = edge(v0, v1, p);
-
             if (w0 >= 0.0f && w1 >= 0.0f && w2 >= 0.0f)
             {
                 pixels[y * width + x] = color;
+                span_started = true;
             }
+            else if (span_started)
+            {
+                break;
+            }
+
+            w0 += w0_step_x;
+            w1 += w1_step_x;
+            w2 += w2_step_x;
         }
+
+        row_w0 += w0_step_y;
+        row_w1 += w1_step_y;
+        row_w2 += w2_step_y;
     }
 }
 
@@ -85,16 +113,19 @@ static bool frame(void* arg)
     float32 a1 = angle + (2.0f * (float32)MATH_PI / 3.0f);
     float32 a2 = angle + (4.0f * (float32)MATH_PI / 3.0f);
 
-    Vec2f v0 = vec2f(center.x + radius * cosf(a0), center.y + radius * sinf(a0));
-    Vec2f v1 = vec2f(center.x + radius * cosf(a1), center.y + radius * sinf(a1));
-    Vec2f v2 = vec2f(center.x + radius * cosf(a2), center.y + radius * sinf(a2));
+    Vec2f base = vec2f(radius, 0.0f);
 
-    for (int i = 0; i < w * h; i++)
-    {
-        state->pixels[i] = 0x00222222;
-    }
+    Vec2f v0 = vec2f_add(center, vec2f_rotate(base, a0));
+    Vec2f v1 = vec2f_add(center, vec2f_rotate(base, a1));
+    Vec2f v2 = vec2f_add(center, vec2f_rotate(base, a2));
 
-    draw_triangle(state->pixels, w, h, v0, v1, v2, 0x0000AAFF);
+    const uint32 dark_grey = 0x22222222;
+    const uint32 blue = 0x0000AAFF;
+
+    // Clear framebuffer using byte-fill.
+    memset(state->pixels, dark_grey & 0xFF, (size_t)w * h * sizeof(uint32));
+
+    draw_triangle(state->pixels, w, h, v0, v1, v2, blue);
 
     window_present(state->window, state->pixels, w, h);
 

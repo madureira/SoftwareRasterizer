@@ -345,6 +345,83 @@ static void test_negate_inplace(TestContext* ctx)
 }
 
 /*
+ * Rotation
+ */
+
+static void test_rotate_sincos_quarter_turn(TestContext* ctx)
+{
+    Vec2f r = vec2f_rotate_sincos(vec2f(1.0f, 0.0f), 1.0f, 0.0f);
+    TEST_ASSERT_FLOAT_EQ(ctx, r.x, 0.0f, EPS);
+    TEST_ASSERT_FLOAT_EQ(ctx, r.y, 1.0f, EPS);
+}
+
+static void test_rotate_sincos_rotates_y_axis(TestContext* ctx)
+{
+    Vec2f r = vec2f_rotate_sincos(vec2f(0.0f, 1.0f), 1.0f, 0.0f);
+    TEST_ASSERT_FLOAT_EQ(ctx, r.x, -1.0f, EPS);
+    TEST_ASSERT_FLOAT_EQ(ctx, r.y, 0.0f, EPS);
+}
+
+static void test_rotate_zero_angle(TestContext* ctx)
+{
+    Vec2f r = vec2f_rotate(vec2f(1.0f, 0.0f), 0.0f);
+    TEST_ASSERT_FLOAT_EQ(ctx, r.x, 1.0f, EPS);
+    TEST_ASSERT_FLOAT_EQ(ctx, r.y, 0.0f, EPS);
+}
+
+static void test_rotate_quarter_turn(TestContext* ctx)
+{
+    Vec2f r = vec2f_rotate(vec2f(1.0f, 0.0f), MATH_PI / 2.0f);
+    TEST_ASSERT_FLOAT_EQ(ctx, r.x, 0.0f, EPS);
+    TEST_ASSERT_FLOAT_EQ(ctx, r.y, 1.0f, EPS);
+}
+
+static void test_rotate_half_turn(TestContext* ctx)
+{
+    Vec2f r = vec2f_rotate(vec2f(1.0f, 0.0f), MATH_PI);
+    TEST_ASSERT_FLOAT_EQ(ctx, r.x, -1.0f, EPS);
+    TEST_ASSERT_FLOAT_EQ(ctx, r.y, 0.0f, EPS);
+}
+
+static void test_rotate_negative_quarter_turn(TestContext* ctx)
+{
+    Vec2f r = vec2f_rotate(vec2f(0.0f, 1.0f), -MATH_PI / 2.0f);
+    TEST_ASSERT_FLOAT_EQ(ctx, r.x, 1.0f, EPS);
+    TEST_ASSERT_FLOAT_EQ(ctx, r.y, 0.0f, EPS);
+}
+
+static void test_rotate_inplace_quarter_turn(TestContext* ctx)
+{
+    Vec2f v = vec2f(1.0f, 0.0f);
+    vec2f_rotate_inplace(&v, MATH_PI / 2.0f);
+    TEST_ASSERT_FLOAT_EQ(ctx, v.x, 0.0f, EPS);
+    TEST_ASSERT_FLOAT_EQ(ctx, v.y, 1.0f, EPS);
+}
+
+static void test_rotate_inplace_half_turn(TestContext* ctx)
+{
+    Vec2f v = vec2f(1.0f, 0.0f);
+    vec2f_rotate_inplace(&v, MATH_PI);
+    TEST_ASSERT_FLOAT_EQ(ctx, v.x, -1.0f, EPS);
+    TEST_ASSERT_FLOAT_EQ(ctx, v.y, 0.0f, EPS);
+}
+
+static void test_rotate_around_pivot(TestContext* ctx)
+{
+    Vec2f r = vec2f_rotate_around(vec2f(2.0f, 0.0f), vec2f(1.0f, 0.0f), MATH_PI / 2.0f);
+    TEST_ASSERT_FLOAT_EQ(ctx, r.x, 1.0f, EPS);
+    TEST_ASSERT_FLOAT_EQ(ctx, r.y, 1.0f, EPS);
+}
+
+static void test_rotate_around_self_returns_same(TestContext* ctx)
+{
+    Vec2f v = vec2f(1.0f, 0.0f);
+    Vec2f r = vec2f_rotate_around(v, v, MATH_PI / 2.0f);
+    TEST_ASSERT_FLOAT_EQ(ctx, r.x, v.x, EPS);
+    TEST_ASSERT_FLOAT_EQ(ctx, r.y, v.y, EPS);
+}
+
+/*
  * Suite registration
  */
 
@@ -365,6 +442,11 @@ static void setup(void)
         test(test_scale);
         test(test_divide);
         test(test_negate);
+        test(test_add_inplace);
+        test(test_subtract_inplace);
+        test(test_multiply_inplace);
+        test(test_divide_inplace);
+        test(test_negate_inplace);
     }
     describe("dot")
     {
@@ -424,13 +506,27 @@ static void setup(void)
         test(test_near_within_distance);
         test(test_near_outside_distance);
     }
-    describe("inplace")
+    describe("rotate")
     {
-        test(test_add_inplace);
-        test(test_subtract_inplace);
-        test(test_multiply_inplace);
-        test(test_divide_inplace);
-        test(test_negate_inplace);
+        test(test_rotate_zero_angle);
+        test(test_rotate_quarter_turn);
+        test(test_rotate_half_turn);
+        test(test_rotate_negative_quarter_turn);
+    }
+    describe("rotate_inplace")
+    {
+        test(test_rotate_inplace_quarter_turn);
+        test(test_rotate_inplace_half_turn);
+    }
+    describe("rotate_around")
+    {
+        test(test_rotate_around_pivot);
+        test(test_rotate_around_self_returns_same);
+    }
+    describe("rotate_sincos")
+    {
+        test(test_rotate_sincos_quarter_turn);
+        test(test_rotate_sincos_rotates_y_axis);
     }
 }
 

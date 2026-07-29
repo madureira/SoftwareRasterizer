@@ -70,6 +70,20 @@ static inline Vec2f vec2f_scale(Vec2f vector, float32 scalar)
     // clang-format on
 }
 
+static inline Vec2f vec2f_rotate_sincos(Vec2f vector, float32 sine, float32 cosine)
+{
+    assert(vec2f_is_finite(vector));
+    assert(isfinite(sine));
+    assert(isfinite(cosine));
+
+    // clang-format off
+    return vec2f(
+        (vector.x * cosine) - (vector.y * sine),
+        (vector.x * sine)   + (vector.y * cosine)
+    );
+    // clang-format on
+}
+
 /**
  * Divides a vector by a scalar.
  *
@@ -333,5 +347,11 @@ Vec2f vec2f_normalize(Vec2f vector);
  * On failure, the value pointed to by result is not modified.
  */
 bool vec2f_try_normalize(Vec2f vector, Vec2f* result);
+
+Vec2f vec2f_rotate(Vec2f vector, float32 angle_radians);
+
+void vec2f_rotate_inplace(Vec2f* vector, float32 angle_radians);
+
+Vec2f vec2f_rotate_around(Vec2f vector, Vec2f pivot, float32 angle_radians);
 
 #endif // MATH_VEC2F_H

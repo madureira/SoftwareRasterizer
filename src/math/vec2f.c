@@ -59,3 +59,42 @@ bool vec2f_try_normalize(Vec2f vector, Vec2f* result)
 
     return true;
 }
+
+Vec2f vec2f_rotate(Vec2f vector, float32 angle_radians)
+{
+    assert(vec2f_is_finite(vector));
+    assert(isfinite(angle_radians));
+
+    const float32 sine = sinf(angle_radians);
+    const float32 cosine = cosf(angle_radians);
+
+    return vec2f_rotate_sincos(vector, sine, cosine);
+}
+
+void vec2f_rotate_inplace(Vec2f* vector, float32 angle_radians)
+{
+    assert(vector != NULL);
+    assert(vec2f_is_finite(*vector));
+    assert(isfinite(angle_radians));
+
+    const float32 sine = sinf(angle_radians);
+    const float32 cosine = cosf(angle_radians);
+
+    const float32 original_x = vector->x;
+    const float32 original_y = vector->y;
+
+    vector->x = (original_x * cosine) - (original_y * sine);
+    vector->y = (original_x * sine) + (original_y * cosine);
+}
+
+Vec2f vec2f_rotate_around(Vec2f vector, Vec2f pivot, float32 angle_radians)
+{
+    assert(vec2f_is_finite(vector));
+    assert(vec2f_is_finite(pivot));
+    assert(isfinite(angle_radians));
+
+    const Vec2f translated = vec2f_sub(vector, pivot);
+    const Vec2f rotated = vec2f_rotate(translated, angle_radians);
+
+    return vec2f_add(rotated, pivot);
+}
