@@ -1,0 +1,47 @@
+#!/bin/sh
+
+EXPECTED_NAME="Rafael Madureira"
+EXPECTED_EMAIL="rafael.madureira.santos@gmail.com"
+
+AUTHOR_IDENT="$(git var GIT_AUTHOR_IDENT)"
+COMMITTER_IDENT="$(git var GIT_COMMITTER_IDENT)"
+
+AUTHOR_NAME="$(printf '%s\n' "$AUTHOR_IDENT" | sed 's/ <.*//')"
+AUTHOR_EMAIL="$(printf '%s\n' "$AUTHOR_IDENT" | sed -n 's/.*<\([^>]*\)>.*/\1/p')"
+
+COMMITTER_NAME="$(printf '%s\n' "$COMMITTER_IDENT" | sed 's/ <.*//')"
+COMMITTER_EMAIL="$(printf '%s\n' "$COMMITTER_IDENT" | sed -n 's/.*<\([^>]*\)>.*/\1/p')"
+
+if [ "$AUTHOR_NAME" != "$EXPECTED_NAME" ] ||
+   [ "$AUTHOR_EMAIL" != "$EXPECTED_EMAIL" ]; then
+    echo "Commit blocked: invalid author identity."
+    echo
+    echo "Expected:"
+    echo "  $EXPECTED_NAME <$EXPECTED_EMAIL>"
+    echo
+    echo "Found:"
+    echo "  $AUTHOR_NAME <$AUTHOR_EMAIL>"
+    echo
+    echo "Configure this repository with:"
+    echo "  git config --local user.name \"$EXPECTED_NAME\""
+    echo "  git config --local user.email \"$EXPECTED_EMAIL\""
+    exit 1
+fi
+
+if [ "$COMMITTER_NAME" != "$EXPECTED_NAME" ] ||
+   [ "$COMMITTER_EMAIL" != "$EXPECTED_EMAIL" ]; then
+    echo "Commit blocked: invalid committer identity."
+    echo
+    echo "Expected:"
+    echo "  $EXPECTED_NAME <$EXPECTED_EMAIL>"
+    echo
+    echo "Found:"
+    echo "  $COMMITTER_NAME <$COMMITTER_EMAIL>"
+    echo
+    echo "Configure this repository with:"
+    echo "  git config --local user.name \"$EXPECTED_NAME\""
+    echo "  git config --local user.email \"$EXPECTED_EMAIL\""
+    exit 1
+fi
+
+exit 0
