@@ -17,7 +17,7 @@ A 3D software rasterizer built from scratch in C99, using SDL3 for windowing.
 - [Emscripten SDK](https://emscripten.org/docs/getting_started/downloads.html) (Web builds only)
 
 \
-[![Live Demo](docs/live_demo_badge.svg)](https://madureira.github.io/SoftwareRasterizer)
+[![Live Demo](.github/live_demo_badge.svg)](https://madureira.github.io/SoftwareRasterizer)
 
 ## Getting started
 
