@@ -31,6 +31,17 @@ jobs:
       - name: Build and run tests
         run: ./test.sh
 
+  macos-build-and-test:
+    name: Build & Test (macOS)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Build and run tests
+        run: ./test.sh
+
   windows-build-and-test:
     name: Build & Test (Windows)
     runs-on: windows-latest
