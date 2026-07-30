@@ -88,14 +88,6 @@ After building with `./build.sh web`, serve the output via a local HTTP server (
 ./web_serve.sh 9000   # custom port
 ```
 
-## Deploying to GitHub Pages
-
-Copy the web build output to `docs/` for GitHub Pages hosting:
-
-```bash
-./web_deploy.sh
-```
-
 ## VS Code
 
 Two extensions are required. Install them when prompted, or manually via the links below:
