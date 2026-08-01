@@ -4,16 +4,23 @@
 #include <string.h>
 
 #include "app/window.h"
+#include "core/memory_arena.h"
 #include "math/vec2f.h"
 #include "platform/platform.h"
 
-#define WINDOW_TITLE  "Software Rasterizer"
-#define WINDOW_WIDTH  800
-#define WINDOW_HEIGHT 600
+#define WINDOW_TITLE           "Software Rasterizer"
+#define WINDOW_WIDTH           800
+#define WINDOW_HEIGHT          600
+#define MAX_FRAMEBUFFER_WIDTH  1920
+#define MAX_FRAMEBUFFER_HEIGHT 1080
+#define MAX_FRAMEBUFFER_PIXELS ((size_t)MAX_FRAMEBUFFER_WIDTH * MAX_FRAMEBUFFER_HEIGHT)
+#define COLOR_DARK_GREY        0x22222222
+#define COLOR_BLUE             0x0000AAFF
 
 typedef struct AppState
 {
     Window* window;
+    MemoryArena pixels_arena;
     uint32* pixels;
     int32 width;
     int32 height;
@@ -90,9 +97,20 @@ static bool frame(void* arg)
     int32 w = window_get_width(state->window);
     int32 h = window_get_height(state->window);
 
+    if (w > MAX_FRAMEBUFFER_WIDTH)
+    {
+        w = MAX_FRAMEBUFFER_WIDTH;
+    }
+
+    if (h > MAX_FRAMEBUFFER_HEIGHT)
+    {
+        h = MAX_FRAMEBUFFER_HEIGHT;
+    }
+
     if (w != state->width || h != state->height)
     {
-        uint32* resized = realloc(state->pixels, (size_t)w * (size_t)h * sizeof(uint32));
+        memory_arena_reset(&state->pixels_arena);
+        uint32* resized = ARENA_PUSH_ARRAY(&state->pixels_arena, (size_t)w * h, uint32);
         if (resized == NULL)
         {
             return false;
@@ -119,13 +137,10 @@ static bool frame(void* arg)
     Vec2f v1 = vec2f_add(center, vec2f_rotate(base, a1));
     Vec2f v2 = vec2f_add(center, vec2f_rotate(base, a2));
 
-    const uint32 dark_grey = 0x22222222;
-    const uint32 blue = 0x0000AAFF;
-
     // Clear framebuffer using byte-fill.
-    memset(state->pixels, dark_grey & 0xFF, (size_t)w * h * sizeof(uint32));
+    memset(state->pixels, COLOR_DARK_GREY & 0xFF, (size_t)w * h * sizeof(uint32));
 
-    draw_triangle(state->pixels, w, h, v0, v1, v2, blue);
+    draw_triangle(state->pixels, w, h, v0, v1, v2, COLOR_BLUE);
 
     window_present(state->window, state->pixels, w, h);
 
@@ -148,9 +163,18 @@ int app_run(void)
         return 1;
     }
 
-    uint32* pixels = malloc((size_t)WINDOW_WIDTH * WINDOW_HEIGHT * sizeof(uint32));
+    MemoryArena pixels_arena;
+    if (!memory_arena_create(&pixels_arena, MAX_FRAMEBUFFER_PIXELS * sizeof(uint32)))
+    {
+        window_destroy(window);
+        platform_shutdown();
+        return 1;
+    }
+
+    uint32* pixels = ARENA_PUSH_ARRAY(&pixels_arena, (size_t)WINDOW_WIDTH * WINDOW_HEIGHT, uint32);
     if (pixels == NULL)
     {
+        memory_arena_destroy(&pixels_arena);
         window_destroy(window);
         platform_shutdown();
         return 1;
@@ -159,6 +183,7 @@ int app_run(void)
     // clang-format off
     AppState state = {
         .window = window,
+        .pixels_arena = pixels_arena,
         .pixels = pixels,
         .width = WINDOW_WIDTH,
         .height = WINDOW_HEIGHT
@@ -167,7 +192,7 @@ int app_run(void)
 
     platform_run_main_loop(frame, &state);
 
-    free(state.pixels);
+    memory_arena_destroy(&state.pixels_arena);
     window_destroy(window);
     platform_shutdown();
 
