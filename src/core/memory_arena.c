@@ -20,7 +20,9 @@ bool memory_arena_create(MemoryArena* arena, size_t capacity)
     arena->used = 0;
     arena->peak = 0;
 
-    uint8* memory = (uint8*)malloc(capacity);
+    size_t actual = capacity + MEMORY_ARENA_DEFAULT_ALIGNMENT - 1;
+
+    uint8* memory = (uint8*)malloc(actual);
 
     if (memory == NULL)
     {
@@ -28,7 +30,7 @@ bool memory_arena_create(MemoryArena* arena, size_t capacity)
     }
 
     arena->base = memory;
-    arena->capacity = capacity;
+    arena->capacity = actual;
 
     return true;
 }

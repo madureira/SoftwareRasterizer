@@ -281,6 +281,7 @@ void platform_window_present(PlatformWindow* window, const uint32* pixels, int32
         return;
     }
 
+    emscripten_set_canvas_element_size("#canvas", width, height);
     platform_js_present(pixels, width, height);
 }
 
