@@ -92,6 +92,7 @@ static void draw_triangle(uint32* pixels, int width, int height, Vec2f v0, Vec2f
 static bool frame(void* arg)
 {
     AppState* state = (AppState*)arg;
+
     window_poll_events(state->window);
 
     int32 w = window_get_width(state->window);
@@ -110,7 +111,7 @@ static bool frame(void* arg)
     if (w != state->width || h != state->height)
     {
         memory_arena_reset(&state->pixels_arena);
-        uint32* resized = ARENA_PUSH_ARRAY(&state->pixels_arena, (size_t)w * h, uint32);
+        uint32* resized = MEM_ARENA_PUSH_ARRAY(&state->pixels_arena, (size_t)w * h, uint32);
         if (resized == NULL)
         {
             return false;
@@ -163,32 +164,32 @@ int app_run(void)
         return 1;
     }
 
-    MemoryArena pixels_arena;
-    if (!memory_arena_create(&pixels_arena, MAX_FRAMEBUFFER_PIXELS * sizeof(uint32)))
-    {
-        window_destroy(window);
-        platform_shutdown();
-        return 1;
-    }
-
-    uint32* pixels = ARENA_PUSH_ARRAY(&pixels_arena, (size_t)WINDOW_WIDTH * WINDOW_HEIGHT, uint32);
-    if (pixels == NULL)
-    {
-        memory_arena_destroy(&pixels_arena);
-        window_destroy(window);
-        platform_shutdown();
-        return 1;
-    }
-
     // clang-format off
     AppState state = {
-        .window = window,
-        .pixels_arena = pixels_arena,
-        .pixels = pixels,
-        .width = WINDOW_WIDTH,
-        .height = WINDOW_HEIGHT
+        .window       = window,
+        .pixels_arena = {0},
+        .pixels       = NULL,
+        .width        = WINDOW_WIDTH,
+        .height       = WINDOW_HEIGHT
     };
     // clang-format on
+
+    if (!memory_arena_create(&state.pixels_arena, MAX_FRAMEBUFFER_PIXELS * sizeof(uint32)))
+    {
+        window_destroy(window);
+        platform_shutdown();
+        return 1;
+    }
+
+    state.pixels =
+        MEM_ARENA_PUSH_ARRAY(&state.pixels_arena, (size_t)WINDOW_WIDTH * WINDOW_HEIGHT, uint32);
+    if (state.pixels == NULL)
+    {
+        memory_arena_destroy(&state.pixels_arena);
+        window_destroy(window);
+        platform_shutdown();
+        return 1;
+    }
 
     platform_run_main_loop(frame, &state);
 

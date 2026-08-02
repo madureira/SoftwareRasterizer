@@ -93,7 +93,7 @@ else()
   )
 endif()
 
-if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND CMAKE_SYSTEM_NAME STREQUAL "Linux")
+if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND (CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "Darwin"))
   if(CMAKE_C_COMPILER_ID MATCHES "Clang|GNU")
     target_compile_options(SoftwareRasterizer PRIVATE
       -fsanitize=address,undefined

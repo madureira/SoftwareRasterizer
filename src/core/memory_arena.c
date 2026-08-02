@@ -1,11 +1,38 @@
 #include "core/memory_arena.h"
 
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifndef NDEBUG
+#define MEMORY_ARENA_POISON_FREED 0xDD
+#endif
 
 static bool memory_arena_is_power_of_two(size_t value)
 {
     return value != 0 && (value & (value - 1)) == 0;
+}
+
+static bool memory_arena_is_valid(const MemoryArena* arena)
+{
+    // clang-format off
+    if (arena == NULL
+        || arena->allocation == NULL
+        || arena->base == NULL
+        || arena->used > arena->capacity)
+    {
+        return false;
+    }
+
+#ifndef NDEBUG
+    if (arena->self != arena)
+    {
+        return false;
+    }
+#endif
+    // clang-format on
+
+    return true;
 }
 
 bool memory_arena_create(MemoryArena* arena, size_t capacity)
@@ -15,22 +42,39 @@ bool memory_arena_create(MemoryArena* arena, size_t capacity)
         return false;
     }
 
+    arena->allocation = NULL;
     arena->base = NULL;
     arena->capacity = 0;
     arena->used = 0;
     arena->peak = 0;
 
-    size_t actual = capacity + MEMORY_ARENA_DEFAULT_ALIGNMENT - 1;
+    size_t alignment_mask = MEMORY_ARENA_MAX_ALIGNMENT - 1;
 
-    uint8* memory = (uint8*)malloc(actual);
-
-    if (memory == NULL)
+    if (capacity > SIZE_MAX - alignment_mask)
     {
         return false;
     }
 
-    arena->base = memory;
-    arena->capacity = actual;
+    size_t allocation_size = capacity + alignment_mask;
+
+    uint8* allocation = malloc(allocation_size);
+
+    if (allocation == NULL)
+    {
+        return false;
+    }
+
+    size_t offset = (size_t)(-(uintptr_t)allocation & alignment_mask);
+
+    arena->allocation = allocation;
+    arena->base = allocation + offset;
+    arena->capacity = capacity;
+
+#ifndef NDEBUG
+    assert((uintptr_t)arena->base % MEMORY_ARENA_MAX_ALIGNMENT_VALUE == 0);
+    arena->self = arena;
+    arena->generation = 0;
+#endif
 
     return true;
 }
@@ -42,38 +86,37 @@ void memory_arena_destroy(MemoryArena* arena)
         return;
     }
 
-    free(arena->base);
+    free(arena->allocation);
 
+    arena->allocation = NULL;
     arena->base = NULL;
     arena->capacity = 0;
     arena->used = 0;
     arena->peak = 0;
+#ifndef NDEBUG
+    arena->self = NULL;
+    arena->generation = 0;
+#endif
 }
 
 void* memory_arena_alloc(MemoryArena* arena, size_t size, size_t alignment)
 {
-    if (arena == NULL || arena->base == NULL || size == 0
-        || !memory_arena_is_power_of_two(alignment) || arena->used > arena->capacity)
+    // clang-format off
+    if (arena == NULL
+        || arena->base == NULL
+        || arena->allocation == NULL
+        || size == 0
+        || !memory_arena_is_power_of_two(alignment)
+        || alignment > MEMORY_ARENA_MAX_ALIGNMENT
+        || arena->used > arena->capacity)
     {
         return NULL;
     }
+    // clang-format on
 
-    uintptr_t current_address = (uintptr_t)(arena->base + arena->used);
+    size_t alignment_mask = alignment - 1;
 
-    uintptr_t alignment_mask = (uintptr_t)(alignment - 1);
-
-    /*
-     * Avoid overlow on:
-     * current_address + alignment_mask
-     */
-    if (current_address > UINTPTR_MAX - alignment_mask)
-    {
-        return NULL;
-    }
-
-    uintptr_t aligned_address = (current_address + alignment_mask) & ~alignment_mask;
-
-    size_t padding = (size_t)(aligned_address - current_address);
+    size_t padding = (alignment - (arena->used & alignment_mask)) & alignment_mask;
 
     size_t remaining = arena->capacity - arena->used;
 
@@ -89,14 +132,16 @@ void* memory_arena_alloc(MemoryArena* arena, size_t size, size_t alignment)
         return NULL;
     }
 
-    arena->used += padding + size;
+    size_t offset = arena->used + padding;
+
+    arena->used = offset + size;
 
     if (arena->used > arena->peak)
     {
         arena->peak = arena->used;
     }
 
-    return (void*)aligned_address;
+    return arena->base + offset;
 }
 
 void* memory_arena_alloc_zero(MemoryArena* arena, size_t size, size_t alignment)
@@ -153,49 +198,98 @@ void* memory_arena_alloc_array_zero(MemoryArena* arena, size_t count, size_t ele
 
 void memory_arena_reset(MemoryArena* arena)
 {
-    if (arena == NULL)
+    if (!memory_arena_is_valid(arena))
     {
         return;
     }
 
+#ifndef NDEBUG
+    memset(arena->base, MEMORY_ARENA_POISON_FREED, arena->used);
+#endif
+
     /*
      * Do not clear the memory
-     *
      * It just allows subsequent allocations to reuse the previous space.
      */
     arena->used = 0;
+
+#ifndef NDEBUG
+    arena->generation++;
+#endif
 }
 
 bool memory_arena_get_marker(const MemoryArena* arena, MemoryArenaMarker* out_marker)
 {
-    if (arena == NULL || out_marker == NULL)
+    if (!memory_arena_is_valid(arena) || out_marker == NULL)
     {
         return false;
     }
 
-    *out_marker = arena->used;
+    out_marker->used = arena->used;
+
+#ifndef NDEBUG
+    out_marker->arena = arena;
+    out_marker->generation = arena->generation;
+#endif
 
     return true;
 }
 
 bool memory_arena_rewind(MemoryArena* arena, MemoryArenaMarker marker)
 {
-    if (arena == NULL || marker > arena->used)
+    if (!memory_arena_is_valid(arena) || marker.used > arena->used)
     {
         return false;
     }
 
-    arena->used = marker;
+#ifndef NDEBUG
+    if (marker.arena != arena || marker.generation != arena->generation)
+    {
+        return false;
+    }
+
+    memset(arena->base + marker.used, MEMORY_ARENA_POISON_FREED, arena->used - marker.used);
+#endif
+
+    arena->used = marker.used;
 
     return true;
 }
 
 size_t memory_arena_remaining(const MemoryArena* arena)
 {
-    if (arena == NULL || arena->used > arena->capacity)
+    if (!memory_arena_is_valid(arena))
     {
         return 0;
     }
 
     return arena->capacity - arena->used;
+}
+
+size_t memory_arena_remaining_aligned(const MemoryArena* arena, size_t alignment)
+{
+    // clang-format off
+    if (arena == NULL
+            || arena->allocation == NULL
+            || arena->base == NULL
+            || arena->used > arena->capacity
+            || !memory_arena_is_power_of_two(alignment)
+            || alignment > MEMORY_ARENA_MAX_ALIGNMENT)
+    {
+        return 0;
+    }
+    // clang-format on
+
+    size_t mask = alignment - 1;
+
+    size_t padding = (alignment - (arena->used & mask)) & mask;
+
+    size_t remaining = arena->capacity - arena->used;
+
+    if (padding > remaining)
+    {
+        return 0;
+    }
+
+    return remaining - padding;
 }

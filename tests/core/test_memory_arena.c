@@ -19,6 +19,13 @@ static void test_create_zero_capacity_returns_false(TestContext* ctx)
     TEST_ASSERT_FALSE(ctx, memory_arena_create(&arena, 0));
 }
 
+static void test_create_capacity_overflow_returns_false(TestContext* ctx)
+{
+    MemoryArena arena;
+    size_t overflow_capacity = SIZE_MAX - (MEMORY_ARENA_MAX_ALIGNMENT - 2);
+    TEST_ASSERT_FALSE(ctx, memory_arena_create(&arena, overflow_capacity));
+}
+
 static void test_create_valid_initializes_fields(TestContext* ctx)
 {
     MemoryArena arena;
@@ -104,6 +111,22 @@ static void test_alloc_updates_peak(TestContext* ctx)
     memory_arena_destroy(&arena);
 }
 
+static void test_alloc_zero_alignment_returns_null(TestContext* ctx)
+{
+    MemoryArena arena;
+    memory_arena_create(&arena, 1024);
+    TEST_ASSERT_NULL(ctx, memory_arena_alloc(&arena, 16, 0));
+    memory_arena_destroy(&arena);
+}
+
+static void test_alloc_alignment_exceeds_max_returns_null(TestContext* ctx)
+{
+    MemoryArena arena;
+    memory_arena_create(&arena, 1024);
+    TEST_ASSERT_NULL(ctx, memory_arena_alloc(&arena, 16, MEMORY_ARENA_MAX_ALIGNMENT * 2));
+    memory_arena_destroy(&arena);
+}
+
 /*
  * alloc_zero
  */
@@ -175,6 +198,64 @@ static void test_alloc_array_valid_returns_non_null(TestContext* ctx)
 }
 
 /*
+ * alloc_array_zero
+ */
+
+static void test_alloc_array_zero_zero_count_returns_null(TestContext* ctx)
+{
+    MemoryArena arena;
+    memory_arena_create(&arena, 1024);
+    TEST_ASSERT_NULL(ctx, memory_arena_alloc_array_zero(&arena, 0, 4, 4));
+    memory_arena_destroy(&arena);
+}
+
+static void test_alloc_array_zero_zero_element_size_returns_null(TestContext* ctx)
+{
+    MemoryArena arena;
+    memory_arena_create(&arena, 1024);
+    TEST_ASSERT_NULL(ctx, memory_arena_alloc_array_zero(&arena, 4, 0, 4));
+    memory_arena_destroy(&arena);
+}
+
+static void test_alloc_array_zero_overflow_returns_null(TestContext* ctx)
+{
+    MemoryArena arena;
+    memory_arena_create(&arena, 1024);
+    TEST_ASSERT_NULL(ctx, memory_arena_alloc_array_zero(&arena, SIZE_MAX, 2, 1));
+    memory_arena_destroy(&arena);
+}
+
+static void test_alloc_array_zero_returns_zeroed_memory(TestContext* ctx)
+{
+    MemoryArena arena;
+    memory_arena_create(&arena, 1024);
+
+    uint8* dirty = (uint8*)memory_arena_alloc(&arena, 32, 1);
+    if (dirty != NULL)
+    {
+        memset(dirty, 0xFF, 32);
+    }
+
+    memory_arena_reset(&arena);
+
+    uint8* mem = (uint8*)memory_arena_alloc_array_zero(&arena, 8, sizeof(int32), 4);
+    TEST_ASSERT_NOT_NULL(ctx, mem);
+
+    bool all_zero = true;
+    for (size_t i = 0; i < 8 * sizeof(int32); i++)
+    {
+        if (mem[i] != 0)
+        {
+            all_zero = false;
+            break;
+        }
+    }
+    TEST_ASSERT_TRUE(ctx, all_zero);
+
+    memory_arena_destroy(&arena);
+}
+
+/*
  * reset
  */
 
@@ -196,6 +277,16 @@ static void test_reset_allows_reuse(TestContext* ctx)
     memory_arena_reset(&arena);
     void* second = memory_arena_alloc(&arena, 64, 1);
     TEST_ASSERT(ctx, first == second);
+    memory_arena_destroy(&arena);
+}
+
+static void test_reset_does_not_clear_peak(TestContext* ctx)
+{
+    MemoryArena arena;
+    memory_arena_create(&arena, 1024);
+    memory_arena_alloc(&arena, 64, 1);
+    memory_arena_reset(&arena);
+    TEST_ASSERT_INT_EQ(ctx, (int)arena.peak, 64);
     memory_arena_destroy(&arena);
 }
 
@@ -225,7 +316,7 @@ static void test_get_marker_returns_used(TestContext* ctx)
 
     MemoryArenaMarker m;
     TEST_ASSERT_TRUE(ctx, memory_arena_get_marker(&arena, &m));
-    TEST_ASSERT_INT_EQ(ctx, (int)m, 32);
+    TEST_ASSERT_INT_EQ(ctx, (int)m.used, 32);
 
     memory_arena_destroy(&arena);
 }
@@ -252,8 +343,13 @@ static void test_rewind_past_used_returns_false(TestContext* ctx)
     MemoryArena arena;
     memory_arena_create(&arena, 1024);
     memory_arena_alloc(&arena, 32, 1);
-    TEST_ASSERT_FALSE(ctx, memory_arena_rewind(&arena, 64));
+    TEST_ASSERT_FALSE(ctx, memory_arena_rewind(&arena, (MemoryArenaMarker){.used = 64}));
     memory_arena_destroy(&arena);
+}
+
+static void test_rewind_null_arena_returns_false(TestContext* ctx)
+{
+    TEST_ASSERT_FALSE(ctx, memory_arena_rewind(NULL, (MemoryArenaMarker){.used = 0}));
 }
 
 /*
@@ -276,6 +372,47 @@ static void test_remaining_decreases_by_allocation_size(TestContext* ctx)
 }
 
 /*
+ * remaining_aligned
+ */
+
+static void test_remaining_aligned_null_returns_zero(TestContext* ctx)
+{
+    TEST_ASSERT_INT_EQ(ctx, (int)memory_arena_remaining_aligned(NULL, 16), 0);
+}
+
+static void test_remaining_aligned_non_power_of_two_returns_zero(TestContext* ctx)
+{
+    MemoryArena arena;
+    memory_arena_create(&arena, 1024);
+    TEST_ASSERT_INT_EQ(ctx, (int)memory_arena_remaining_aligned(&arena, 3), 0);
+    memory_arena_destroy(&arena);
+}
+
+static void test_remaining_aligned_accounts_for_padding(TestContext* ctx)
+{
+    MemoryArena arena;
+    memory_arena_create(&arena, 1024);
+    memory_arena_alloc(&arena, 1, 1);
+
+    size_t unaligned = memory_arena_remaining(&arena);
+    size_t aligned = memory_arena_remaining_aligned(&arena, 16);
+
+    TEST_ASSERT(ctx, aligned < unaligned);
+    TEST_ASSERT_INT_EQ(ctx, (int)aligned, (int)(unaligned - 15));
+
+    memory_arena_destroy(&arena);
+}
+
+static void test_remaining_aligned_returns_zero_when_padding_exceeds_remaining(TestContext* ctx)
+{
+    MemoryArena arena;
+    memory_arena_create(&arena, 17);
+    memory_arena_alloc(&arena, 1, 1);
+    TEST_ASSERT_INT_EQ(ctx, (int)memory_arena_remaining_aligned(&arena, 32), 0);
+    memory_arena_destroy(&arena);
+}
+
+/*
  * destroy
  */
 
@@ -286,6 +423,14 @@ static void test_destroy_twice_is_safe(TestContext* ctx)
     memory_arena_destroy(&arena);
     memory_arena_destroy(&arena);
     TEST_ASSERT_NULL(ctx, arena.base);
+}
+
+static void test_destroy_then_alloc_returns_null(TestContext* ctx)
+{
+    MemoryArena arena;
+    memory_arena_create(&arena, 1024);
+    memory_arena_destroy(&arena);
+    TEST_ASSERT_NULL(ctx, memory_arena_alloc(&arena, 16, 16));
 }
 
 /*
@@ -300,6 +445,7 @@ static void setup(void)
     {
         test(test_create_null_arena_returns_false);
         test(test_create_zero_capacity_returns_false);
+        test(test_create_capacity_overflow_returns_false);
         test(test_create_valid_initializes_fields);
     }
     describe("alloc")
@@ -307,6 +453,8 @@ static void setup(void)
         test(test_alloc_null_arena_returns_null);
         test(test_alloc_zero_size_returns_null);
         test(test_alloc_non_power_of_two_alignment_returns_null);
+        test(test_alloc_zero_alignment_returns_null);
+        test(test_alloc_alignment_exceeds_max_returns_null);
         test(test_alloc_returns_non_null);
         test(test_alloc_address_is_aligned);
         test(test_alloc_exhausted_arena_returns_null);
@@ -324,10 +472,18 @@ static void setup(void)
         test(test_alloc_array_overflow_returns_null);
         test(test_alloc_array_valid_returns_non_null);
     }
+    describe("alloc_array_zero")
+    {
+        test(test_alloc_array_zero_zero_count_returns_null);
+        test(test_alloc_array_zero_zero_element_size_returns_null);
+        test(test_alloc_array_zero_overflow_returns_null);
+        test(test_alloc_array_zero_returns_zeroed_memory);
+    }
     describe("reset")
     {
         test(test_reset_sets_used_to_zero);
         test(test_reset_allows_reuse);
+        test(test_reset_does_not_clear_peak);
     }
     describe("marker_rewind")
     {
@@ -336,15 +492,24 @@ static void setup(void)
         test(test_get_marker_returns_used);
         test(test_rewind_restores_used);
         test(test_rewind_past_used_returns_false);
+        test(test_rewind_null_arena_returns_false);
     }
     describe("remaining")
     {
         test(test_remaining_null_returns_zero);
         test(test_remaining_decreases_by_allocation_size);
     }
+    describe("remaining_aligned")
+    {
+        test(test_remaining_aligned_null_returns_zero);
+        test(test_remaining_aligned_non_power_of_two_returns_zero);
+        test(test_remaining_aligned_accounts_for_padding);
+        test(test_remaining_aligned_returns_zero_when_padding_exceeds_remaining);
+    }
     describe("destroy")
     {
         test(test_destroy_twice_is_safe);
+        test(test_destroy_then_alloc_returns_null);
     }
 }
 
