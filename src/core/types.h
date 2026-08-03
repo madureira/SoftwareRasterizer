@@ -40,20 +40,20 @@ typedef ptrdiff_t isize;
 typedef uintptr_t uptr;
 typedef intptr_t iptr;
 
+// clang-format off
+
 /*
  * C99-compatible compile-time assertion.
  */
 #define CORE_JOIN_IMPL(a, b) a##b
 #define CORE_JOIN(a, b)      CORE_JOIN_IMPL(a, b)
 
-#define CORE_STATIC_ASSERT(condition, name)                                                        \
+#define CORE_STATIC_ASSERT(condition, name) \
     typedef char CORE_JOIN(core_static_assert_, name)[(condition) ? 1 : -1]
 
 /*
  * Floating-point representation requirements.
  */
-
-// clang-format off
 
 CORE_STATIC_ASSERT(
     CHAR_BIT == 8,

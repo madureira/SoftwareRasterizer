@@ -1,9 +1,11 @@
 #include "app/app.h"
 
-#include <stdlib.h>
+#include <math.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "app/window.h"
+#include "core/font.h"
 #include "core/memory_arena.h"
 #include "math/vec2f.h"
 #include "platform/platform.h"
@@ -16,6 +18,13 @@
 #define MAX_FRAMEBUFFER_PIXELS ((usize)MAX_FRAMEBUFFER_WIDTH * MAX_FRAMEBUFFER_HEIGHT)
 #define COLOR_DARK_GREY        0x22222222
 #define COLOR_BLUE             0x0000AAFF
+#define COLOR_GREEN            0x0000FF00
+#define DEBUG_FONT_SIZE        24.0f
+#define DEBUG_FONT_COLOR       COLOR_GREEN
+#define TRIANGLE_COS_120       (-0.5f)                // cos(120deg)
+#define TRIANGLE_SIN_120       0.8660254037844386f    // sin(120deg) == sqrt(3)/2
+#define TRIANGLE_COS_240       (-0.5f)                // cos(240deg)
+#define TRIANGLE_SIN_240       (-0.8660254037844386f) // sin(240deg) == -sqrt(3)/2
 
 typedef struct AppState
 {
@@ -24,6 +33,12 @@ typedef struct AppState
     u32* pixels;
     i32 width;
     i32 height;
+    f64 last_frame_time;
+    f64 fps;
+    f64 frame_time_ms;
+    f64 last_overlay_update;
+    char overlay_text[64];
+    Font* debug_font;
 } AppState;
 
 static inline f32 edge(const Vec2f a, const Vec2f b, const Vec2f p)
@@ -89,9 +104,35 @@ static void draw_triangle(u32* pixels, int width, int height, Vec2f v0, Vec2f v1
     }
 }
 
+static inline void draw_debug_overlay(AppState* state, f64 now, i32 width, i32 height)
+{
+    if (now - state->last_overlay_update >= 1.0)
+    {
+        snprintf(state->overlay_text, sizeof(state->overlay_text), "FPS: %.2f - %.2fms", state->fps,
+                 state->frame_time_ms);
+        state->last_overlay_update = now;
+    }
+
+    if (state->debug_font != NULL)
+    {
+        font_draw_text(state->debug_font, state->pixels, width, height, 4, 4, state->overlay_text,
+                       DEBUG_FONT_COLOR);
+    }
+}
+
 static bool frame(void* arg)
 {
     AppState* state = (AppState*)arg;
+
+    const f64 now = platform_get_time_seconds();
+    const f64 dt = now - state->last_frame_time;
+    state->last_frame_time = now;
+
+    if (dt > 0.0)
+    {
+        state->fps = 1.0 / dt;
+        state->frame_time_ms = dt * 1000.0;
+    }
 
     window_poll_events(state->window);
 
@@ -123,26 +164,31 @@ static bool frame(void* arg)
 
     const f32 rotation_speed = 1.0f; // radians per second
 
-    f32 angle = (f32)(platform_get_time_seconds() * rotation_speed);
+    f32 angle = (f32)(now * rotation_speed);
     f32 radius = (f32)(width < height ? width : height) * 0.25f;
 
     // Move the origin to the center of the triangle
     Vec2f center = vec2f((f32)width * 0.5f, (f32)height * 0.5f);
 
-    f32 a0 = angle;
-    f32 a1 = angle + (2.0f * (f32)MATH_PI / 3.0f);
-    f32 a2 = angle + (4.0f * (f32)MATH_PI / 3.0f);
-
     Vec2f base = vec2f(radius, 0.0f);
 
-    Vec2f v0 = vec2f_add(center, vec2f_rotate(base, a0));
-    Vec2f v1 = vec2f_add(center, vec2f_rotate(base, a1));
-    Vec2f v2 = vec2f_add(center, vec2f_rotate(base, a2));
+    const f32 s0 = sinf(angle);
+    const f32 c0 = cosf(angle);
+    const f32 s1 = s0 * TRIANGLE_COS_120 + c0 * TRIANGLE_SIN_120;
+    const f32 c1 = c0 * TRIANGLE_COS_120 - s0 * TRIANGLE_SIN_120;
+    const f32 s2 = s0 * TRIANGLE_COS_240 + c0 * TRIANGLE_SIN_240;
+    const f32 c2 = c0 * TRIANGLE_COS_240 - s0 * TRIANGLE_SIN_240;
+
+    Vec2f v0 = vec2f_add(center, vec2f_rotate_sincos(base, s0, c0));
+    Vec2f v1 = vec2f_add(center, vec2f_rotate_sincos(base, s1, c1));
+    Vec2f v2 = vec2f_add(center, vec2f_rotate_sincos(base, s2, c2));
 
     // Clear framebuffer using byte-fill.
     memset(state->pixels, COLOR_DARK_GREY & 0xFF, (usize)width * height * sizeof(u32));
 
     draw_triangle(state->pixels, width, height, v0, v1, v2, COLOR_BLUE);
+
+    draw_debug_overlay(state, now, width, height);
 
     window_present(state->window, state->pixels, width, height);
 
@@ -173,7 +219,8 @@ int app_run(void)
         .pixels_arena = MEM_ARENA_INIT,
         .pixels       = NULL,
         .width        = WINDOW_WIDTH,
-        .height       = WINDOW_HEIGHT
+        .height       = WINDOW_HEIGHT,
+        .debug_font   = NULL
     };
     // clang-format on
 
@@ -194,8 +241,12 @@ int app_run(void)
         return 1;
     }
 
+    state.last_frame_time = platform_get_time_seconds();
+    state.debug_font = font_load("assets/fonts/TerminessNerdFont-Regular.ttf", DEBUG_FONT_SIZE);
+
     platform_run_main_loop(frame, &state);
 
+    font_destroy(state.debug_font);
     memory_arena_destroy(&state.pixels_arena);
     window_destroy(window);
     platform_shutdown();

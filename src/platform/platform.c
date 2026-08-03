@@ -55,6 +55,8 @@ PlatformWindow* platform_window_create(const char* title, i32 width, i32 height,
         return NULL;
     }
 
+    SDL_SetRenderVSync(win->renderer, 1);
+
     win->texture = SDL_CreateTexture(win->renderer, SDL_PIXELFORMAT_XRGB8888,
                                      SDL_TEXTUREACCESS_STREAMING, width, height);
     if (win->texture == NULL)
@@ -171,7 +173,7 @@ void platform_run_main_loop(PlatformFrameCallback frame_cb, void* user_data)
 
 f64 platform_get_time_seconds(void)
 {
-    return (f64)SDL_GetTicks() / 1000.0;
+    return (f64)SDL_GetPerformanceCounter() / (f64)SDL_GetPerformanceFrequency();
 }
 
 #else // __EMSCRIPTEN__
