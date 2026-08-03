@@ -19,8 +19,9 @@
 #define COLOR_DARK_GREY        0x22222222
 #define COLOR_BLUE             0x0000AAFF
 #define COLOR_GREEN            0x0000FF00
-#define DEBUG_FONT_SIZE        24.0f
+#define DEBUG_FONT_SIZE        16.0f
 #define DEBUG_FONT_COLOR       COLOR_GREEN
+#define DEBUG_FONT_FAMILY      "assets/fonts/BigBlueTerm437NerdFont-Regular.ttf"
 #define TRIANGLE_COS_120       (-0.5f)                // cos(120deg)
 #define TRIANGLE_SIN_120       0.8660254037844386f    // sin(120deg) == sqrt(3)/2
 #define TRIANGLE_COS_240       (-0.5f)                // cos(240deg)
@@ -242,7 +243,7 @@ int app_run(void)
     }
 
     state.last_frame_time = platform_get_time_seconds();
-    state.debug_font = font_load("assets/fonts/TerminessNerdFont-Regular.ttf", DEBUG_FONT_SIZE);
+    state.debug_font = font_load(DEBUG_FONT_FAMILY, DEBUG_FONT_SIZE);
 
     platform_run_main_loop(frame, &state);
 
