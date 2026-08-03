@@ -11,8 +11,8 @@ struct PlatformWindow
     SDL_Window* window;
     SDL_Renderer* renderer;
     SDL_Texture* texture;
-    int32 texture_width;
-    int32 texture_height;
+    i32 texture_width;
+    i32 texture_height;
 };
 
 bool platform_init(void)
@@ -25,7 +25,7 @@ void platform_shutdown(void)
     SDL_Quit();
 }
 
-PlatformWindow* platform_window_create(const char* title, int32 width, int32 height, bool resizable)
+PlatformWindow* platform_window_create(const char* title, i32 width, i32 height, bool resizable)
 {
     SDL_WindowFlags flags = 0;
 
@@ -94,8 +94,7 @@ void platform_window_set_title(PlatformWindow* window, const char* title)
     SDL_SetWindowTitle(window->window, title);
 }
 
-void platform_window_present(PlatformWindow* window, const uint32* pixels, int32 width,
-                             int32 height)
+void platform_window_present(PlatformWindow* window, const u32* pixels, i32 width, i32 height)
 {
     if (window == NULL || pixels == NULL)
     {
@@ -116,7 +115,7 @@ void platform_window_present(PlatformWindow* window, const uint32* pixels, int32
         window->texture_height = height;
     }
 
-    SDL_UpdateTexture(window->texture, NULL, pixels, width * (int)sizeof(uint32));
+    SDL_UpdateTexture(window->texture, NULL, pixels, width * (int)sizeof(u32));
     SDL_RenderTexture(window->renderer, window->texture, NULL, NULL);
     SDL_RenderPresent(window->renderer);
 }
@@ -170,9 +169,9 @@ void platform_run_main_loop(PlatformFrameCallback frame_cb, void* user_data)
     }
 }
 
-float64 platform_get_time_seconds(void)
+f64 platform_get_time_seconds(void)
 {
-    return (float64)SDL_GetTicks() / 1000.0;
+    return (f64)SDL_GetTicks() / 1000.0;
 }
 
 #else // __EMSCRIPTEN__
@@ -183,10 +182,10 @@ float64 platform_get_time_seconds(void)
 #include <emscripten/html5.h>
 
 // Implemented in platform_web.js, linked via --js-library.
-extern int32 platform_js_get_window_width(void);
-extern int32 platform_js_get_window_height(void);
+extern i32 platform_js_get_window_width(void);
+extern i32 platform_js_get_window_height(void);
 extern void platform_js_set_title(const char* title);
-extern void platform_js_present(const uint32* pixels, int32 width, int32 height);
+extern void platform_js_present(const u32* pixels, i32 width, i32 height);
 
 typedef struct
 {
@@ -196,14 +195,14 @@ typedef struct
 
 struct PlatformWindow
 {
-    int32 width;
-    int32 height;
+    i32 width;
+    i32 height;
 };
 
 static EmscriptenLoopState g_loop_state;
 
-static int32 g_canvas_width = 0;
-static int32 g_canvas_height = 0;
+static i32 g_canvas_width = 0;
+static i32 g_canvas_height = 0;
 static bool g_resize_pending = false;
 
 static EM_BOOL on_window_resize(int event_type, const EmscriptenUiEvent* ui_event, void* user_data)
@@ -211,8 +210,8 @@ static EM_BOOL on_window_resize(int event_type, const EmscriptenUiEvent* ui_even
     (void)event_type;
     (void)user_data;
 
-    const int32 new_width = (int32)ui_event->windowInnerWidth;
-    const int32 new_height = (int32)ui_event->windowInnerHeight;
+    const i32 new_width = (i32)ui_event->windowInnerWidth;
+    const i32 new_height = (i32)ui_event->windowInnerHeight;
 
     emscripten_set_canvas_element_size("#canvas", new_width, new_height);
 
@@ -232,7 +231,7 @@ void platform_shutdown(void)
 {
 }
 
-PlatformWindow* platform_window_create(const char* title, int32 width, int32 height, bool resizable)
+PlatformWindow* platform_window_create(const char* title, i32 width, i32 height, bool resizable)
 {
     (void)title;
     (void)width;
@@ -245,8 +244,8 @@ PlatformWindow* platform_window_create(const char* title, int32 width, int32 hei
         return NULL;
     }
 
-    const int32 actual_width = platform_js_get_window_width();
-    const int32 actual_height = platform_js_get_window_height();
+    const i32 actual_width = platform_js_get_window_width();
+    const i32 actual_height = platform_js_get_window_height();
 
     win->width = actual_width;
     win->height = actual_height;
@@ -273,8 +272,7 @@ void platform_window_set_title(PlatformWindow* window, const char* title)
     platform_js_set_title(title);
 }
 
-void platform_window_present(PlatformWindow* window, const uint32* pixels, int32 width,
-                             int32 height)
+void platform_window_present(PlatformWindow* window, const u32* pixels, i32 width, i32 height)
 {
     if (window == NULL || pixels == NULL)
     {
@@ -320,7 +318,7 @@ void platform_run_main_loop(PlatformFrameCallback frame_cb, void* user_data)
     emscripten_set_main_loop(emscripten_frame_wrapper, 0, 1);
 }
 
-float64 platform_get_time_seconds(void)
+f64 platform_get_time_seconds(void)
 {
     return emscripten_get_now() / 1000.0;
 }

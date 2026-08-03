@@ -14,7 +14,7 @@
  * Scalar helpers
  */
 
-static inline float32 math_clamp_f32(float32 value, float32 minimum, float32 maximum)
+static inline f32 math_clamp_f32(f32 value, f32 minimum, f32 maximum)
 {
     assert(isfinite(value));
     assert(isfinite(minimum));
@@ -34,7 +34,7 @@ static inline float32 math_clamp_f32(float32 value, float32 minimum, float32 max
     return value;
 }
 
-static inline float32 math_lerp_f32(float32 from, float32 to, float32 amount)
+static inline f32 math_lerp_f32(f32 from, f32 to, f32 amount)
 {
     assert(isfinite(from));
     assert(isfinite(to));
@@ -43,14 +43,14 @@ static inline float32 math_lerp_f32(float32 from, float32 to, float32 amount)
     return from + ((to - from) * amount);
 }
 
-static inline float32 math_degree_to_radians(float32 degrees)
+static inline f32 math_degree_to_radians(f32 degrees)
 {
     assert(isfinite(degrees));
 
     return degrees * (MATH_PI / 180.0f);
 }
 
-static inline float32 math_radians_to_degree(float32 radians)
+static inline f32 math_radians_to_degree(f32 radians)
 {
     assert(isfinite(radians));
 

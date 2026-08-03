@@ -7,8 +7,8 @@
 struct Window
 {
     PlatformWindow* platform_window;
-    int32 width;
-    int32 height;
+    i32 width;
+    i32 height;
     bool should_close;
 };
 
@@ -87,12 +87,12 @@ bool window_should_close(const Window* window)
     return window != NULL && window->should_close;
 }
 
-int32 window_get_width(const Window* window)
+i32 window_get_width(const Window* window)
 {
     return window != NULL ? window->width : 0;
 }
 
-int32 window_get_height(const Window* window)
+i32 window_get_height(const Window* window)
 {
     return window != NULL ? window->height : 0;
 }
@@ -107,7 +107,7 @@ void window_set_title(Window* window, const char* title)
     platform_window_set_title(window->platform_window, title);
 }
 
-void window_present(Window* window, const uint32* pixels, int32 width, int32 height)
+void window_present(Window* window, const u32* pixels, i32 width, i32 height)
 {
     if (window == NULL || pixels == NULL)
     {

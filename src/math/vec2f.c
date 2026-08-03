@@ -2,7 +2,7 @@
 
 #include "math/math_config.h"
 
-bool vec2f_try_div(Vec2f vector, float32 scalar, Vec2f* result)
+bool vec2f_try_div(Vec2f vector, f32 scalar, Vec2f* result)
 {
     // clang-format off
     if (
@@ -15,7 +15,7 @@ bool vec2f_try_div(Vec2f vector, float32 scalar, Vec2f* result)
     }
     // clang-format on
 
-    const float32 inverse = 1.0f / scalar;
+    const f32 inverse = 1.0f / scalar;
 
     *result = vec2f_scale(vector, inverse);
 
@@ -26,7 +26,7 @@ Vec2f vec2f_normalize(Vec2f vector)
 {
     assert(vec2f_is_finite(vector));
 
-    const float32 length_squared = vec2f_len_sq(vector);
+    const f32 length_squared = vec2f_len_sq(vector);
 
     assert(isfinite(length_squared));
 
@@ -36,7 +36,7 @@ Vec2f vec2f_normalize(Vec2f vector)
         return vec2f_zero();
     }
 
-    const float32 inverse_length = 1.0f / sqrtf(length_squared);
+    const f32 inverse_length = 1.0f / sqrtf(length_squared);
 
     return vec2f_scale(vector, inverse_length);
 }
@@ -48,7 +48,7 @@ bool vec2f_try_normalize(Vec2f vector, Vec2f* result)
         return false;
     }
 
-    const float32 length_squared = vec2f_len_sq(vector);
+    const f32 length_squared = vec2f_len_sq(vector);
 
     if (length_squared <= MATH_NORMALIZE_EPSILON_SQUARED)
     {
@@ -60,34 +60,34 @@ bool vec2f_try_normalize(Vec2f vector, Vec2f* result)
     return true;
 }
 
-Vec2f vec2f_rotate(Vec2f vector, float32 angle_radians)
+Vec2f vec2f_rotate(Vec2f vector, f32 angle_radians)
 {
     assert(vec2f_is_finite(vector));
     assert(isfinite(angle_radians));
 
-    const float32 sine = sinf(angle_radians);
-    const float32 cosine = cosf(angle_radians);
+    const f32 sine = sinf(angle_radians);
+    const f32 cosine = cosf(angle_radians);
 
     return vec2f_rotate_sincos(vector, sine, cosine);
 }
 
-void vec2f_rotate_inplace(Vec2f* vector, float32 angle_radians)
+void vec2f_rotate_inplace(Vec2f* vector, f32 angle_radians)
 {
     assert(vector != NULL);
     assert(vec2f_is_finite(*vector));
     assert(isfinite(angle_radians));
 
-    const float32 sine = sinf(angle_radians);
-    const float32 cosine = cosf(angle_radians);
+    const f32 sine = sinf(angle_radians);
+    const f32 cosine = cosf(angle_radians);
 
-    const float32 original_x = vector->x;
-    const float32 original_y = vector->y;
+    const f32 original_x = vector->x;
+    const f32 original_y = vector->y;
 
     vector->x = (original_x * cosine) - (original_y * sine);
     vector->y = (original_x * sine) + (original_y * cosine);
 }
 
-Vec2f vec2f_rotate_around(Vec2f vector, Vec2f pivot, float32 angle_radians)
+Vec2f vec2f_rotate_around(Vec2f vector, Vec2f pivot, f32 angle_radians)
 {
     assert(vec2f_is_finite(vector));
     assert(vec2f_is_finite(pivot));

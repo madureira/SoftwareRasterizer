@@ -5,8 +5,8 @@
 
 typedef struct Vec2f
 {
-    float32 x;
-    float32 y;
+    f32 x;
+    f32 y;
 } Vec2f;
 
 /**
@@ -60,7 +60,7 @@ static inline Vec2f vec2f_sub(Vec2f a, Vec2f b)
     // clang-format on
 }
 
-static inline Vec2f vec2f_scale(Vec2f vector, float32 scalar)
+static inline Vec2f vec2f_scale(Vec2f vector, f32 scalar)
 {
     // clang-format off
     return vec2f(
@@ -70,7 +70,7 @@ static inline Vec2f vec2f_scale(Vec2f vector, float32 scalar)
     // clang-format on
 }
 
-static inline Vec2f vec2f_rotate_sincos(Vec2f vector, float32 sine, float32 cosine)
+static inline Vec2f vec2f_rotate_sincos(Vec2f vector, f32 sine, f32 cosine)
 {
     assert(vec2f_is_finite(vector));
     assert(isfinite(sine));
@@ -93,13 +93,13 @@ static inline Vec2f vec2f_rotate_sincos(Vec2f vector, float32 sine, float32 cosi
  *
  * Use vec2f_try_divide() for untrusted or dynamically computed values.
  */
-static inline Vec2f vec2f_div(Vec2f vector, float32 scalar)
+static inline Vec2f vec2f_div(Vec2f vector, f32 scalar)
 {
     assert(vec2f_is_finite(vector));
     assert(isfinite(scalar));
     assert(scalar != 0.0f);
 
-    const float32 inverse = 1.0f / scalar;
+    const f32 inverse = 1.0f / scalar;
 
     return vec2f_scale(vector, inverse);
 }
@@ -118,29 +118,29 @@ static inline Vec2f vec2f_neg(Vec2f vector)
  * Vector operations
  */
 
-static inline float32 vec2f_dot(Vec2f a, Vec2f b)
+static inline f32 vec2f_dot(Vec2f a, Vec2f b)
 {
     return (a.x * b.x) + (a.y * b.y);
 }
 
-static inline float32 vec2f_cross(Vec2f a, Vec2f b)
+static inline f32 vec2f_cross(Vec2f a, Vec2f b)
 {
     assert(vec2f_is_finite(a));
     assert(vec2f_is_finite(b));
 
-    const float32 result = (a.x * b.y) - (a.y * b.x);
+    const f32 result = (a.x * b.y) - (a.y * b.x);
 
     assert(isfinite(result));
 
     return result;
 }
 
-static inline float32 vec2f_len_sq(Vec2f vector)
+static inline f32 vec2f_len_sq(Vec2f vector)
 {
     return vec2f_dot(vector, vector);
 }
 
-static inline float32 vec2f_dist_sq(Vec2f a, Vec2f b)
+static inline f32 vec2f_dist_sq(Vec2f a, Vec2f b)
 {
     return vec2f_len_sq(vec2f_sub(b, a));
 }
@@ -152,7 +152,7 @@ static inline float32 vec2f_dist_sq(Vec2f a, Vec2f b)
  * amount = 1 returns to.
  * Values outside [0, 1] extrapolate.
  */
-static inline Vec2f vec2f_lerp(Vec2f from, Vec2f to, float32 amount)
+static inline Vec2f vec2f_lerp(Vec2f from, Vec2f to, f32 amount)
 {
     assert(vec2f_is_finite(from));
     assert(vec2f_is_finite(to));
@@ -166,7 +166,7 @@ static inline Vec2f vec2f_lerp(Vec2f from, Vec2f to, float32 amount)
     // clang-format on
 }
 
-static inline Vec2f vec2f_lerp_clamp(Vec2f from, Vec2f to, float32 amount)
+static inline Vec2f vec2f_lerp_clamp(Vec2f from, Vec2f to, f32 amount)
 {
     // clang-format off
     return vec2f_lerp(
@@ -197,7 +197,7 @@ static inline void vec2f_sub_inplace(Vec2f* vector, Vec2f value)
     vector->y -= value.y;
 }
 
-static inline void vec2f_scale_inplace(Vec2f* vector, float32 scalar)
+static inline void vec2f_scale_inplace(Vec2f* vector, f32 scalar)
 {
     assert(vector != NULL);
 
@@ -214,14 +214,14 @@ static inline void vec2f_scale_inplace(Vec2f* vector, float32 scalar)
  *
  * Use vec2f_try_divide() for untrusted or dynamically computed values.
  */
-static inline void vec2f_div_inplace(Vec2f* vector, float32 scalar)
+static inline void vec2f_div_inplace(Vec2f* vector, f32 scalar)
 {
     assert(vector != NULL);
     assert(vec2f_is_finite(*vector));
     assert(isfinite(scalar));
     assert(scalar != 0.0f);
 
-    const float32 inverse = 1.0f / scalar;
+    const f32 inverse = 1.0f / scalar;
 
     vector->x *= inverse;
     vector->y *= inverse;
@@ -244,18 +244,18 @@ static inline bool vec2f_eq(Vec2f a, Vec2f b)
     return a.x == b.x && a.y == b.y;
 }
 
-static inline bool vec2f_near(Vec2f a, Vec2f b, float32 distance)
+static inline bool vec2f_near(Vec2f a, Vec2f b, f32 distance)
 {
     assert(vec2f_is_finite(a));
     assert(vec2f_is_finite(b));
     assert(isfinite(distance));
     assert(distance >= 0.0f);
 
-    const float32 maximum_distance_squared = distance * distance;
+    const f32 maximum_distance_squared = distance * distance;
 
     assert(isfinite(maximum_distance_squared));
 
-    const float32 actual_distance_squared = vec2f_dist_sq(a, b);
+    const f32 actual_distance_squared = vec2f_dist_sq(a, b);
 
     assert(isfinite(actual_distance_squared));
 
@@ -266,37 +266,37 @@ static inline bool vec2f_near(Vec2f a, Vec2f b, float32 distance)
  * Returns true when the distance between a and b is less than
  * or equal to the provided squared distance.
  */
-static inline bool vec2f_near_sq(Vec2f a, Vec2f b, float32 maximum_distance_squared)
+static inline bool vec2f_near_sq(Vec2f a, Vec2f b, f32 maximum_distance_squared)
 {
     assert(vec2f_is_finite(a));
     assert(vec2f_is_finite(b));
     assert(isfinite(maximum_distance_squared));
     assert(maximum_distance_squared >= 0.0f);
 
-    const float32 actual_distance_squared = vec2f_dist_sq(a, b);
+    const f32 actual_distance_squared = vec2f_dist_sq(a, b);
 
     assert(isfinite(actual_distance_squared));
 
     return actual_distance_squared <= maximum_distance_squared;
 }
 
-static inline float32 vec2f_len(Vec2f vector)
+static inline f32 vec2f_len(Vec2f vector)
 {
     assert(vec2f_is_finite(vector));
 
-    const float32 length_squared = vec2f_len_sq(vector);
+    const f32 length_squared = vec2f_len_sq(vector);
 
     assert(isfinite(length_squared));
 
     return sqrtf(length_squared);
 }
 
-static inline float32 vec2f_dist(Vec2f a, Vec2f b)
+static inline f32 vec2f_dist(Vec2f a, Vec2f b)
 {
     assert(vec2f_is_finite(a));
     assert(vec2f_is_finite(b));
 
-    const float32 distance_squared = vec2f_dist_sq(a, b);
+    const f32 distance_squared = vec2f_dist_sq(a, b);
 
     assert(isfinite(distance_squared));
 
@@ -307,7 +307,7 @@ static inline float32 vec2f_dist(Vec2f a, Vec2f b)
  * Returns true when the absolute difference of each corresponding
  * component is less than or equal to epsilon.
  */
-static inline bool vec2f_eq_eps(Vec2f a, Vec2f b, float32 epsilon)
+static inline bool vec2f_eq_eps(Vec2f a, Vec2f b, f32 epsilon)
 {
     assert(vec2f_is_finite(a));
     assert(vec2f_is_finite(b));
@@ -334,7 +334,7 @@ static inline bool vec2f_eq_eps(Vec2f a, Vec2f b, float32 epsilon)
  *
  * On failure, the value pointed to by result is not modified.
  */
-bool vec2f_try_div(Vec2f vector, float32 scalar, Vec2f* result);
+bool vec2f_try_div(Vec2f vector, f32 scalar, Vec2f* result);
 
 Vec2f vec2f_normalize(Vec2f vector);
 
@@ -348,10 +348,10 @@ Vec2f vec2f_normalize(Vec2f vector);
  */
 bool vec2f_try_normalize(Vec2f vector, Vec2f* result);
 
-Vec2f vec2f_rotate(Vec2f vector, float32 angle_radians);
+Vec2f vec2f_rotate(Vec2f vector, f32 angle_radians);
 
-void vec2f_rotate_inplace(Vec2f* vector, float32 angle_radians);
+void vec2f_rotate_inplace(Vec2f* vector, f32 angle_radians);
 
-Vec2f vec2f_rotate_around(Vec2f vector, Vec2f pivot, float32 angle_radians);
+Vec2f vec2f_rotate_around(Vec2f vector, Vec2f pivot, f32 angle_radians);
 
 #endif // MATH_VEC2F_H

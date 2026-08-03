@@ -24,11 +24,11 @@
 #endif
 
 #if FLT_MANT_DIG != 24 || FLT_MAX_EXP != 128
-#error "float32 must use an IEEE-754 binary32-compatible representation."
+#error "f32 must use an IEEE-754 binary32-compatible representation."
 #endif
 
 #if DBL_MANT_DIG != 53 || DBL_MAX_EXP != 1024
-#error "float64 must use an IEEE-754 binary64-compatible representation."
+#error "f64 must use an IEEE-754 binary64-compatible representation."
 #endif
 
 /*

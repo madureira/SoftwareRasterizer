@@ -57,4 +57,5 @@ dkms.conf
 # Project
 .DS_Store
 /build/
+/internal_docs/
 compile_commands.json

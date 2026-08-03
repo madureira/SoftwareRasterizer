@@ -7,7 +7,7 @@
 static const char* relative_path(const char* file)
 {
     const char* prefix = PROJECT_SOURCE_DIR "/";
-    size_t prefix_len = strlen(prefix);
+    usize prefix_len = strlen(prefix);
     if (strncmp(file, prefix, prefix_len) == 0)
     {
         return file + prefix_len;
