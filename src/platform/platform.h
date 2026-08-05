@@ -32,7 +32,8 @@ bool platform_init(void);
 
 void platform_shutdown(void);
 
-PlatformWindow* platform_window_create(const char* title, i32 width, i32 height, bool resizable);
+PlatformWindow* platform_window_create(const char* title, i32 width, i32 height, bool resizable,
+                                       bool fullscreen, bool vsync, const char* canvas_id);
 
 void platform_window_destroy(PlatformWindow* window);
 
@@ -44,7 +45,7 @@ bool platform_poll_event(PlatformEvent* event);
 
 typedef bool (*PlatformFrameCallback)(void* user_data);
 
-void platform_run_main_loop(PlatformFrameCallback frame_cb, void* user_data);
+void platform_run_main_loop(PlatformFrameCallback frame_cb, void* user_data, i32 target_fps);
 
 f64 platform_get_time_seconds(void);
 

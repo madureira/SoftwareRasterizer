@@ -21,6 +21,9 @@ AllowShortFunctionsOnASingleLine: None
 AllowShortIfStatementsOnASingleLine: Never
 AllowShortLoopsOnASingleLine: false
 
+# Keep each designated initializer on its own line instead of compacting them
+Cpp11BracedListStyle: false
+
 AlignConsecutiveMacros:
   Enabled: true
   AcrossEmptyLines: false

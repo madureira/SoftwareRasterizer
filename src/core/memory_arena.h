@@ -1,17 +1,14 @@
 #ifndef CORE_MEMORY_ARENA_H
 #define CORE_MEMORY_ARENA_H
 
-#define MEM_ARENA_INIT                       {0}
+#define MEM_ARENA_INIT                       { 0 }
 #define MEMORY_ARENA_MAX_ALIGNMENT_VALUE     64
 #define MEMORY_ARENA_DEFAULT_ALIGNMENT_VALUE 16
 
-// clang-format off
-#if MEMORY_ARENA_MAX_ALIGNMENT_VALUE == 0 \
-    || (MEMORY_ARENA_MAX_ALIGNMENT_VALUE \
-        & (MEMORY_ARENA_MAX_ALIGNMENT_VALUE - 1)) != 0
+#if MEMORY_ARENA_MAX_ALIGNMENT_VALUE == 0                                                          \
+    || (MEMORY_ARENA_MAX_ALIGNMENT_VALUE & (MEMORY_ARENA_MAX_ALIGNMENT_VALUE - 1)) != 0
 #error "MEMORY_ARENA_MAX_ALIGNMENT_VALUE must be a power of two."
 #endif
-// clang-format on
 
 #define MEMORY_ARENA_MAX_ALIGNMENT     ((usize)MEMORY_ARENA_MAX_ALIGNMENT_VALUE)
 #define MEMORY_ARENA_DEFAULT_ALIGNMENT ((usize)MEMORY_ARENA_DEFAULT_ALIGNMENT_VALUE)
@@ -34,7 +31,7 @@ typedef struct MemoryArena
 
 #ifndef NDEBUG
     const struct MemoryArena* self;
-    u32 generation;
+    u64 generation;
 #endif
 } MemoryArena;
 
@@ -44,7 +41,7 @@ typedef struct MemoryArenaMarker
 
 #ifndef NDEBUG
     const MemoryArena* arena;
-    u32 generation;
+    u64 generation;
 #endif
 } MemoryArenaMarker;
 
@@ -72,32 +69,16 @@ usize memory_arena_remaining(const MemoryArena* arena);
 
 usize memory_arena_remaining_aligned(const MemoryArena* arena, usize alignment);
 
-// clang-format off
-#define MEM_ARENA_PUSH_STRUCT(arena, type)              \
-    ((type*)memory_arena_alloc(                         \
-        (arena),                                        \
-        sizeof(type),                                   \
-        MEMORY_ALIGNOF(type)))
+#define MEM_ARENA_PUSH_STRUCT(arena, type)                                                         \
+    ((type*)memory_arena_alloc((arena), sizeof(type), MEMORY_ALIGNOF(type)))
 
-#define MEM_ARENA_PUSH_STRUCT_ZERO(arena, type)         \
-    ((type*)memory_arena_alloc_zero(                    \
-        (arena),                                        \
-        sizeof(type),                                   \
-        MEMORY_ALIGNOF(type)))
+#define MEM_ARENA_PUSH_STRUCT_ZERO(arena, type)                                                    \
+    ((type*)memory_arena_alloc_zero((arena), sizeof(type), MEMORY_ALIGNOF(type)))
 
-#define MEM_ARENA_PUSH_ARRAY(arena, count, type)        \
-    ((type*)memory_arena_alloc_array(                   \
-        (arena),                                        \
-        (count),                                        \
-        sizeof(type),                                   \
-        MEMORY_ALIGNOF(type)))
+#define MEM_ARENA_PUSH_ARRAY(arena, count, type)                                                   \
+    ((type*)memory_arena_alloc_array((arena), (count), sizeof(type), MEMORY_ALIGNOF(type)))
 
-#define MEM_ARENA_PUSH_ARRAY_ZERO(arena, count, type)   \
-    ((type*)memory_arena_alloc_array_zero(              \
-        (arena),                                        \
-        (count),                                        \
-        sizeof(type),                                   \
-        MEMORY_ALIGNOF(type)))
-// clang-format on
+#define MEM_ARENA_PUSH_ARRAY_ZERO(arena, count, type)                                              \
+    ((type*)memory_arena_alloc_array_zero((arena), (count), sizeof(type), MEMORY_ALIGNOF(type)))
 
 #endif // CORE_MEMORY_ARENA_H

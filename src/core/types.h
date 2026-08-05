@@ -40,61 +40,33 @@ typedef ptrdiff_t isize;
 typedef uintptr_t uptr;
 typedef intptr_t iptr;
 
-// clang-format off
-
 /*
  * C99-compatible compile-time assertion.
  */
 #define CORE_JOIN_IMPL(a, b) a##b
 #define CORE_JOIN(a, b)      CORE_JOIN_IMPL(a, b)
 
-#define CORE_STATIC_ASSERT(condition, name) \
+#define CORE_STATIC_ASSERT(condition, name)                                                        \
     typedef char CORE_JOIN(core_static_assert_, name)[(condition) ? 1 : -1]
 
 /*
  * Floating-point representation requirements.
  */
 
-CORE_STATIC_ASSERT(
-    CHAR_BIT == 8,
-    char_must_have_8_bits
-);
+CORE_STATIC_ASSERT(CHAR_BIT == 8, char_must_have_8_bits);
 
-CORE_STATIC_ASSERT(
-    sizeof(f32) * CHAR_BIT == 32,
-    f32_must_have_32_bits
-);
+CORE_STATIC_ASSERT(sizeof(f32) * CHAR_BIT == 32, f32_must_have_32_bits);
 
-CORE_STATIC_ASSERT(
-    FLT_RADIX == 2,
-    f32_must_use_binary_radix
-);
+CORE_STATIC_ASSERT(FLT_RADIX == 2, f32_must_use_binary_radix);
 
-CORE_STATIC_ASSERT(
-    FLT_MANT_DIG == 24,
-    f32_must_have_24_bit_mantissa
-);
+CORE_STATIC_ASSERT(FLT_MANT_DIG == 24, f32_must_have_24_bit_mantissa);
 
-CORE_STATIC_ASSERT(
-    FLT_MAX_EXP == 128,
-    f32_must_have_expected_max_exponent
-);
+CORE_STATIC_ASSERT(FLT_MAX_EXP == 128, f32_must_have_expected_max_exponent);
 
-CORE_STATIC_ASSERT(
-    sizeof(f64) * CHAR_BIT == 64,
-    f64_must_have_64_bits
-);
+CORE_STATIC_ASSERT(sizeof(f64) * CHAR_BIT == 64, f64_must_have_64_bits);
 
-CORE_STATIC_ASSERT(
-    DBL_MANT_DIG == 53,
-    f64_must_have_53_bit_mantissa
-);
+CORE_STATIC_ASSERT(DBL_MANT_DIG == 53, f64_must_have_53_bit_mantissa);
 
-CORE_STATIC_ASSERT(
-    DBL_MAX_EXP == 1024,
-    f64_must_have_expected_max_exponent
-);
-
-// clang-format on
+CORE_STATIC_ASSERT(DBL_MAX_EXP == 1024, f64_must_have_expected_max_exponent);
 
 #endif // CORE_TYPES_H

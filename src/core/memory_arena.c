@@ -15,10 +15,7 @@ static bool memory_arena_is_power_of_two(const usize value)
 
 static bool memory_arena_is_valid(const MemoryArena* arena)
 {
-    // clang-format off
-    if (arena == NULL
-        || arena->allocation == NULL
-        || arena->base == NULL
+    if (arena == NULL || arena->allocation == NULL || arena->base == NULL
         || arena->used > arena->capacity)
     {
         return false;
@@ -30,7 +27,6 @@ static bool memory_arena_is_valid(const MemoryArena* arena)
         return false;
     }
 #endif
-    // clang-format on
 
     return true;
 }
@@ -101,18 +97,12 @@ void memory_arena_destroy(MemoryArena* arena)
 
 void* memory_arena_alloc(MemoryArena* arena, usize size, usize alignment)
 {
-    // clang-format off
-    if (arena == NULL
-        || arena->base == NULL
-        || arena->allocation == NULL
-        || size == 0
-        || !memory_arena_is_power_of_two(alignment)
-        || alignment > MEMORY_ARENA_MAX_ALIGNMENT
+    if (arena == NULL || arena->base == NULL || arena->allocation == NULL || size == 0
+        || !memory_arena_is_power_of_two(alignment) || alignment > MEMORY_ARENA_MAX_ALIGNMENT
         || arena->used > arena->capacity)
     {
         return NULL;
     }
-    // clang-format on
 
     usize alignment_mask = alignment - 1;
 
@@ -267,17 +257,12 @@ usize memory_arena_remaining(const MemoryArena* arena)
 
 usize memory_arena_remaining_aligned(const MemoryArena* arena, usize alignment)
 {
-    // clang-format off
-    if (arena == NULL
-            || arena->allocation == NULL
-            || arena->base == NULL
-            || arena->used > arena->capacity
-            || !memory_arena_is_power_of_two(alignment)
-            || alignment > MEMORY_ARENA_MAX_ALIGNMENT)
+    if (arena == NULL || arena->allocation == NULL || arena->base == NULL
+        || arena->used > arena->capacity || !memory_arena_is_power_of_two(alignment)
+        || alignment > MEMORY_ARENA_MAX_ALIGNMENT)
     {
         return 0;
     }
-    // clang-format on
 
     usize mask = alignment - 1;
 

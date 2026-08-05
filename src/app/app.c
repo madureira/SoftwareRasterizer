@@ -5,41 +5,41 @@
 #include <string.h>
 
 #include "app/window.h"
+#include "core/config.h"
+#include "core/file_io.h"
 #include "core/font.h"
 #include "core/memory_arena.h"
 #include "math/vec2f.h"
 #include "platform/platform.h"
 
-#define WINDOW_TITLE           "Software Rasterizer"
-#define WINDOW_WIDTH           800
-#define WINDOW_HEIGHT          600
-#define MAX_FRAMEBUFFER_WIDTH  1920
-#define MAX_FRAMEBUFFER_HEIGHT 1080
-#define MAX_FRAMEBUFFER_PIXELS ((usize)MAX_FRAMEBUFFER_WIDTH * MAX_FRAMEBUFFER_HEIGHT)
-#define COLOR_DARK_GREY        0x22222222
-#define COLOR_BLUE             0x0000AAFF
-#define COLOR_GREEN            0x0000FF00
-#define DEBUG_FONT_SIZE        16.0f
-#define DEBUG_FONT_COLOR       COLOR_GREEN
-#define DEBUG_FONT_FAMILY      "assets/fonts/BigBlueTerm437NerdFont-Regular.ttf"
-#define TRIANGLE_COS_120       (-0.5f)                // cos(120deg)
-#define TRIANGLE_SIN_120       0.8660254037844386f    // sin(120deg) == sqrt(3)/2
-#define TRIANGLE_COS_240       (-0.5f)                // cos(240deg)
-#define TRIANGLE_SIN_240       (-0.8660254037844386f) // sin(240deg) == -sqrt(3)/2
+#define COLOR_DARK_GREY   0x22222222
+#define COLOR_BLUE        0x0000AAFF
+#define COLOR_GREEN       0x0000FF00
+#define DEBUG_FONT_SIZE   20.0f
+#define DEBUG_FONT_COLOR  COLOR_GREEN
+#define DEBUG_FONT_FAMILY "assets/fonts/CONSOLA-Powerline.ttf"
+#define TRIANGLE_COS_120  (-0.5f)                // cos(120deg)
+#define TRIANGLE_SIN_120  0.8660254037844386f    // sin(120deg) == sqrt(3)/2
+#define TRIANGLE_COS_240  (-0.5f)                // cos(240deg)
+#define TRIANGLE_SIN_240  (-0.8660254037844386f) // sin(240deg) == -sqrt(3)/2
 
 typedef struct AppState
 {
     Window* window;
     MemoryArena pixels_arena;
+    MemoryArena font_arena;
     u32* pixels;
     i32 width;
     i32 height;
+    i32 max_width;
+    i32 max_height;
     f64 last_frame_time;
     f64 fps;
     f64 frame_time_ms;
     f64 last_overlay_update;
     char overlay_text[64];
     Font* debug_font;
+    bool show_fps;
 } AppState;
 
 static inline f32 edge(const Vec2f a, const Vec2f b, const Vec2f p)
@@ -140,14 +140,14 @@ static bool frame(void* arg)
     i32 width = window_get_width(state->window);
     i32 height = window_get_height(state->window);
 
-    if (width > MAX_FRAMEBUFFER_WIDTH)
+    if (width > state->max_width)
     {
-        width = MAX_FRAMEBUFFER_WIDTH;
+        width = state->max_width;
     }
 
-    if (height > MAX_FRAMEBUFFER_HEIGHT)
+    if (height > state->max_height)
     {
-        height = MAX_FRAMEBUFFER_HEIGHT;
+        height = state->max_height;
     }
 
     if (width != state->width || height != state->height)
@@ -184,27 +184,42 @@ static bool frame(void* arg)
     Vec2f v1 = vec2f_add(center, vec2f_rotate_sincos(base, s1, c1));
     Vec2f v2 = vec2f_add(center, vec2f_rotate_sincos(base, s2, c2));
 
-    // Clear framebuffer using byte-fill.
+    // Byte-fill only works because all bytes of COLOR_DARK_GREY are equal (0x22).
     memset(state->pixels, COLOR_DARK_GREY & 0xFF, (usize)width * height * sizeof(u32));
 
     draw_triangle(state->pixels, width, height, v0, v1, v2, COLOR_BLUE);
 
-    draw_debug_overlay(state, now, width, height);
+    if (state->show_fps)
+    {
+        draw_debug_overlay(state, now, width, height);
+    }
 
     window_present(state->window, state->pixels, width, height);
 
     return !window_should_close(state->window);
 }
 
-int app_run(void)
+int app_start(void)
 {
+    Config config;
+
+    if (!config_load(&config, "config.ini"))
+    {
+        return 1;
+    }
+
     if (!platform_init())
     {
         return 1;
     }
 
-    WindowConfig win_config = {
-        .title = WINDOW_TITLE, .width = WINDOW_WIDTH, .height = WINDOW_HEIGHT, .resizable = true};
+    WindowConfig win_config = { .title = config.window_title,
+                                .canvas_id = config.canvas_id,
+                                .width = config.window_width,
+                                .height = config.window_height,
+                                .resizable = config.resizable,
+                                .fullscreen = config.fullscreen,
+                                .vsync = config.vsync };
 
     Window* window = window_create(&win_config);
 
@@ -214,26 +229,39 @@ int app_run(void)
         return 1;
     }
 
-    // clang-format off
-    AppState state = {
-        .window       = window,
-        .pixels_arena = MEM_ARENA_INIT,
-        .pixels       = NULL,
-        .width        = WINDOW_WIDTH,
-        .height       = WINDOW_HEIGHT,
-        .debug_font   = NULL
-    };
-    // clang-format on
+    AppState state = { .window = window,
+                       .pixels_arena = MEM_ARENA_INIT,
+                       .font_arena = MEM_ARENA_INIT,
+                       .pixels = NULL,
+                       .width = config.window_width,
+                       .height = config.window_height,
+                       .max_width = config.window_max_width,
+                       .max_height = config.window_max_height,
+                       .debug_font = NULL,
+                       .show_fps = config.show_fps };
 
-    if (!memory_arena_create(&state.pixels_arena, MAX_FRAMEBUFFER_PIXELS * sizeof(u32)))
+    const u32 max_framebuffer_pixels = config.window_max_width * config.window_max_height;
+
+    if (!memory_arena_create(&state.pixels_arena, max_framebuffer_pixels * sizeof(u32)))
     {
         window_destroy(window);
         platform_shutdown();
         return 1;
     }
 
-    state.pixels =
-        MEM_ARENA_PUSH_ARRAY(&state.pixels_arena, (usize)WINDOW_WIDTH * WINDOW_HEIGHT, u32);
+    long font_file_size = file_io_size(DEBUG_FONT_FAMILY);
+
+    usize font_arena_size = font_required_memory((usize)font_file_size, DEBUG_FONT_SIZE);
+    if (font_arena_size == 0 || !memory_arena_create(&state.font_arena, font_arena_size))
+    {
+        memory_arena_destroy(&state.pixels_arena);
+        window_destroy(window);
+        platform_shutdown();
+        return 1;
+    }
+
+    state.pixels = MEM_ARENA_PUSH_ARRAY(&state.pixels_arena,
+                                        (usize)config.window_width * config.window_height, u32);
     if (state.pixels == NULL)
     {
         memory_arena_destroy(&state.pixels_arena);
@@ -243,11 +271,13 @@ int app_run(void)
     }
 
     state.last_frame_time = platform_get_time_seconds();
-    state.debug_font = font_load(DEBUG_FONT_FAMILY, DEBUG_FONT_SIZE);
 
-    platform_run_main_loop(frame, &state);
+    state.debug_font =
+        font_load(&state.font_arena, DEBUG_FONT_FAMILY, DEBUG_FONT_SIZE, (usize)font_file_size);
 
-    font_destroy(state.debug_font);
+    platform_run_main_loop(frame, &state, config.target_fps);
+
+    memory_arena_destroy(&state.font_arena);
     memory_arena_destroy(&state.pixels_arena);
     window_destroy(window);
     platform_shutdown();

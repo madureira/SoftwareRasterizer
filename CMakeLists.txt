@@ -130,5 +130,12 @@ if(EMSCRIPTEN)
     "SHELL:--js-library ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/platform_web.js"
     "SHELL:-sALLOW_MEMORY_GROWTH=1"
     "SHELL:--preload-file ${CMAKE_CURRENT_SOURCE_DIR}/assets/fonts@/assets/fonts"
+    "SHELL:--preload-file ${CMAKE_CURRENT_SOURCE_DIR}/config.ini@/config.ini"
+  )
+
+  set_property(
+    TARGET SoftwareRasterizer
+    APPEND PROPERTY LINK_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/config.ini"
   )
 endif()

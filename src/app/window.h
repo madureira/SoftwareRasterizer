@@ -6,9 +6,12 @@ typedef struct Window Window;
 typedef struct WindowConfig
 {
     const char* title;
+    const char* canvas_id;
     i32 width;
     i32 height;
     bool resizable;
+    bool fullscreen;
+    bool vsync;
 } WindowConfig;
 
 Window* window_create(const WindowConfig* config);

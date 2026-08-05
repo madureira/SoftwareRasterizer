@@ -530,4 +530,4 @@ static void setup(void)
     }
 }
 
-const TestSuite vec2f_suite = {"vec2f", setup, &reg};
+const TestSuite vec2f_suite = { "vec2f", setup, &reg };

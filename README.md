@@ -5,7 +5,7 @@
 ![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows%20%7C%20WebAssembly-blueviolet)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-A 3D software rasterizer built from scratch in C99, using SDL3 for windowing.
+A 3D software rasterizer built from scratch in C99.
 
 > **Note:** This project is in early development. Features, performance and behavior may change significantly.
 
@@ -18,6 +18,13 @@ A 3D software rasterizer built from scratch in C99, using SDL3 for windowing.
 
 \
 [![Live Demo](.github/live_demo_badge.svg)](https://madureira.github.io/SoftwareRasterizer)
+
+## Dependencies
+
+| Library                                          | Purpose                                 |
+| ------------------------------------------------ | --------------------------------------- |
+| [SDL3](https://github.com/libsdl-org/SDL)        | Windowing and input                     |
+| [stb_truetype](https://github.com/nothings/stb)  | TrueType font rasterization             |
 
 ## Getting started
 

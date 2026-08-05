@@ -151,7 +151,7 @@ RunResult run_suite(const TestSuite* suite)
 
         for (int i = 0; i < group->count; i++)
         {
-            TestContext ctx = {group->test_names[i], 0};
+            TestContext ctx = { group->test_names[i], 0 };
             group->tests[i](&ctx);
 
             if (ctx.failures == 0)
@@ -165,7 +165,7 @@ RunResult run_suite(const TestSuite* suite)
         }
     }
 
-    return (RunResult){total, tests_failed};
+    return (RunResult){ total, tests_failed };
 }
 
 void print_summary(int total_tests, int tests_failed)

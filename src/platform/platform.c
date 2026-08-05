@@ -15,6 +15,8 @@ struct PlatformWindow
     i32 texture_height;
 };
 
+static PlatformWindow* g_window = NULL;
+
 bool platform_init(void)
 {
     return SDL_Init(SDL_INIT_VIDEO);
@@ -25,13 +27,20 @@ void platform_shutdown(void)
     SDL_Quit();
 }
 
-PlatformWindow* platform_window_create(const char* title, i32 width, i32 height, bool resizable)
+PlatformWindow* platform_window_create(const char* title, i32 width, i32 height, bool resizable,
+                                       bool fullscreen, bool vsync, const char* canvas_id)
 {
+    (void)canvas_id;
     SDL_WindowFlags flags = 0;
 
     if (resizable)
     {
         flags |= SDL_WINDOW_RESIZABLE;
+    }
+
+    if (fullscreen)
+    {
+        flags |= SDL_WINDOW_FULLSCREEN;
     }
 
     PlatformWindow* win = malloc(sizeof(*win));
@@ -55,7 +64,7 @@ PlatformWindow* platform_window_create(const char* title, i32 width, i32 height,
         return NULL;
     }
 
-    SDL_SetRenderVSync(win->renderer, 1);
+    SDL_SetRenderVSync(win->renderer, vsync);
 
     win->texture = SDL_CreateTexture(win->renderer, SDL_PIXELFORMAT_XRGB8888,
                                      SDL_TEXTUREACCESS_STREAMING, width, height);
@@ -70,6 +79,8 @@ PlatformWindow* platform_window_create(const char* title, i32 width, i32 height,
     win->texture_width = width;
     win->texture_height = height;
 
+    g_window = win;
+
     return win;
 }
 
@@ -80,6 +91,7 @@ void platform_window_destroy(PlatformWindow* window)
         return;
     }
 
+    g_window = NULL;
     SDL_DestroyTexture(window->texture);
     SDL_DestroyRenderer(window->renderer);
     SDL_DestroyWindow(window->window);
@@ -149,6 +161,11 @@ bool platform_poll_event(PlatformEvent* event)
         break;
 
     case SDL_EVENT_KEY_DOWN:
+        if (sdl_event.key.scancode == SDL_SCANCODE_ESCAPE && g_window != NULL
+            && (SDL_GetWindowFlags(g_window->window) & SDL_WINDOW_FULLSCREEN))
+        {
+            SDL_SetWindowFullscreen(g_window->window, false);
+        }
         event->type = PLATFORM_EVENT_KEY_DOWN;
         break;
 
@@ -164,10 +181,37 @@ bool platform_poll_event(PlatformEvent* event)
     return true;
 }
 
-void platform_run_main_loop(PlatformFrameCallback frame_cb, void* user_data)
+static void platform_frame_sleep(f64 target_frame_time, f64 frame_start)
 {
-    while (frame_cb(user_data))
+    const f64 SPIN_THRESHOLD = 0.002;
+    for (;;)
     {
+        const f64 remaining = target_frame_time - (platform_get_time_seconds() - frame_start);
+        if (remaining <= 0.0)
+        {
+            break;
+        }
+        if (remaining > SPIN_THRESHOLD)
+        {
+            SDL_DelayNS((Uint64)((remaining - SPIN_THRESHOLD) * 1e9));
+        }
+    }
+}
+
+void platform_run_main_loop(PlatformFrameCallback frame_cb, void* user_data, i32 target_fps)
+{
+    const f64 target_frame_time = (target_fps > 0) ? (1.0 / (f64)target_fps) : 0.0;
+    for (;;)
+    {
+        const f64 frame_start = platform_get_time_seconds();
+        if (!frame_cb(user_data))
+        {
+            break;
+        }
+        if (target_frame_time > 0.0)
+        {
+            platform_frame_sleep(target_frame_time, frame_start);
+        }
     }
 }
 
@@ -179,6 +223,7 @@ f64 platform_get_time_seconds(void)
 #else // __EMSCRIPTEN__
 
 #include <stdlib.h>
+#include <string.h>
 
 #include <emscripten.h>
 #include <emscripten/html5.h>
@@ -187,7 +232,12 @@ f64 platform_get_time_seconds(void)
 extern i32 platform_js_get_window_width(void);
 extern i32 platform_js_get_window_height(void);
 extern void platform_js_set_title(const char* title);
+extern void platform_js_init_canvas(const char* id);
+extern void platform_js_request_fullscreen(void);
 extern void platform_js_present(const u32* pixels, i32 width, i32 height);
+
+#define PLATFORM_CANVAS_ID_MAX 64
+static char g_canvas_selector[PLATFORM_CANVAS_ID_MAX + 2]; // '#' + id + '\0'
 
 typedef struct
 {
@@ -215,7 +265,7 @@ static EM_BOOL on_window_resize(int event_type, const EmscriptenUiEvent* ui_even
     const i32 new_width = (i32)ui_event->windowInnerWidth;
     const i32 new_height = (i32)ui_event->windowInnerHeight;
 
-    emscripten_set_canvas_element_size("#canvas", new_width, new_height);
+    emscripten_set_canvas_element_size(g_canvas_selector, new_width, new_height);
 
     g_canvas_width = new_width;
     g_canvas_height = new_height;
@@ -233,12 +283,25 @@ void platform_shutdown(void)
 {
 }
 
-PlatformWindow* platform_window_create(const char* title, i32 width, i32 height, bool resizable)
+PlatformWindow* platform_window_create(const char* title, i32 width, i32 height, bool resizable,
+                                       bool fullscreen, bool vsync, const char* canvas_id)
 {
-    (void)title;
     (void)width;
     (void)height;
     (void)resizable;
+    (void)vsync;
+
+    g_canvas_selector[0] = '#';
+    strncpy(g_canvas_selector + 1, canvas_id, PLATFORM_CANVAS_ID_MAX);
+    g_canvas_selector[PLATFORM_CANVAS_ID_MAX + 1] = '\0';
+
+    platform_js_init_canvas(canvas_id);
+    platform_js_set_title(title);
+
+    if (fullscreen)
+    {
+        platform_js_request_fullscreen();
+    }
 
     PlatformWindow* win = malloc(sizeof(*win));
     if (win == NULL)
@@ -252,7 +315,7 @@ PlatformWindow* platform_window_create(const char* title, i32 width, i32 height,
     win->width = actual_width;
     win->height = actual_height;
 
-    emscripten_set_canvas_element_size("#canvas", actual_width, actual_height);
+    emscripten_set_canvas_element_size(g_canvas_selector, actual_width, actual_height);
 
     g_canvas_width = actual_width;
     g_canvas_height = actual_height;
@@ -281,7 +344,7 @@ void platform_window_present(PlatformWindow* window, const u32* pixels, i32 widt
         return;
     }
 
-    emscripten_set_canvas_element_size("#canvas", width, height);
+    emscripten_set_canvas_element_size(g_canvas_selector, width, height);
     platform_js_present(pixels, width, height);
 }
 
@@ -313,11 +376,11 @@ static void emscripten_frame_wrapper(void)
     }
 }
 
-void platform_run_main_loop(PlatformFrameCallback frame_cb, void* user_data)
+void platform_run_main_loop(PlatformFrameCallback frame_cb, void* user_data, i32 target_fps)
 {
     g_loop_state.cb = frame_cb;
     g_loop_state.user_data = user_data;
-    emscripten_set_main_loop(emscripten_frame_wrapper, 0, 1);
+    emscripten_set_main_loop(emscripten_frame_wrapper, target_fps, 1);
 }
 
 f64 platform_get_time_seconds(void)

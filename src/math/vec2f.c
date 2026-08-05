@@ -4,16 +4,11 @@
 
 bool vec2f_try_div(Vec2f vector, f32 scalar, Vec2f* result)
 {
-    // clang-format off
-    if (
-        result == NULL
-        || !vec2f_is_finite(vector)
-        || !isfinite(scalar)
+    if (result == NULL || !vec2f_is_finite(vector) || !isfinite(scalar)
         || fabsf(scalar) <= MATH_DIVISION_EPSILON)
     {
         return false;
     }
-    // clang-format on
 
     const f32 inverse = 1.0f / scalar;
 

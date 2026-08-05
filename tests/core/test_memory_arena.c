@@ -343,13 +343,13 @@ static void test_rewind_past_used_returns_false(TestContext* ctx)
     MemoryArena arena;
     memory_arena_create(&arena, 1024);
     memory_arena_alloc(&arena, 32, 1);
-    TEST_ASSERT_FALSE(ctx, memory_arena_rewind(&arena, (MemoryArenaMarker){.used = 64}));
+    TEST_ASSERT_FALSE(ctx, memory_arena_rewind(&arena, (MemoryArenaMarker){ .used = 64 }));
     memory_arena_destroy(&arena);
 }
 
 static void test_rewind_null_arena_returns_false(TestContext* ctx)
 {
-    TEST_ASSERT_FALSE(ctx, memory_arena_rewind(NULL, (MemoryArenaMarker){.used = 0}));
+    TEST_ASSERT_FALSE(ctx, memory_arena_rewind(NULL, (MemoryArenaMarker){ .used = 0 }));
 }
 
 /*
@@ -513,4 +513,4 @@ static void setup(void)
     }
 }
 
-const TestSuite memory_arena_suite = {"memory_arena", setup, &reg};
+const TestSuite memory_arena_suite = { "memory_arena", setup, &reg };

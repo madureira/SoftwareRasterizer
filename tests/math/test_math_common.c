@@ -122,4 +122,4 @@ static void setup(void)
     }
 }
 
-const TestSuite math_common_suite = {"math_common", setup, &reg};
+const TestSuite math_common_suite = { "math_common", setup, &reg };

@@ -1,11 +1,13 @@
 #ifndef CORE_FONT_H
 #define CORE_FONT_H
 
+#include "core/memory_arena.h"
+
 typedef struct Font Font;
 
-Font* font_load(const char* path, f32 size_px);
+usize font_required_memory(usize file_size, f32 size_px);
 
-void font_destroy(Font* font);
+Font* font_load(MemoryArena* arena, const char* path, f32 size_px, usize file_size);
 
 void font_draw_text(Font* font, u32* pixels, i32 width, i32 height, i32 x, i32 y, const char* text,
                     u32 color);

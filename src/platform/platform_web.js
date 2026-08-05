@@ -7,9 +7,25 @@ addToLibrary({
     document.title = UTF8ToString(titlePtr);
   },
 
+  $platform_canvas: null,
+
+  platform_js_init_canvas__deps: ['$platform_canvas'],
+  platform_js_init_canvas: (idPtr) => {
+    platform_canvas = document.getElementById(UTF8ToString(idPtr));
+  },
+
+  platform_js_request_fullscreen__deps: ['$platform_canvas'],
+  platform_js_request_fullscreen: () => {
+    const handler = () => {
+      platform_canvas.requestFullscreen().catch(() => {});
+      platform_canvas.removeEventListener('click', handler);
+    };
+    platform_canvas.addEventListener('click', handler);
+  },
+
+  platform_js_present__deps: ['$platform_canvas'],
   platform_js_present: (pixelsPtr, width, height) => {
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
+    const ctx = platform_canvas.getContext('2d');
     const imgData = ctx.createImageData(width, height);
     const dst = imgData.data;
     const src = pixelsPtr >>> 2;

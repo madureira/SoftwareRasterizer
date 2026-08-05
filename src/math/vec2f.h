@@ -42,32 +42,17 @@ static inline bool vec2f_is_finite(Vec2f vector)
 
 static inline Vec2f vec2f_add(Vec2f a, Vec2f b)
 {
-    // clang-format off
-    return vec2f(
-        a.x + b.x,
-        a.y + b.y
-    );
-    // clang-format on
+    return vec2f(a.x + b.x, a.y + b.y);
 }
 
 static inline Vec2f vec2f_sub(Vec2f a, Vec2f b)
 {
-    // clang-format off
-    return vec2f(
-        a.x - b.x,
-        a.y - b.y
-    );
-    // clang-format on
+    return vec2f(a.x - b.x, a.y - b.y);
 }
 
 static inline Vec2f vec2f_scale(Vec2f vector, f32 scalar)
 {
-    // clang-format off
-    return vec2f(
-        vector.x * scalar,
-        vector.y * scalar
-    );
-    // clang-format on
+    return vec2f(vector.x * scalar, vector.y * scalar);
 }
 
 static inline Vec2f vec2f_rotate_sincos(Vec2f vector, f32 sine, f32 cosine)
@@ -76,12 +61,7 @@ static inline Vec2f vec2f_rotate_sincos(Vec2f vector, f32 sine, f32 cosine)
     assert(isfinite(sine));
     assert(isfinite(cosine));
 
-    // clang-format off
-    return vec2f(
-        (vector.x * cosine) - (vector.y * sine),
-        (vector.x * sine)   + (vector.y * cosine)
-    );
-    // clang-format on
+    return vec2f((vector.x * cosine) - (vector.y * sine), (vector.x * sine) + (vector.y * cosine));
 }
 
 /**
@@ -106,12 +86,7 @@ static inline Vec2f vec2f_div(Vec2f vector, f32 scalar)
 
 static inline Vec2f vec2f_neg(Vec2f vector)
 {
-    // clang-format off
-    return vec2f(
-        -vector.x,
-        -vector.y
-    );
-    // clang-format on
+    return vec2f(-vector.x, -vector.y);
 }
 
 /**
@@ -158,23 +133,12 @@ static inline Vec2f vec2f_lerp(Vec2f from, Vec2f to, f32 amount)
     assert(vec2f_is_finite(to));
     assert(isfinite(amount));
 
-    // clang-format off
-    return vec2f(
-        math_lerp_f32(from.x, to.x, amount),
-        math_lerp_f32(from.y, to.y, amount)
-    );
-    // clang-format on
+    return vec2f(math_lerp_f32(from.x, to.x, amount), math_lerp_f32(from.y, to.y, amount));
 }
 
 static inline Vec2f vec2f_lerp_clamp(Vec2f from, Vec2f to, f32 amount)
 {
-    // clang-format off
-    return vec2f_lerp(
-        from,
-        to,
-        math_clamp_f32(amount, 0.0f, 1.0f)
-    );
-    // clang-format on
+    return vec2f_lerp(from, to, math_clamp_f32(amount, 0.0f, 1.0f));
 }
 
 /**
@@ -314,12 +278,7 @@ static inline bool vec2f_eq_eps(Vec2f a, Vec2f b, f32 epsilon)
     assert(isfinite(epsilon));
     assert(epsilon >= 0.0f);
 
-    // clang-format off
-    return (
-        fabsf(a.x - b.x) <= epsilon
-        && fabsf(a.y - b.y) <= epsilon
-    );
-    // clang-format on
+    return (fabsf(a.x - b.x) <= epsilon && fabsf(a.y - b.y) <= epsilon);
 }
 
 /**
