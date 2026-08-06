@@ -24,6 +24,9 @@
 #define DEBUG_FONT_COLOR  COLOR_GREEN
 #define DEBUG_FONT_FAMILY "assets/fonts/CONSOLA-Powerline.ttf"
 
+#define GRID_COLS 100
+#define GRID_ROWS 50
+
 typedef struct AppState
 {
     Window* window;
@@ -178,9 +181,6 @@ static bool frame(void* arg)
 
     static const u32 palette[3] = { COLOR_BLUE, COLOR_GREEN, COLOR_RED };
 
-#define GRID_COLS 100
-#define GRID_ROWS 50
-
     const f32 padding = fminf((f32)width, (f32)height) * 0.05f;
     const f32 inner_w = (f32)width - 2.0f * padding;
     const f32 inner_h = (f32)height - 2.0f * padding;
@@ -216,9 +216,6 @@ static bool frame(void* arg)
                           palette[(row * GRID_COLS + col) % 3]);
         }
     }
-
-#undef GRID_COLS
-#undef GRID_ROWS
 
     if (state->show_fps)
     {
