@@ -29,7 +29,8 @@ Window* window_create(const WindowConfig* config)
     }
 
     window->platform_window =
-        platform_window_create(config->title, config->width, config->height, config->resizable,
+        platform_window_create(config->title, config->width, config->height, config->display_index,
+                               config->min_width, config->min_height, config->resizable,
                                config->fullscreen, config->vsync, config->canvas_id);
 
     if (window->platform_window == NULL)

@@ -143,13 +143,6 @@
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
         canvas.addEventListener('wheel', function (e) { e.preventDefault(); }, { passive: false });
-        window.addEventListener('resize', function () {
-          canvas.width = window.innerWidth;
-          canvas.height = window.innerHeight;
-          if (Module.setCanvasSize) {
-            Module.setCanvasSize(canvas.width, canvas.height);
-          }
-        });
         return canvas;
       })(),
 

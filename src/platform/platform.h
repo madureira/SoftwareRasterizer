@@ -32,7 +32,8 @@ bool platform_init(void);
 
 void platform_shutdown(void);
 
-PlatformWindow* platform_window_create(const char* title, i32 width, i32 height, bool resizable,
+PlatformWindow* platform_window_create(const char* title, i32 width, i32 height, i32 display_index,
+                                       i32 min_width, i32 min_height, bool resizable,
                                        bool fullscreen, bool vsync, const char* canvas_id);
 
 void platform_window_destroy(PlatformWindow* window);

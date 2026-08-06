@@ -16,6 +16,7 @@ struct PlatformWindow
 };
 
 static PlatformWindow* g_window = NULL;
+static i32 g_display_fps = 0;
 
 bool platform_init(void)
 {
@@ -27,7 +28,8 @@ void platform_shutdown(void)
     SDL_Quit();
 }
 
-PlatformWindow* platform_window_create(const char* title, i32 width, i32 height, bool resizable,
+PlatformWindow* platform_window_create(const char* title, i32 width, i32 height, i32 display_index,
+                                       i32 min_width, i32 min_height, bool resizable,
                                        bool fullscreen, bool vsync, const char* canvas_id)
 {
     (void)canvas_id;
@@ -49,12 +51,42 @@ PlatformWindow* platform_window_create(const char* title, i32 width, i32 height,
         return NULL;
     }
 
-    win->window = SDL_CreateWindow(title, width, height, flags);
+    // Resolve the target display: clamp index to available displays.
+    int display_count = 0;
+    SDL_DisplayID* displays = SDL_GetDisplays(&display_count);
+    SDL_DisplayID target_display =
+        (displays != NULL && display_index < display_count) ? displays[display_index] : 0;
+    SDL_free(displays);
+
+    // SDL_WINDOWPOS_CENTERED_DISPLAY(0) falls back to the primary display.
+    const int centered = SDL_WINDOWPOS_CENTERED_DISPLAY(target_display);
+
+    SDL_PropertiesID props = SDL_CreateProperties();
+    SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, title);
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X_NUMBER, centered);
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_Y_NUMBER, centered);
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, width);
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, height);
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, (Sint64)flags);
+    win->window = SDL_CreateWindowWithProperties(props);
+    SDL_DestroyProperties(props);
+
     if (win->window == NULL)
     {
         free(win);
         return NULL;
     }
+
+    SDL_SetWindowMinimumSize(win->window, min_width, min_height);
+
+    const SDL_DisplayID display = SDL_GetDisplayForWindow(win->window);
+    const SDL_DisplayMode* mode = SDL_GetCurrentDisplayMode(display);
+    g_display_fps =
+        (mode != NULL && mode->refresh_rate > 0.0f) ? (i32)(mode->refresh_rate + 0.5f) : 60;
+
+    // Hint must be set before SDL_CreateRenderer so backends like Metal
+    // create their swap chain with VSync enabled from the start.
+    SDL_SetHint(SDL_HINT_RENDER_VSYNC, vsync ? "1" : "0");
 
     win->renderer = SDL_CreateRenderer(win->window, NULL);
     if (win->renderer == NULL)
@@ -64,7 +96,7 @@ PlatformWindow* platform_window_create(const char* title, i32 width, i32 height,
         return NULL;
     }
 
-    SDL_SetRenderVSync(win->renderer, vsync);
+    SDL_SetRenderVSync(win->renderer, vsync ? 1 : 0);
 
     win->texture = SDL_CreateTexture(win->renderer, SDL_PIXELFORMAT_XRGB8888,
                                      SDL_TEXTUREACCESS_STREAMING, width, height);
@@ -200,7 +232,10 @@ static void platform_frame_sleep(f64 target_frame_time, f64 frame_start)
 
 void platform_run_main_loop(PlatformFrameCallback frame_cb, void* user_data, i32 target_fps)
 {
-    const f64 target_frame_time = (target_fps > 0) ? (1.0 / (f64)target_fps) : 0.0;
+    // When no explicit cap is set, fall back to the display refresh rate so
+    // the loop doesn't spin uncapped even if the backend VSync is unreliable.
+    const i32 effective_fps = (target_fps > 0) ? target_fps : g_display_fps;
+    const f64 target_frame_time = (effective_fps > 0) ? (1.0 / (f64)effective_fps) : 0.0;
     for (;;)
     {
         const f64 frame_start = platform_get_time_seconds();
@@ -252,6 +287,7 @@ struct PlatformWindow
 };
 
 static EmscriptenLoopState g_loop_state;
+static f64 g_frame_time_sec = 0.0;
 
 static i32 g_canvas_width = 0;
 static i32 g_canvas_height = 0;
@@ -262,13 +298,8 @@ static EM_BOOL on_window_resize(int event_type, const EmscriptenUiEvent* ui_even
     (void)event_type;
     (void)user_data;
 
-    const i32 new_width = (i32)ui_event->windowInnerWidth;
-    const i32 new_height = (i32)ui_event->windowInnerHeight;
-
-    emscripten_set_canvas_element_size(g_canvas_selector, new_width, new_height);
-
-    g_canvas_width = new_width;
-    g_canvas_height = new_height;
+    g_canvas_width = (i32)ui_event->windowInnerWidth;
+    g_canvas_height = (i32)ui_event->windowInnerHeight;
     g_resize_pending = true;
 
     return EM_TRUE;
@@ -283,11 +314,15 @@ void platform_shutdown(void)
 {
 }
 
-PlatformWindow* platform_window_create(const char* title, i32 width, i32 height, bool resizable,
+PlatformWindow* platform_window_create(const char* title, i32 width, i32 height, i32 display_index,
+                                       i32 min_width, i32 min_height, bool resizable,
                                        bool fullscreen, bool vsync, const char* canvas_id)
 {
     (void)width;
     (void)height;
+    (void)display_index;
+    (void)min_width;
+    (void)min_height;
     (void)resizable;
     (void)vsync;
 
@@ -314,8 +349,6 @@ PlatformWindow* platform_window_create(const char* title, i32 width, i32 height,
 
     win->width = actual_width;
     win->height = actual_height;
-
-    emscripten_set_canvas_element_size(g_canvas_selector, actual_width, actual_height);
 
     g_canvas_width = actual_width;
     g_canvas_height = actual_height;
@@ -344,7 +377,6 @@ void platform_window_present(PlatformWindow* window, const u32* pixels, i32 widt
         return;
     }
 
-    emscripten_set_canvas_element_size(g_canvas_selector, width, height);
     platform_js_present(pixels, width, height);
 }
 
@@ -370,6 +402,9 @@ bool platform_poll_event(PlatformEvent* event)
 
 static void emscripten_frame_wrapper(void)
 {
+    // Snapshot time once at rAF entry so every platform_get_time_seconds()
+    // call within a frame returns the same value — no intra-frame drift.
+    g_frame_time_sec = emscripten_get_now() / 1000.0;
     if (!g_loop_state.cb(g_loop_state.user_data))
     {
         emscripten_cancel_main_loop();
@@ -378,14 +413,16 @@ static void emscripten_frame_wrapper(void)
 
 void platform_run_main_loop(PlatformFrameCallback frame_cb, void* user_data, i32 target_fps)
 {
+    (void)target_fps;
     g_loop_state.cb = frame_cb;
     g_loop_state.user_data = user_data;
-    emscripten_set_main_loop(emscripten_frame_wrapper, target_fps, 1);
+    g_frame_time_sec = emscripten_get_now() / 1000.0;
+    emscripten_set_main_loop(emscripten_frame_wrapper, 0, 1);
 }
 
 f64 platform_get_time_seconds(void)
 {
-    return emscripten_get_now() / 1000.0;
+    return g_frame_time_sec;
 }
 
 #endif // __EMSCRIPTEN__

@@ -129,6 +129,7 @@ if(EMSCRIPTEN)
     "SHELL:--shell-file ${CMAKE_CURRENT_SOURCE_DIR}/assets/index.html"
     "SHELL:--js-library ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/platform_web.js"
     "SHELL:-sALLOW_MEMORY_GROWTH=1"
+    "SHELL:-sMAX_WEBGL_VERSION=2"
     "SHELL:--preload-file ${CMAKE_CURRENT_SOURCE_DIR}/assets/fonts@/assets/fonts"
     "SHELL:--preload-file ${CMAKE_CURRENT_SOURCE_DIR}/config.ini@/config.ini"
   )

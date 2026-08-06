@@ -15,13 +15,14 @@
 #define COLOR_DARK_GREY   0x22222222
 #define COLOR_BLUE        0x0000AAFF
 #define COLOR_GREEN       0x0000FF00
-#define DEBUG_FONT_SIZE   20.0f
-#define DEBUG_FONT_COLOR  COLOR_GREEN
-#define DEBUG_FONT_FAMILY "assets/fonts/CONSOLA-Powerline.ttf"
+#define COLOR_RED         0x00FF0000
 #define TRIANGLE_COS_120  (-0.5f)                // cos(120deg)
 #define TRIANGLE_SIN_120  0.8660254037844386f    // sin(120deg) == sqrt(3)/2
 #define TRIANGLE_COS_240  (-0.5f)                // cos(240deg)
 #define TRIANGLE_SIN_240  (-0.8660254037844386f) // sin(240deg) == -sqrt(3)/2
+#define DEBUG_FONT_SIZE   18.0f
+#define DEBUG_FONT_COLOR  COLOR_GREEN
+#define DEBUG_FONT_FAMILY "assets/fonts/CONSOLA-Powerline.ttf"
 
 typedef struct AppState
 {
@@ -31,6 +32,8 @@ typedef struct AppState
     u32* pixels;
     i32 width;
     i32 height;
+    i32 min_width;
+    i32 min_height;
     i32 max_width;
     i32 max_height;
     f64 last_frame_time;
@@ -140,6 +143,16 @@ static bool frame(void* arg)
     i32 width = window_get_width(state->window);
     i32 height = window_get_height(state->window);
 
+    if (width < state->min_width)
+    {
+        width = state->min_width;
+    }
+
+    if (height < state->min_height)
+    {
+        height = state->min_height;
+    }
+
     if (width > state->max_width)
     {
         width = state->max_width;
@@ -163,31 +176,49 @@ static bool frame(void* arg)
         state->height = height;
     }
 
-    const f32 rotation_speed = 1.0f; // radians per second
+    static const u32 palette[3] = { COLOR_BLUE, COLOR_GREEN, COLOR_RED };
 
-    f32 angle = (f32)(now * rotation_speed);
-    f32 radius = (f32)(width < height ? width : height) * 0.25f;
+#define GRID_COLS 100
+#define GRID_ROWS 50
 
-    // Move the origin to the center of the triangle
-    Vec2f center = vec2f((f32)width * 0.5f, (f32)height * 0.5f);
-
-    Vec2f base = vec2f(radius, 0.0f);
-
-    const f32 s0 = sinf(angle);
-    const f32 c0 = cosf(angle);
-    const f32 s1 = s0 * TRIANGLE_COS_120 + c0 * TRIANGLE_SIN_120;
-    const f32 c1 = c0 * TRIANGLE_COS_120 - s0 * TRIANGLE_SIN_120;
-    const f32 s2 = s0 * TRIANGLE_COS_240 + c0 * TRIANGLE_SIN_240;
-    const f32 c2 = c0 * TRIANGLE_COS_240 - s0 * TRIANGLE_SIN_240;
-
-    Vec2f v0 = vec2f_add(center, vec2f_rotate_sincos(base, s0, c0));
-    Vec2f v1 = vec2f_add(center, vec2f_rotate_sincos(base, s1, c1));
-    Vec2f v2 = vec2f_add(center, vec2f_rotate_sincos(base, s2, c2));
+    const f32 padding = fminf((f32)width, (f32)height) * 0.05f;
+    const f32 inner_w = (f32)width - 2.0f * padding;
+    const f32 inner_h = (f32)height - 2.0f * padding;
+    const f32 cell_w = inner_w / (f32)(GRID_COLS - 1);
+    const f32 cell_h = inner_h / (f32)(GRID_ROWS - 1);
+    const f32 radius = fminf(cell_w, cell_h) * 0.38f;
 
     // Byte-fill only works because all bytes of COLOR_DARK_GREY are equal (0x22).
     memset(state->pixels, COLOR_DARK_GREY & 0xFF, (usize)width * height * sizeof(u32));
 
-    draw_triangle(state->pixels, width, height, v0, v1, v2, COLOR_BLUE);
+    for (i32 row = 0; row < GRID_ROWS; row++)
+    {
+        for (i32 col = 0; col < GRID_COLS; col++)
+        {
+            // Phase offset per cell creates a diagonal wave effect.
+            const f32 angle = (f32)now + (f32)col * 0.1f + (f32)row * 0.2f;
+
+            const Vec2f center = vec2f(padding + (f32)col * cell_w, padding + (f32)row * cell_h);
+            const Vec2f base = vec2f(radius, 0.0f);
+
+            const f32 s0 = sinf(angle);
+            const f32 c0 = cosf(angle);
+            const f32 s1 = s0 * TRIANGLE_COS_120 + c0 * TRIANGLE_SIN_120;
+            const f32 c1 = c0 * TRIANGLE_COS_120 - s0 * TRIANGLE_SIN_120;
+            const f32 s2 = s0 * TRIANGLE_COS_240 + c0 * TRIANGLE_SIN_240;
+            const f32 c2 = c0 * TRIANGLE_COS_240 - s0 * TRIANGLE_SIN_240;
+
+            const Vec2f v0 = vec2f_add(center, vec2f_rotate_sincos(base, s0, c0));
+            const Vec2f v1 = vec2f_add(center, vec2f_rotate_sincos(base, s1, c1));
+            const Vec2f v2 = vec2f_add(center, vec2f_rotate_sincos(base, s2, c2));
+
+            draw_triangle(state->pixels, width, height, v0, v1, v2,
+                          palette[(row * GRID_COLS + col) % 3]);
+        }
+    }
+
+#undef GRID_COLS
+#undef GRID_ROWS
 
     if (state->show_fps)
     {
@@ -217,6 +248,9 @@ int app_start(void)
                                 .canvas_id = config.canvas_id,
                                 .width = config.window_width,
                                 .height = config.window_height,
+                                .display_index = config.window_display_index,
+                                .min_width = config.window_min_width,
+                                .min_height = config.window_min_height,
                                 .resizable = config.resizable,
                                 .fullscreen = config.fullscreen,
                                 .vsync = config.vsync };
@@ -235,6 +269,8 @@ int app_start(void)
                        .pixels = NULL,
                        .width = config.window_width,
                        .height = config.window_height,
+                       .min_width = config.window_min_width,
+                       .min_height = config.window_min_height,
                        .max_width = config.window_max_width,
                        .max_height = config.window_max_height,
                        .debug_font = NULL,

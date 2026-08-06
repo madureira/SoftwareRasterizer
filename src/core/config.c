@@ -8,8 +8,10 @@
 #include "core/utils.h"
 
 #define CONFIG_LINE_CAPACITY     256
-#define CONFIG_MIN_WINDOW_WIDTH  320
-#define CONFIG_MIN_WINDOW_HEIGHT 200
+#define CONFIG_WINDOW_WIDTH      960
+#define CONFIG_WINDOW_HEIGHT     540
+#define CONFIG_MIN_WINDOW_WIDTH  640
+#define CONFIG_MIN_WINDOW_HEIGHT 360
 #define CONFIG_MAX_WINDOW_WIDTH  3840
 #define CONFIG_MAX_WINDOW_HEIGHT 2160
 #define CONFIG_MIN_TARGET_FPS    0
@@ -85,8 +87,11 @@ void config_set_defaults(Config* config)
     }
 
     strcpy(config->window_title, "Software Rasterizer");
-    config->window_width = 800;
-    config->window_height = 600;
+    config->window_width = CONFIG_WINDOW_WIDTH;
+    config->window_height = CONFIG_WINDOW_HEIGHT;
+    config->window_display_index = 0;
+    config->window_min_width = CONFIG_MIN_WINDOW_WIDTH;
+    config->window_min_height = CONFIG_MIN_WINDOW_HEIGHT;
     config->window_max_width = 1920;
     config->window_max_height = 1080;
     config->target_fps = 60;
@@ -206,6 +211,20 @@ bool config_load(Config* config, const char* path)
             config_read_i32(path, line_number, key, value, &config->window_height,
                             CONFIG_MIN_WINDOW_HEIGHT, CONFIG_MAX_WINDOW_HEIGHT);
         }
+        else if (str_equals(key, "display_index"))
+        {
+            config_read_i32(path, line_number, key, value, &config->window_display_index, 0, 16);
+        }
+        else if (str_equals(key, "min_width"))
+        {
+            config_read_i32(path, line_number, key, value, &config->window_min_width,
+                            CONFIG_MIN_WINDOW_WIDTH, CONFIG_MAX_WINDOW_WIDTH);
+        }
+        else if (str_equals(key, "min_height"))
+        {
+            config_read_i32(path, line_number, key, value, &config->window_min_height,
+                            CONFIG_MIN_WINDOW_HEIGHT, CONFIG_MAX_WINDOW_HEIGHT);
+        }
         else if (str_equals(key, "max_width"))
         {
             config_read_i32(path, line_number, key, value, &config->window_max_width,
@@ -265,6 +284,20 @@ bool config_load(Config* config, const char* path)
     }
 
     fclose(file);
+
+    if (config->window_min_width > config->window_max_width)
+    {
+        fprintf(stderr, "%s: min_width (%d) exceeds max_width (%d), resetting to max_width\n", path,
+                config->window_min_width, config->window_max_width);
+        config->window_min_width = config->window_max_width;
+    }
+
+    if (config->window_min_height > config->window_max_height)
+    {
+        fprintf(stderr, "%s: min_height (%d) exceeds max_height (%d), resetting to max_height\n",
+                path, config->window_min_height, config->window_max_height);
+        config->window_min_height = config->window_max_height;
+    }
 
     if (config->window_width > config->window_max_width)
     {

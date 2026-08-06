@@ -9,6 +9,9 @@ typedef struct WindowConfig
     const char* canvas_id;
     i32 width;
     i32 height;
+    i32 display_index;
+    i32 min_width;
+    i32 min_height;
     bool resizable;
     bool fullscreen;
     bool vsync;
