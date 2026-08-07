@@ -116,6 +116,12 @@ if(NOT EMSCRIPTEN)
 endif()
 
 if(EMSCRIPTEN)
+  target_compile_definitions(
+    SoftwareRasterizer
+    PRIVATE
+    ENABLE_PROFILING=0
+  )
+
   set_target_properties(
     SoftwareRasterizer
     PROPERTIES

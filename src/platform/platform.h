@@ -50,4 +50,8 @@ void platform_run_main_loop(PlatformFrameCallback frame_cb, void* user_data, i32
 
 f64 platform_get_time_seconds(void);
 
+u64 platform_get_perf_counter(void);
+
+u64 platform_get_perf_frequency(void);
+
 #endif // PLATFORM_PLATFORM_H

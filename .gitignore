@@ -59,3 +59,4 @@ dkms.conf
 /build/
 /internal_docs/
 compile_commands.json
+trace.json

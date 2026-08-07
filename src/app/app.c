@@ -9,6 +9,7 @@
 #include "core/file_io.h"
 #include "core/font.h"
 #include "core/memory_arena.h"
+#include "core/profiler.h"
 #include "math/vec2f.h"
 #include "platform/platform.h"
 
@@ -129,6 +130,8 @@ static inline void draw_debug_overlay(AppState* state, f64 now, i32 width, i32 h
 
 static bool frame(void* arg)
 {
+    ProfilerToken frame_profile = PROFILE_BEGIN("frame", "Frame");
+
     AppState* state = (AppState*)arg;
 
     const f64 now = platform_get_time_seconds();
@@ -141,7 +144,9 @@ static bool frame(void* arg)
         state->frame_time_ms = dt * 1000.0;
     }
 
+    ProfilerToken poll_profile = PROFILE_BEGIN("platform", "Poll Events");
     window_poll_events(state->window);
+    PROFILE_END(poll_profile);
 
     i32 width = window_get_width(state->window);
     i32 height = window_get_height(state->window);
@@ -188,9 +193,12 @@ static bool frame(void* arg)
     const f32 cell_h = inner_h / (f32)(GRID_ROWS - 1);
     const f32 radius = fminf(cell_w, cell_h) * 0.38f;
 
+    ProfilerToken clear_profile = PROFILE_BEGIN("render", "Clear");
     // Byte-fill only works because all bytes of COLOR_DARK_GREY are equal (0x22).
     memset(state->pixels, COLOR_DARK_GREY & 0xFF, (usize)width * height * sizeof(u32));
+    PROFILE_END(clear_profile);
 
+    ProfilerToken triangles_profile = PROFILE_BEGIN("render", "Draw Triangles");
     for (i32 row = 0; row < GRID_ROWS; row++)
     {
         for (i32 col = 0; col < GRID_COLS; col++)
@@ -216,13 +224,22 @@ static bool frame(void* arg)
                           palette[(row * GRID_COLS + col) % 3]);
         }
     }
+    PROFILE_END(triangles_profile);
 
     if (state->show_fps)
     {
+        ProfilerToken overlay_profile = PROFILE_BEGIN("render", "Overlay");
         draw_debug_overlay(state, now, width, height);
+        PROFILE_END(overlay_profile);
     }
 
+    ProfilerToken present_profile = PROFILE_BEGIN("platform", "Present");
+
     window_present(state->window, state->pixels, width, height);
+
+    PROFILE_END(present_profile);
+
+    PROFILE_END(frame_profile);
 
     return !window_should_close(state->window);
 }
@@ -308,7 +325,14 @@ int app_start(void)
     state.debug_font =
         font_load(&state.font_arena, DEBUG_FONT_FAMILY, DEBUG_FONT_SIZE, (usize)font_file_size);
 
+    PROFILE_INIT();
+
     platform_run_main_loop(frame, &state, config.target_fps);
+
+    if (!PROFILE_WRITE("trace.json"))
+    {
+        fprintf(stderr, "Failed to write profilling trace\n");
+    }
 
     memory_arena_destroy(&state.font_arena);
     memory_arena_destroy(&state.pixels_arena);

@@ -255,6 +255,16 @@ f64 platform_get_time_seconds(void)
     return (f64)SDL_GetPerformanceCounter() / (f64)SDL_GetPerformanceFrequency();
 }
 
+u64 platform_get_perf_counter(void)
+{
+    return SDL_GetPerformanceCounter();
+}
+
+u64 platform_get_perf_frequency(void)
+{
+    return SDL_GetPerformanceFrequency();
+}
+
 #else // __EMSCRIPTEN__
 
 #include <stdlib.h>
@@ -423,6 +433,16 @@ void platform_run_main_loop(PlatformFrameCallback frame_cb, void* user_data, i32
 f64 platform_get_time_seconds(void)
 {
     return g_frame_time_sec;
+}
+
+u64 platform_get_perf_counter(void)
+{
+    return (u64)(emscripten_get_now() * 1000.0);
+}
+
+u64 platform_get_perf_frequency(void)
+{
+    return 1000000ULL;
 }
 
 #endif // __EMSCRIPTEN__
