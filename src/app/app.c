@@ -8,6 +8,7 @@
 #include "core/config.h"
 #include "core/file_io.h"
 #include "core/font.h"
+#include "core/log.h"
 #include "core/memory_arena.h"
 #include "core/profiler.h"
 #include "core/simd.h"
@@ -205,6 +206,7 @@ static void draw_triangle(u32* pixels, int width, int height, Vec2f v0, Vec2f v1
             w2 += advance2;
         }
 #endif
+        // Scalar loop: processes all pixels when SIMD is ON, or the remaining tail when it is.
         for (; x <= x_max; x++)
         {
             if (w0 >= 0.0f && w1 >= 0.0f && w2 >= 0.0f)
@@ -366,12 +368,14 @@ int app_start(void)
 
     if (!config_load(&config, "config.ini"))
     {
-        return 1;
+        LOG_ERROR("Failed to load config.ini");
+        return EXIT_FAILURE;
     }
 
     if (!platform_init())
     {
-        return 1;
+        LOG_ERROR("Failed to init platform");
+        return EXIT_FAILURE;
     }
 
     WindowConfig win_config = { .title = config.window_title,
@@ -389,8 +393,10 @@ int app_start(void)
 
     if (window == NULL)
     {
+        LOG_ERROR("Failed to create window \"%s\" (%dx%d)", config.window_title,
+                  config.window_width, config.window_height);
         platform_shutdown();
-        return 1;
+        return EXIT_FAILURE;
     }
 
     AppState state = { .window = window,
@@ -410,9 +416,11 @@ int app_start(void)
 
     if (!memory_arena_create(&state.pixels_arena, max_framebuffer_pixels * sizeof(u32)))
     {
+        LOG_ERROR("Failed to create pixels arena (%u bytes)",
+                  max_framebuffer_pixels * (u32)sizeof(u32));
         window_destroy(window);
         platform_shutdown();
-        return 1;
+        return EXIT_FAILURE;
     }
 
     long font_file_size = file_io_size(DEBUG_FONT_FAMILY);
@@ -420,20 +428,25 @@ int app_start(void)
     usize font_arena_size = font_required_memory((usize)font_file_size, DEBUG_FONT_SIZE);
     if (font_arena_size == 0 || !memory_arena_create(&state.font_arena, font_arena_size))
     {
+        LOG_ERROR("Failed to create font arena for \"%s\" (size %.1f, %zu bytes)",
+                  DEBUG_FONT_FAMILY, (double)DEBUG_FONT_SIZE, font_arena_size);
         memory_arena_destroy(&state.pixels_arena);
         window_destroy(window);
         platform_shutdown();
-        return 1;
+        return EXIT_FAILURE;
     }
 
     state.pixels = MEM_ARENA_PUSH_ARRAY(&state.pixels_arena,
                                         (usize)config.window_width * config.window_height, u32);
     if (state.pixels == NULL)
     {
+        LOG_ERROR("Failed to allocate framebuffer (%dx%d)", config.window_width,
+                  config.window_height);
+        memory_arena_destroy(&state.font_arena);
         memory_arena_destroy(&state.pixels_arena);
         window_destroy(window);
         platform_shutdown();
-        return 1;
+        return EXIT_FAILURE;
     }
 
     state.last_frame_time = platform_get_time_seconds();
@@ -441,13 +454,19 @@ int app_start(void)
     state.debug_font =
         font_load(&state.font_arena, DEBUG_FONT_FAMILY, DEBUG_FONT_SIZE, (usize)font_file_size);
 
+    if (state.debug_font == NULL)
+    {
+        LOG_WARN("Failed to load debug font \"%s\" (size %.1f) — overlay disabled",
+                 DEBUG_FONT_FAMILY, (double)DEBUG_FONT_SIZE);
+    }
+
     PROFILE_INIT();
 
     platform_run_main_loop(frame, &state, config.target_fps);
 
     if (!PROFILE_WRITE("trace.json"))
     {
-        fprintf(stderr, "Failed to write profilling trace\n");
+        LOG_ERROR("Failed to write profiling trace to \"trace.json\"");
     }
 
     memory_arena_destroy(&state.font_arena);
@@ -455,5 +474,5 @@ int app_start(void)
     window_destroy(window);
     platform_shutdown();
 
-    return 0;
+    return EXIT_SUCCESS;
 }

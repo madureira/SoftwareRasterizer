@@ -40,6 +40,14 @@ typedef ptrdiff_t isize;
 typedef uintptr_t uptr;
 typedef intptr_t iptr;
 
+#ifndef EXIT_SUCCESS
+#define EXIT_SUCCESS 0
+#endif
+
+#ifndef EXIT_FAILURE
+#define EXIT_FAILURE 1
+#endif
+
 /*
  * C99-compatible compile-time assertion.
  */
