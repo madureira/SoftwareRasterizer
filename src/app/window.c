@@ -1,6 +1,7 @@
 #include "app/window.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "platform/platform.h"
 
@@ -10,6 +11,7 @@ struct Window
     i32 width;
     i32 height;
     bool should_close;
+    bool keys[PLATFORM_KEY_COUNT];
 };
 
 Window* window_create(const WindowConfig* config)
@@ -42,6 +44,7 @@ Window* window_create(const WindowConfig* config)
     window->width = config->width;
     window->height = config->height;
     window->should_close = false;
+    memset(window->keys, 0, sizeof(window->keys));
 
     return window;
 }
@@ -76,6 +79,20 @@ void window_poll_events(Window* window)
         case PLATFORM_EVENT_WINDOW_RESIZED:
             window->width = event.data.window.width;
             window->height = event.data.window.height;
+            break;
+
+        case PLATFORM_EVENT_KEY_DOWN:
+            if (event.data.key.key != PLATFORM_KEY_UNKNOWN)
+            {
+                window->keys[event.data.key.key] = true;
+            }
+            break;
+
+        case PLATFORM_EVENT_KEY_UP:
+            if (event.data.key.key != PLATFORM_KEY_UNKNOWN)
+            {
+                window->keys[event.data.key.key] = false;
+            }
             break;
 
         default:
@@ -117,4 +134,13 @@ void window_present(Window* window, const u32* pixels, i32 width, i32 height)
     }
 
     platform_window_present(window->platform_window, pixels, width, height);
+}
+
+bool window_is_key_down(const Window* window, PlatformKey key)
+{
+    if (window == NULL || key == PLATFORM_KEY_UNKNOWN || key >= PLATFORM_KEY_COUNT)
+    {
+        return false;
+    }
+    return window->keys[key];
 }

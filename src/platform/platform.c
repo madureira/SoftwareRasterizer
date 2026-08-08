@@ -18,6 +18,27 @@ struct PlatformWindow
 static PlatformWindow* g_window = NULL;
 static i32 g_display_fps = 0;
 
+static PlatformKey sdl_scancode_to_platform_key(SDL_Scancode sc)
+{
+    switch (sc)
+    {
+    case SDL_SCANCODE_ESCAPE:
+        return PLATFORM_KEY_ESCAPE;
+    case SDL_SCANCODE_RETURN:
+        return PLATFORM_KEY_ENTER;
+    case SDL_SCANCODE_UP:
+        return PLATFORM_KEY_UP;
+    case SDL_SCANCODE_DOWN:
+        return PLATFORM_KEY_DOWN;
+    case SDL_SCANCODE_LEFT:
+        return PLATFORM_KEY_LEFT;
+    case SDL_SCANCODE_RIGHT:
+        return PLATFORM_KEY_RIGHT;
+    default:
+        return PLATFORM_KEY_UNKNOWN;
+    }
+}
+
 bool platform_init(void)
 {
     return SDL_Init(SDL_INIT_VIDEO);
@@ -199,10 +220,12 @@ bool platform_poll_event(PlatformEvent* event)
             SDL_SetWindowFullscreen(g_window->window, false);
         }
         event->type = PLATFORM_EVENT_KEY_DOWN;
+        event->data.key.key = sdl_scancode_to_platform_key(sdl_event.key.scancode);
         break;
 
     case SDL_EVENT_KEY_UP:
         event->type = PLATFORM_EVENT_KEY_UP;
+        event->data.key.key = sdl_scancode_to_platform_key(sdl_event.key.scancode);
         break;
 
     default:
@@ -273,6 +296,8 @@ u64 platform_get_perf_frequency(void)
 #include <emscripten.h>
 #include <emscripten/html5.h>
 
+#include "core/utils.h"
+
 // Implemented in platform_web.js, linked via --js-library.
 extern i32 platform_js_get_window_width(void);
 extern i32 platform_js_get_window_height(void);
@@ -302,6 +327,43 @@ static f64 g_frame_time_sec = 0.0;
 static i32 g_canvas_width = 0;
 static i32 g_canvas_height = 0;
 static bool g_resize_pending = false;
+static bool g_key_down_pending[PLATFORM_KEY_COUNT];
+static bool g_key_up_pending[PLATFORM_KEY_COUNT];
+
+static PlatformKey dom_code_to_platform_key(const char* code)
+{
+    if (str_equals(code, "Escape"))
+    {
+        return PLATFORM_KEY_ESCAPE;
+    }
+
+    if (str_equals(code, "Enter"))
+    {
+        return PLATFORM_KEY_ENTER;
+    }
+
+    if (str_equals(code, "ArrowUp"))
+    {
+        return PLATFORM_KEY_UP;
+    }
+
+    if (str_equals(code, "ArrowDown"))
+    {
+        return PLATFORM_KEY_DOWN;
+    }
+
+    if (str_equals(code, "ArrowLeft"))
+    {
+        return PLATFORM_KEY_LEFT;
+    }
+
+    if (str_equals(code, "ArrowRight"))
+    {
+        return PLATFORM_KEY_RIGHT;
+    }
+
+    return PLATFORM_KEY_UNKNOWN;
+}
 
 static EM_BOOL on_window_resize(int event_type, const EmscriptenUiEvent* ui_event, void* user_data)
 {
@@ -315,8 +377,34 @@ static EM_BOOL on_window_resize(int event_type, const EmscriptenUiEvent* ui_even
     return EM_TRUE;
 }
 
+static EM_BOOL on_keydown(int type, const EmscriptenKeyboardEvent* e, void* ud)
+{
+    (void)type;
+    (void)ud;
+    PlatformKey k = dom_code_to_platform_key(e->code);
+    if (k != PLATFORM_KEY_UNKNOWN)
+    {
+        g_key_down_pending[k] = true;
+    }
+    return EM_TRUE;
+}
+
+static EM_BOOL on_keyup(int type, const EmscriptenKeyboardEvent* e, void* ud)
+{
+    (void)type;
+    (void)ud;
+    PlatformKey k = dom_code_to_platform_key(e->code);
+    if (k != PLATFORM_KEY_UNKNOWN)
+    {
+        g_key_up_pending[k] = true;
+    }
+    return EM_TRUE;
+}
+
 bool platform_init(void)
 {
+    emscripten_set_keydown_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, NULL, 1, on_keydown);
+    emscripten_set_keyup_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, NULL, 1, on_keyup);
     return true;
 }
 
@@ -395,6 +483,24 @@ bool platform_poll_event(PlatformEvent* event)
     if (event == NULL)
     {
         return false;
+    }
+
+    for (int k = 1; k < PLATFORM_KEY_COUNT; k++)
+    {
+        if (g_key_down_pending[k])
+        {
+            g_key_down_pending[k] = false;
+            event->type = PLATFORM_EVENT_KEY_DOWN;
+            event->data.key.key = (PlatformKey)k;
+            return true;
+        }
+        if (g_key_up_pending[k])
+        {
+            g_key_up_pending[k] = false;
+            event->type = PLATFORM_EVENT_KEY_UP;
+            event->data.key.key = (PlatformKey)k;
+            return true;
+        }
     }
 
     if (g_resize_pending)

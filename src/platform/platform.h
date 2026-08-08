@@ -3,6 +3,23 @@
 
 typedef struct PlatformWindow PlatformWindow;
 
+typedef enum PlatformKey
+{
+    PLATFORM_KEY_UNKNOWN = 0,
+    PLATFORM_KEY_ESCAPE,
+    PLATFORM_KEY_ENTER,
+    PLATFORM_KEY_UP,
+    PLATFORM_KEY_DOWN,
+    PLATFORM_KEY_LEFT,
+    PLATFORM_KEY_RIGHT,
+    PLATFORM_KEY_COUNT
+} PlatformKey;
+
+typedef struct PlatformKeyEvent
+{
+    PlatformKey key;
+} PlatformKeyEvent;
+
 typedef enum PlatformEventType
 {
     PLATFORM_EVENT_NONE,
@@ -25,6 +42,7 @@ typedef struct PlatformEvent
     union
     {
         PlatformWindowEvent window;
+        PlatformKeyEvent key;
     } data;
 } PlatformEvent;
 

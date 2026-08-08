@@ -28,6 +28,11 @@
 #define DEBUG_FONT_FAMILY "assets/fonts/CONSOLA-Powerline.ttf"
 #define GRID_COLS         20
 #define GRID_ROWS         10
+#define GRID_MIN          2
+#define GRID_MAX          50
+#define ROT_SPEED_INIT    1.0f
+#define ROT_ACCEL         3.0f
+#define ROT_SPEED_MAX     20.0f
 
 typedef struct AppState
 {
@@ -48,6 +53,12 @@ typedef struct AppState
     char overlay_text[64];
     Font* debug_font;
     bool show_fps;
+    i32 grid_cols;
+    i32 grid_rows;
+    bool key_up_prev;
+    bool key_down_prev;
+    f64 rotation;
+    f32 rot_speed;
 } AppState;
 
 static inline f32 edge(const Vec2f a, const Vec2f b, const Vec2f p)
@@ -304,11 +315,69 @@ static bool frame(void* arg)
 
     static const u32 palette[3] = { COLOR_BLUE, COLOR_GREEN, COLOR_RED };
 
+    const bool key_up = window_is_key_down(state->window, PLATFORM_KEY_UP);
+    const bool key_down = window_is_key_down(state->window, PLATFORM_KEY_DOWN);
+
+    if (key_up && /*!state->key_up_prev &&*/ state->grid_cols < GRID_MAX
+        && state->grid_rows < GRID_MAX)
+    {
+        state->grid_cols++;
+        state->grid_rows++;
+    }
+    if (key_down && /*!state->key_down_prev &&*/ state->grid_cols > GRID_MIN
+        && state->grid_rows > GRID_MIN)
+    {
+        state->grid_cols--;
+        state->grid_rows--;
+    }
+
+    state->key_up_prev = key_up;
+    state->key_down_prev = key_down;
+
+    const bool key_left = window_is_key_down(state->window, PLATFORM_KEY_LEFT);
+    const bool key_right = window_is_key_down(state->window, PLATFORM_KEY_RIGHT);
+
+    if (key_right && !key_left)
+    {
+        if (state->rot_speed < 0.0f)
+        {
+            state->rot_speed = ROT_SPEED_INIT;
+        }
+        else
+        {
+            state->rot_speed += ROT_ACCEL * (f32)dt;
+            if (state->rot_speed > ROT_SPEED_MAX)
+            {
+                state->rot_speed = ROT_SPEED_MAX;
+            }
+        }
+    }
+    else if (key_left && !key_right)
+    {
+        if (state->rot_speed > 0.0f)
+        {
+            state->rot_speed = -ROT_SPEED_INIT;
+        }
+        else
+        {
+            state->rot_speed -= ROT_ACCEL * (f32)dt;
+            if (state->rot_speed < -ROT_SPEED_MAX)
+            {
+                state->rot_speed = -ROT_SPEED_MAX;
+            }
+        }
+    }
+
+    state->rotation += state->rot_speed * dt;
+
+    const int grid_cols = state->grid_cols;
+    const int grid_rows = state->grid_rows;
+
     const f32 padding = fminf((f32)width, (f32)height) * 0.05f;
     const f32 inner_w = (f32)width - 2.0f * padding;
     const f32 inner_h = (f32)height - 2.0f * padding;
-    const f32 cell_w = inner_w / (f32)(GRID_COLS - 1);
-    const f32 cell_h = inner_h / (f32)(GRID_ROWS - 1);
+    const f32 cell_w = inner_w / (f32)(grid_cols - 1);
+    const f32 cell_h = inner_h / (f32)(grid_rows - 1);
     const f32 radius = fminf(cell_w, cell_h) * 0.80f;
 
     ProfilerToken clear_profile = PROFILE_BEGIN("render", "Clear");
@@ -317,12 +386,12 @@ static bool frame(void* arg)
     PROFILE_END(clear_profile);
 
     ProfilerToken triangles_profile = PROFILE_BEGIN("render", "Draw Triangles");
-    for (i32 row = 0; row < GRID_ROWS; row++)
+    for (i32 row = 0; row < grid_rows; row++)
     {
-        for (i32 col = 0; col < GRID_COLS; col++)
+        for (i32 col = 0; col < grid_cols; col++)
         {
             // Phase offset per cell creates a diagonal wave effect.
-            const f32 angle = (f32)now + (f32)col * 0.1f + (f32)row * 0.2f;
+            const f32 angle = (f32)state->rotation + (f32)col * 0.1f + (f32)row * 0.2f;
 
             const Vec2f center = vec2f(padding + (f32)col * cell_w, padding + (f32)row * cell_h);
             const Vec2f base = vec2f(radius, 0.0f);
@@ -410,7 +479,10 @@ int app_start(void)
                        .max_width = config.window_max_width,
                        .max_height = config.window_max_height,
                        .debug_font = NULL,
-                       .show_fps = config.show_fps };
+                       .show_fps = config.show_fps,
+                       .grid_cols = GRID_COLS,
+                       .grid_rows = GRID_ROWS,
+                       .rot_speed = -ROT_SPEED_INIT };
 
     const u32 max_framebuffer_pixels = config.window_max_width * config.window_max_height;
 
