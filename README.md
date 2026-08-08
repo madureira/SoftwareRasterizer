@@ -72,6 +72,51 @@ build.bat win release
 
 Binaries are written to `build/<type>/SoftwareRasterizer` (or `.exe` on Windows).
 
+### Profiling
+
+Append `--profile` to any desktop build to enable the frame profiler:
+
+```bash
+./build.sh mac debug --profile
+./build.sh mac release --profile
+./build.sh linux debug --profile
+./build.sh linux release --profile
+```
+
+```bat
+build.bat win debug --profile
+build.bat win release --profile
+```
+
+This compiles with the profiler enabled and generates `trace.json` in the project root when the application exits. Open it at [ui.perfetto.dev](https://ui.perfetto.dev) to visualize.
+
+> **Note:** Web builds do not support `--profile`.
+
+### SIMD
+
+Append `--simd` to any desktop **release** build to enable platform-specific SIMD optimizations:
+
+- **x86-64:** SSE2 (4 floats per instruction, via `emmintrin.h`)
+- **ARM64:** NEON (4 floats per instruction, via `arm_neon.h`)
+
+```bash
+./build.sh mac release --simd
+./build.sh linux release --simd
+```
+
+```bat
+build.bat win release --simd
+```
+
+Flags can be combined in any order:
+
+```bash
+./build.sh mac release --simd --profile
+./build.sh mac release --profile --simd
+```
+
+> **Note:** Web builds do not support `--simd`. SIMD is automatically disabled for WebAssembly targets regardless of the flag.
+
 ## Testing
 
 ```bash

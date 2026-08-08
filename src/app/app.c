@@ -10,6 +10,7 @@
 #include "core/font.h"
 #include "core/memory_arena.h"
 #include "core/profiler.h"
+#include "core/simd.h"
 #include "math/vec2f.h"
 #include "platform/platform.h"
 
@@ -24,9 +25,8 @@
 #define DEBUG_FONT_SIZE   18.0f
 #define DEBUG_FONT_COLOR  COLOR_GREEN
 #define DEBUG_FONT_FAMILY "assets/fonts/CONSOLA-Powerline.ttf"
-
-#define GRID_COLS 100
-#define GRID_ROWS 50
+#define GRID_COLS         20
+#define GRID_ROWS         10
 
 typedef struct AppState
 {
@@ -77,6 +77,32 @@ static void draw_triangle(u32* pixels, int width, int height, Vec2f v0, Vec2f v1
     const f32 w1_step_x = -(v0.y - v2.y), w1_step_y = v0.x - v2.x;
     const f32 w2_step_x = -(v1.y - v0.y), w2_step_y = v1.x - v0.x;
 
+#if SIMD_SSE2
+    const __m128 lane_offsets = _mm_set_ps(3.0f, 2.0f, 1.0f, 0.0f);
+
+    const __m128 bump0 = _mm_mul_ps(_mm_set1_ps(w0_step_x), lane_offsets);
+    const __m128 bump1 = _mm_mul_ps(_mm_set1_ps(w1_step_x), lane_offsets);
+    const __m128 bump2 = _mm_mul_ps(_mm_set1_ps(w2_step_x), lane_offsets);
+
+    const f32 advance0 = w0_step_x * (f32)SIMD_LANES;
+    const f32 advance1 = w1_step_x * (f32)SIMD_LANES;
+    const f32 advance2 = w2_step_x * (f32)SIMD_LANES;
+
+    const __m128 zero = _mm_setzero_ps();
+#elif SIMD_NEON
+    static const f32 offsets_arr[4] = { 0.0f, 1.0f, 2.0f, 3.0f };
+    const float32x4_t lane_offsets = vld1q_f32(offsets_arr);
+    const float32x4_t bump0 = vmulq_f32(vdupq_n_f32(w0_step_x), lane_offsets);
+    const float32x4_t bump1 = vmulq_f32(vdupq_n_f32(w1_step_x), lane_offsets);
+    const float32x4_t bump2 = vmulq_f32(vdupq_n_f32(w2_step_x), lane_offsets);
+    const f32 advance0 = w0_step_x * (f32)SIMD_LANES;
+    const f32 advance1 = w1_step_x * (f32)SIMD_LANES;
+    const f32 advance2 = w2_step_x * (f32)SIMD_LANES;
+    const float32x4_t zero = vdupq_n_f32(0.0f);
+    static const u32 bit_weights_arr[4] = { 1, 2, 4, 8 };
+    const uint32x4_t bit_weights = vld1q_u32(bit_weights_arr);
+#endif
+
     f32 row_w0 = w0_init;
     f32 row_w1 = w1_init;
     f32 row_w2 = w2_init;
@@ -88,8 +114,98 @@ static void draw_triangle(u32* pixels, int width, int height, Vec2f v0, Vec2f v1
         f32 w2 = row_w2;
 
         bool span_started = false;
+        int x = x_min;
 
-        for (int x = x_min; x <= x_max; x++)
+#if SIMD_SSE2
+        for (; x <= x_max - (SIMD_LANES - 1); x += SIMD_LANES)
+        {
+            __m128 w0_vec = _mm_add_ps(_mm_set1_ps(w0), bump0);
+            __m128 w1_vec = _mm_add_ps(_mm_set1_ps(w1), bump1);
+            __m128 w2_vec = _mm_add_ps(_mm_set1_ps(w2), bump2);
+
+            __m128 inside =
+                _mm_and_ps(_mm_and_ps(_mm_cmpge_ps(w0_vec, zero), _mm_cmpge_ps(w1_vec, zero)),
+                           _mm_cmpge_ps(w2_vec, zero));
+
+            int mask = _mm_movemask_ps(inside);
+
+            if (mask != 0)
+            {
+                u32* dst = &pixels[y * width + x];
+                if (mask & 1)
+                {
+                    dst[0] = color;
+                }
+                if (mask & 2)
+                {
+                    dst[1] = color;
+                }
+                if (mask & 4)
+                {
+                    dst[2] = color;
+                }
+                if (mask & 8)
+                {
+                    dst[3] = color;
+                }
+                span_started = true;
+            }
+            else if (span_started)
+            {
+                break;
+            }
+
+            w0 += advance0;
+            w1 += advance1;
+            w2 += advance2;
+        }
+#elif SIMD_NEON
+        for (; x <= x_max - (SIMD_LANES - 1); x += SIMD_LANES)
+        {
+            float32x4_t w0_vec = vaddq_f32(vdupq_n_f32(w0), bump0);
+            float32x4_t w1_vec = vaddq_f32(vdupq_n_f32(w1), bump1);
+            float32x4_t w2_vec = vaddq_f32(vdupq_n_f32(w2), bump2);
+
+            uint32x4_t inside =
+                vandq_u32(vandq_u32(vcgeq_f32(w0_vec, zero), vcgeq_f32(w1_vec, zero)),
+                          vcgeq_f32(w2_vec, zero));
+
+            uint32x4_t bits = vshrq_n_u32(inside, 31);
+            uint32x4_t weighted = vmulq_u32(bits, bit_weights);
+            int mask = (int)vaddvq_u32(weighted);
+
+            if (mask != 0)
+            {
+                u32* dst = &pixels[y * width + x];
+                if (mask & 1)
+                {
+                    dst[0] = color;
+                }
+                if (mask & 2)
+                {
+                    dst[1] = color;
+                }
+                if (mask & 4)
+                {
+                    dst[2] = color;
+                }
+                if (mask & 8)
+                {
+                    dst[3] = color;
+                }
+                span_started = true;
+            }
+            else if (span_started)
+            {
+                break;
+            }
+
+            w0 += advance0;
+            w1 += advance1;
+            w2 += advance2;
+        }
+#endif
+        for (; x <= x_max; x++)
         {
             if (w0 >= 0.0f && w1 >= 0.0f && w2 >= 0.0f)
             {
@@ -191,7 +307,7 @@ static bool frame(void* arg)
     const f32 inner_h = (f32)height - 2.0f * padding;
     const f32 cell_w = inner_w / (f32)(GRID_COLS - 1);
     const f32 cell_h = inner_h / (f32)(GRID_ROWS - 1);
-    const f32 radius = fminf(cell_w, cell_h) * 0.38f;
+    const f32 radius = fminf(cell_w, cell_h) * 0.80f;
 
     ProfilerToken clear_profile = PROFILE_BEGIN("render", "Clear");
     // Byte-fill only works because all bytes of COLOR_DARK_GREY are equal (0x22).

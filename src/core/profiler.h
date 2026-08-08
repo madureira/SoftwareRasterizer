@@ -2,7 +2,7 @@
 #define CORE_PROFILER_H
 
 #ifndef ENABLE_PROFILING
-#define ENABLE_PROFILING 1
+#define ENABLE_PROFILING 0
 #endif
 
 #define PROFILER_INVALID_EVENT ((usize) - 1)

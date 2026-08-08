@@ -6,6 +6,15 @@ PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 PLATFORM="${1:-}"
 BUILD_TYPE="${2:-}"
+PROFILE_FLAG=""
+SIMD_FLAG=""
+for _arg in "${@:3}"; do
+    case "$_arg" in
+        --profile) PROFILE_FLAG="--profile" ;;
+        --simd)    SIMD_FLAG="--simd" ;;
+        *) echo "Error: unknown flag '$_arg'" >&2; print_usage; exit 1 ;;
+    esac
+done
 
 PROJECT_NAME="SoftwareRasterizer"
 
@@ -13,16 +22,17 @@ print_usage() {
     cat <<EOF
 Usage:
   ./build.sh init
-  ./build.sh mac debug
-  ./build.sh mac release
-  ./build.sh linux debug
-  ./build.sh linux release
+  ./build.sh mac debug [--profile] [--simd]
+  ./build.sh mac release [--profile] [--simd]
+  ./build.sh linux debug [--profile] [--simd]
+  ./build.sh linux release [--profile] [--simd]
   ./build.sh web
 
 Examples:
   ./build.sh init
-  ./build.sh mac debug
   ./build.sh mac release
+  ./build.sh mac release --simd
+  ./build.sh mac release --simd --profile
   ./build.sh web
 EOF
 }
@@ -71,6 +81,10 @@ build_desktop() {
     build_directory="${PROJECT_ROOT}/build/${requested_build_type}"
     executable_path="${build_directory}/${PROJECT_NAME}"
 
+    if [[ "$SIMD_FLAG" == "--simd" && "$requested_build_type" == "debug" ]]; then
+        fail "--simd is not supported for debug builds. Use: ./build.sh ${requested_platform} release --simd"
+    fi
+
     case "$requested_platform" in
     mac)
         [[ "$(uname -s)" == "Darwin" ]] ||
@@ -87,6 +101,16 @@ build_desktop() {
         ;;
     esac
 
+    local profiling_flag="-DENABLE_PROFILING=OFF"
+    if [[ "$PROFILE_FLAG" == "--profile" ]]; then
+        profiling_flag="-DENABLE_PROFILING=ON"
+    fi
+
+    local simd_flag="-DENABLE_SIMD=OFF"
+    if [[ "$SIMD_FLAG" == "--simd" ]]; then
+        simd_flag="-DENABLE_SIMD=ON"
+    fi
+
     echo "Configuring ${requested_platform} ${cmake_build_type} build..."
 
     cmake \
@@ -94,7 +118,9 @@ build_desktop() {
         -B "${build_directory}" \
         -G "Unix Makefiles" \
         -DCMAKE_BUILD_TYPE="${cmake_build_type}" \
-        -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+        -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+        "$profiling_flag" \
+        "$simd_flag"
 
     echo "Building ${requested_platform} ${cmake_build_type}..."
 
@@ -116,6 +142,10 @@ build_desktop() {
     echo
     echo "Running ${PROJECT_NAME}..."
     echo "----------------------------------------"
+
+    if [[ "$PROFILE_FLAG" == "--profile" ]]; then
+        rm -f "${PROJECT_ROOT}/trace.json"
+    fi
 
     cd "$PROJECT_ROOT"
     "$executable_path"
@@ -177,6 +207,9 @@ mac | linux)
 web)
     [[ -z "$BUILD_TYPE" ]] ||
         fail "The web target does not accept a build type argument. Use: ./build.sh web"
+
+    [[ "$BUILD_TYPE" != "--profile" && "$PROFILE_FLAG" != "--profile" ]] ||
+        fail "--profile is not supported for web builds."
 
     build_web
     ;;

@@ -10,6 +10,9 @@ set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
+option(ENABLE_PROFILING "Enable frame profiler" OFF)
+option(ENABLE_SIMD      "Enable SIMD optimizations (SSE2 on x86-64, NEON on ARM64)" OFF)
+
 # SDL3 cannot be included via add_subdirectory for Emscripten builds;
 # Emscripten ships its own SDL3 port activated through linker flags.
 if(NOT EMSCRIPTEN)
@@ -88,6 +91,7 @@ if(MSVC)
     SoftwareRasterizer
     PRIVATE
     /W4
+    /arch:SSE2
   )
 else()
   target_compile_options(
@@ -97,6 +101,9 @@ else()
     -Wextra
     -Wpedantic
   )
+  if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64")
+    target_compile_options(SoftwareRasterizer PRIVATE -msse2)
+  endif()
 endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND (CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "Darwin"))
@@ -115,12 +122,27 @@ if(NOT EMSCRIPTEN)
   add_subdirectory(tests)
 endif()
 
-if(EMSCRIPTEN)
+if(EMSCRIPTEN OR NOT ENABLE_SIMD)
+  target_compile_definitions(SoftwareRasterizer PRIVATE ENABLE_SIMD=0)
+else()
+  target_compile_definitions(SoftwareRasterizer PRIVATE ENABLE_SIMD=1)
+endif()
+
+if(EMSCRIPTEN OR NOT ENABLE_PROFILING)
   target_compile_definitions(
     SoftwareRasterizer
     PRIVATE
     ENABLE_PROFILING=0
   )
+elseif(ENABLE_PROFILING)
+  target_compile_definitions(
+    SoftwareRasterizer
+    PRIVATE
+    ENABLE_PROFILING=1
+  )
+endif()
+
+if(EMSCRIPTEN)
 
   set_target_properties(
     SoftwareRasterizer
