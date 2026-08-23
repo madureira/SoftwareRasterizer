@@ -17,7 +17,7 @@ typedef struct TestGroup
     int count;
 } TestGroup;
 
-#define TEST_MAX_GROUPS    16
+#define TEST_MAX_GROUPS    32
 #define TEST_MAX_PER_GROUP 32
 
 typedef struct TestRegistry

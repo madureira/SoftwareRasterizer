@@ -2,6 +2,7 @@
 #define MATH_VEC2F_H
 
 #include "math/math_common.h"
+#include "math/math_config.h"
 
 typedef struct Vec2f
 {
@@ -71,7 +72,7 @@ static inline Vec2f vec2f_rotate_sincos(Vec2f vector, f32 sine, f32 cosine)
  * - vector must have finite components;
  * - scalar must be finite and non-zero.
  *
- * Use vec2f_try_divide() for untrusted or dynamically computed values.
+ * Use vec2f_try_div() for untrusted or dynamically computed values.
  */
 static inline Vec2f vec2f_div(Vec2f vector, f32 scalar)
 {
@@ -118,6 +119,22 @@ static inline f32 vec2f_len_sq(Vec2f vector)
 static inline f32 vec2f_dist_sq(Vec2f a, Vec2f b)
 {
     return vec2f_len_sq(vec2f_sub(b, a));
+}
+
+/**
+ * Reflects a vector off a surface with the given normal.
+ *
+ * Preconditions:
+ * - vector and normal must have finite components;
+ * - normal must be a unit vector.
+ */
+static inline Vec2f vec2f_reflect(Vec2f vector, Vec2f normal)
+{
+    assert(vec2f_is_finite(vector));
+    assert(vec2f_is_finite(normal));
+    assert(fabsf(vec2f_len_sq(normal) - 1.0f) <= MATH_COMPARISON_EPSILON);
+
+    return vec2f_sub(vector, vec2f_scale(normal, 2.0f * vec2f_dot(vector, normal)));
 }
 
 /**
@@ -176,7 +193,7 @@ static inline void vec2f_scale_inplace(Vec2f* vector, f32 scalar)
  * - vector must have finite components;
  * - scalar must be finite and non-zero.
  *
- * Use vec2f_try_divide() for untrusted or dynamically computed values.
+ * Use vec2f_try_div() for untrusted or dynamically computed values.
  */
 static inline void vec2f_div_inplace(Vec2f* vector, f32 scalar)
 {
@@ -227,8 +244,8 @@ static inline bool vec2f_near(Vec2f a, Vec2f b, f32 distance)
 }
 
 /**
- * Returns true when the distance between a and b is less than
- * or equal to the provided squared distance.
+ * Returns true when the squared distance between a and b is less than
+ * or equal to the provided maximum squared distance.
  */
 static inline bool vec2f_near_sq(Vec2f a, Vec2f b, f32 maximum_distance_squared)
 {
@@ -312,5 +329,7 @@ Vec2f vec2f_rotate(Vec2f vector, f32 angle_radians);
 void vec2f_rotate_inplace(Vec2f* vector, f32 angle_radians);
 
 Vec2f vec2f_rotate_around(Vec2f vector, Vec2f pivot, f32 angle_radians);
+
+void vec2f_rotate_around_inplace(Vec2f* vector, Vec2f pivot, f32 angle_radians);
 
 #endif // MATH_VEC2F_H

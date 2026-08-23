@@ -40,25 +40,25 @@ typedef struct AppState
     MemoryArena pixels_arena;
     MemoryArena font_arena;
     u32* pixels;
+    f64 last_frame_time;
+    f64 fps;
+    f64 frame_time_ms;
+    f64 last_overlay_update;
+    Font* debug_font;
+    f64 rotation;
     i32 width;
     i32 height;
     i32 min_width;
     i32 min_height;
     i32 max_width;
     i32 max_height;
-    f64 last_frame_time;
-    f64 fps;
-    f64 frame_time_ms;
-    f64 last_overlay_update;
-    char overlay_text[64];
-    Font* debug_font;
-    bool show_fps;
     i32 grid_cols;
     i32 grid_rows;
+    f32 rot_speed;
+    char overlay_text[64];
+    bool show_fps;
     bool key_up_prev;
     bool key_down_prev;
-    f64 rotation;
-    f32 rot_speed;
 } AppState;
 
 static inline f32 edge(const Vec2f a, const Vec2f b, const Vec2f p)
@@ -482,7 +482,7 @@ int app_start(void)
                        .show_fps = config.show_fps,
                        .grid_cols = GRID_COLS,
                        .grid_rows = GRID_ROWS,
-                       .rot_speed = -ROT_SPEED_INIT };
+                       .rot_speed = ROT_SPEED_INIT };
 
     const u32 max_framebuffer_pixels = config.window_max_width * config.window_max_height;
 

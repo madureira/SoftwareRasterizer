@@ -30,6 +30,25 @@ static void test_one(TestContext* ctx)
 }
 
 /*
+ * Helpers
+ */
+
+static void test_is_finite_true_for_finite_vector(TestContext* ctx)
+{
+    TEST_ASSERT_TRUE(ctx, vec2f_is_finite(vec2f(1.0f, 2.0f)));
+}
+
+static void test_is_finite_false_for_nan_component(TestContext* ctx)
+{
+    TEST_ASSERT_FALSE(ctx, vec2f_is_finite(vec2f(NAN, 0.0f)));
+}
+
+static void test_is_finite_false_for_infinite_component(TestContext* ctx)
+{
+    TEST_ASSERT_FALSE(ctx, vec2f_is_finite(vec2f(1.0f, INFINITY)));
+}
+
+/*
  * Arithmetic
  */
 
@@ -133,6 +152,45 @@ static void test_cross_anti_commutative(TestContext* ctx)
 static void test_cross_zero_vector(TestContext* ctx)
 {
     TEST_ASSERT_FLOAT_EQ(ctx, vec2f_cross(vec2f_zero(), vec2f(3.0f, 4.0f)), 0.0f, EPS);
+}
+
+/*
+ * Reflection
+ */
+
+static void test_reflect_parallel_to_surface_unchanged(TestContext* ctx)
+{
+    Vec2f r = vec2f_reflect(vec2f(1.0f, 0.0f), vec2f(0.0f, 1.0f));
+    TEST_ASSERT_FLOAT_EQ(ctx, r.x, 1.0f, EPS);
+    TEST_ASSERT_FLOAT_EQ(ctx, r.y, 0.0f, EPS);
+}
+
+static void test_reflect_straight_incidence_bounces_back(TestContext* ctx)
+{
+    Vec2f r = vec2f_reflect(vec2f(0.0f, -1.0f), vec2f(0.0f, 1.0f));
+    TEST_ASSERT_FLOAT_EQ(ctx, r.x, 0.0f, EPS);
+    TEST_ASSERT_FLOAT_EQ(ctx, r.y, 1.0f, EPS);
+}
+
+static void test_reflect_general_angle(TestContext* ctx)
+{
+    /*
+     * dot((1,-1), (0,1)) = -1
+     * (1,-1) - 2 * -1 * (0,1) = (1,-1) + (0,2) = (1,1)
+     */
+    Vec2f r = vec2f_reflect(vec2f(1.0f, -1.0f), vec2f(0.0f, 1.0f));
+    TEST_ASSERT_FLOAT_EQ(ctx, r.x, 1.0f, EPS);
+    TEST_ASSERT_FLOAT_EQ(ctx, r.y, 1.0f, EPS);
+}
+
+static void test_reflect_preserves_length(TestContext* ctx)
+{
+    Vec2f v = vec2f(3.0f, 4.0f);
+    Vec2f normal = vec2f_normalize(vec2f(1.0f, 1.0f));
+
+    Vec2f r = vec2f_reflect(v, normal);
+
+    TEST_ASSERT_FLOAT_EQ(ctx, vec2f_len(r), vec2f_len(v), EPS);
 }
 
 /*
@@ -300,6 +358,16 @@ static void test_near_outside_distance(TestContext* ctx)
     TEST_ASSERT_FALSE(ctx, vec2f_near(vec2f_zero(), vec2f(3.0f, 4.0f), 4.0f));
 }
 
+static void test_near_sq_within_distance(TestContext* ctx)
+{
+    TEST_ASSERT_TRUE(ctx, vec2f_near_sq(vec2f_zero(), vec2f(3.0f, 4.0f), 25.0f));
+}
+
+static void test_near_sq_outside_distance(TestContext* ctx)
+{
+    TEST_ASSERT_FALSE(ctx, vec2f_near_sq(vec2f_zero(), vec2f(3.0f, 4.0f), 24.0f));
+}
+
 /*
  * In-place operations
  */
@@ -421,6 +489,14 @@ static void test_rotate_around_self_returns_same(TestContext* ctx)
     TEST_ASSERT_FLOAT_EQ(ctx, r.y, v.y, EPS);
 }
 
+static void test_rotate_around_inplace_pivot(TestContext* ctx)
+{
+    Vec2f v = vec2f(2.0f, 0.0f);
+    vec2f_rotate_around_inplace(&v, vec2f(1.0f, 0.0f), MATH_PI / 2.0f);
+    TEST_ASSERT_FLOAT_EQ(ctx, v.x, 1.0f, EPS);
+    TEST_ASSERT_FLOAT_EQ(ctx, v.y, 1.0f, EPS);
+}
+
 /*
  * Suite registration
  */
@@ -434,6 +510,12 @@ static void setup(void)
         test(test_create);
         test(test_zero);
         test(test_one);
+    }
+    describe("helpers")
+    {
+        test(test_is_finite_true_for_finite_vector);
+        test(test_is_finite_false_for_nan_component);
+        test(test_is_finite_false_for_infinite_component);
     }
     describe("arithmetic")
     {
@@ -463,6 +545,13 @@ static void setup(void)
         test(test_cross_general_vectors);
         test(test_cross_anti_commutative);
         test(test_cross_zero_vector);
+    }
+    describe("reflect")
+    {
+        test(test_reflect_parallel_to_surface_unchanged);
+        test(test_reflect_straight_incidence_bounces_back);
+        test(test_reflect_general_angle);
+        test(test_reflect_preserves_length);
     }
     describe("length")
     {
@@ -505,6 +594,8 @@ static void setup(void)
         test(test_equals_epsilon_outside);
         test(test_near_within_distance);
         test(test_near_outside_distance);
+        test(test_near_sq_within_distance);
+        test(test_near_sq_outside_distance);
     }
     describe("rotate")
     {
@@ -522,6 +613,10 @@ static void setup(void)
     {
         test(test_rotate_around_pivot);
         test(test_rotate_around_self_returns_same);
+    }
+    describe("rotate_around_inplace")
+    {
+        test(test_rotate_around_inplace_pivot);
     }
     describe("rotate_sincos")
     {

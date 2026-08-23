@@ -1,7 +1,5 @@
 #include "math/vec2f.h"
 
-#include "math/math_config.h"
-
 bool vec2f_try_div(Vec2f vector, f32 scalar, Vec2f* result)
 {
     if (result == NULL || !vec2f_is_finite(vector) || !isfinite(scalar)
@@ -92,4 +90,11 @@ Vec2f vec2f_rotate_around(Vec2f vector, Vec2f pivot, f32 angle_radians)
     const Vec2f rotated = vec2f_rotate(translated, angle_radians);
 
     return vec2f_add(rotated, pivot);
+}
+
+void vec2f_rotate_around_inplace(Vec2f* vector, Vec2f pivot, f32 angle_radians)
+{
+    assert(vector != NULL);
+
+    *vector = vec2f_rotate_around(*vector, pivot, angle_radians);
 }
