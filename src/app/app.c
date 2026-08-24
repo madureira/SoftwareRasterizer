@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "app/window.h"
 #include "core/config.h"
 #include "core/file_io.h"
 #include "core/font.h"
@@ -12,6 +11,7 @@
 #include "core/memory_arena.h"
 #include "core/profiler.h"
 #include "core/simd.h"
+#include "core/window.h"
 #include "math/vec2f.h"
 #include "platform/platform.h"
 

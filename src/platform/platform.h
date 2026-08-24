@@ -1,19 +1,9 @@
 #ifndef PLATFORM_PLATFORM_H
 #define PLATFORM_PLATFORM_H
 
-typedef struct PlatformWindow PlatformWindow;
+#include "platform/keyboard.h"
 
-typedef enum PlatformKey
-{
-    PLATFORM_KEY_UNKNOWN = 0,
-    PLATFORM_KEY_ESCAPE,
-    PLATFORM_KEY_ENTER,
-    PLATFORM_KEY_UP,
-    PLATFORM_KEY_DOWN,
-    PLATFORM_KEY_LEFT,
-    PLATFORM_KEY_RIGHT,
-    PLATFORM_KEY_COUNT
-} PlatformKey;
+typedef struct PlatformWindow PlatformWindow;
 
 typedef struct PlatformKeyEvent
 {

@@ -1,7 +1,7 @@
 #ifndef APP_WINDOW_H
 #define APP_WINDOW_H
 
-#include "platform/platform.h"
+#include "platform/keyboard.h"
 
 typedef struct Window Window;
 

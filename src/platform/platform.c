@@ -1,5 +1,7 @@
 #include "platform/platform.h"
 
+#include "platform/keyboard_mapping.h"
+
 #ifndef __EMSCRIPTEN__
 
 #include <stdlib.h>
@@ -17,27 +19,6 @@ struct PlatformWindow
 
 static PlatformWindow* g_window = NULL;
 static i32 g_display_fps = 0;
-
-static PlatformKey sdl_scancode_to_platform_key(SDL_Scancode sc)
-{
-    switch (sc)
-    {
-    case SDL_SCANCODE_ESCAPE:
-        return PLATFORM_KEY_ESCAPE;
-    case SDL_SCANCODE_RETURN:
-        return PLATFORM_KEY_ENTER;
-    case SDL_SCANCODE_UP:
-        return PLATFORM_KEY_UP;
-    case SDL_SCANCODE_DOWN:
-        return PLATFORM_KEY_DOWN;
-    case SDL_SCANCODE_LEFT:
-        return PLATFORM_KEY_LEFT;
-    case SDL_SCANCODE_RIGHT:
-        return PLATFORM_KEY_RIGHT;
-    default:
-        return PLATFORM_KEY_UNKNOWN;
-    }
-}
 
 bool platform_init(void)
 {
@@ -329,41 +310,6 @@ static i32 g_canvas_height = 0;
 static bool g_resize_pending = false;
 static bool g_key_down_pending[PLATFORM_KEY_COUNT];
 static bool g_key_up_pending[PLATFORM_KEY_COUNT];
-
-static PlatformKey dom_code_to_platform_key(const char* code)
-{
-    if (str_equals(code, "Escape"))
-    {
-        return PLATFORM_KEY_ESCAPE;
-    }
-
-    if (str_equals(code, "Enter"))
-    {
-        return PLATFORM_KEY_ENTER;
-    }
-
-    if (str_equals(code, "ArrowUp"))
-    {
-        return PLATFORM_KEY_UP;
-    }
-
-    if (str_equals(code, "ArrowDown"))
-    {
-        return PLATFORM_KEY_DOWN;
-    }
-
-    if (str_equals(code, "ArrowLeft"))
-    {
-        return PLATFORM_KEY_LEFT;
-    }
-
-    if (str_equals(code, "ArrowRight"))
-    {
-        return PLATFORM_KEY_RIGHT;
-    }
-
-    return PLATFORM_KEY_UNKNOWN;
-}
 
 static EM_BOOL on_window_resize(int event_type, const EmscriptenUiEvent* ui_event, void* user_data)
 {

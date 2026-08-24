@@ -1,4 +1,4 @@
-#include "app/window.h"
+#include "core/window.h"
 
 #include <stdlib.h>
 #include <string.h>

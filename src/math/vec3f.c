@@ -109,6 +109,13 @@ Vec3f vec3f_rotate_around(Vec3f vector, Vec3f pivot, Vec3f axis, f32 angle_radia
 void vec3f_rotate_around_inplace(Vec3f* vector, Vec3f pivot, Vec3f axis, f32 angle_radians)
 {
     assert(vector != NULL);
+    assert(vec3f_is_finite(*vector));
+    assert(vec3f_is_finite(pivot));
+    assert(vec3f_is_finite(axis));
+    assert(isfinite(angle_radians));
 
-    *vector = vec3f_rotate_around(*vector, pivot, axis, angle_radians);
+    const Vec3f translated = vec3f_sub(*vector, pivot);
+    const Vec3f rotated = vec3f_rotate(translated, axis, angle_radians);
+
+    *vector = vec3f_add(rotated, pivot);
 }
