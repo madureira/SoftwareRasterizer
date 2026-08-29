@@ -12,4 +12,6 @@ Font* font_load(MemoryArena* arena, const char* path, f32 size_px, usize file_si
 void font_draw_text(Font* font, u32* pixels, i32 width, i32 height, i32 x, i32 y, const char* text,
                     u32 color);
 
+i32 font_measure_text(const Font* font, const char* text);
+
 #endif // CORE_FONT_H

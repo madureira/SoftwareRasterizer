@@ -5,8 +5,7 @@
 #include <string.h>
 
 #include "core/config.h"
-#include "core/file_io.h"
-#include "core/font.h"
+#include "core/fps.h"
 #include "core/log.h"
 #include "core/memory_arena.h"
 #include "core/profiler.h"
@@ -15,36 +14,29 @@
 #include "math/vec2f.h"
 #include "platform/platform.h"
 
-#define COLOR_DARK_GREY   0x22222222
-#define COLOR_BLUE        0x0000AAFF
-#define COLOR_GREEN       0x0000FF00
-#define COLOR_RED         0x00FF0000
-#define TRIANGLE_COS_120  (-0.5f)                // cos(120deg)
-#define TRIANGLE_SIN_120  0.8660254037844386f    // sin(120deg) == sqrt(3)/2
-#define TRIANGLE_COS_240  (-0.5f)                // cos(240deg)
-#define TRIANGLE_SIN_240  (-0.8660254037844386f) // sin(240deg) == -sqrt(3)/2
-#define DEBUG_FONT_SIZE   18.0f
-#define DEBUG_FONT_COLOR  COLOR_GREEN
-#define DEBUG_FONT_FAMILY "assets/fonts/CONSOLA-Powerline.ttf"
-#define GRID_COLS         20
-#define GRID_ROWS         10
-#define GRID_MIN          2
-#define GRID_MAX          50
-#define ROT_SPEED_INIT    1.0f
-#define ROT_ACCEL         3.0f
-#define ROT_SPEED_MAX     20.0f
+#define COLOR_DARK_GREY  0x22222222
+#define COLOR_BLUE       0x0000AAFF
+#define COLOR_GREEN      0x0000FF00
+#define COLOR_RED        0x00FF0000
+#define TRIANGLE_COS_120 (-0.5f)                // cos(120deg)
+#define TRIANGLE_SIN_120 0.8660254037844386f    // sin(120deg) == sqrt(3)/2
+#define TRIANGLE_COS_240 (-0.5f)                // cos(240deg)
+#define TRIANGLE_SIN_240 (-0.8660254037844386f) // sin(240deg) == -sqrt(3)/2
+#define GRID_COLS        20
+#define GRID_ROWS        10
+#define GRID_MIN         2
+#define GRID_MAX         50
+#define ROT_SPEED_INIT   1.0f
+#define ROT_ACCEL        3.0f
+#define ROT_SPEED_MAX    20.0f
 
 typedef struct AppState
 {
     Window* window;
     MemoryArena pixels_arena;
-    MemoryArena font_arena;
     u32* pixels;
     f64 last_frame_time;
-    f64 fps;
-    f64 frame_time_ms;
-    f64 last_overlay_update;
-    Font* debug_font;
+    FpsCounter* fps_counter;
     f64 rotation;
     i32 width;
     i32 height;
@@ -55,8 +47,6 @@ typedef struct AppState
     i32 grid_cols;
     i32 grid_rows;
     f32 rot_speed;
-    char overlay_text[64];
-    bool show_fps;
     bool key_up_prev;
     bool key_down_prev;
 } AppState;
@@ -241,22 +231,6 @@ static void draw_triangle(u32* pixels, int width, int height, Vec2f v0, Vec2f v1
     }
 }
 
-static inline void draw_debug_overlay(AppState* state, f64 now, i32 width, i32 height)
-{
-    if (now - state->last_overlay_update >= 1.0)
-    {
-        snprintf(state->overlay_text, sizeof(state->overlay_text), "FPS: %.2f - %.2fms", state->fps,
-                 state->frame_time_ms);
-        state->last_overlay_update = now;
-    }
-
-    if (state->debug_font != NULL)
-    {
-        font_draw_text(state->debug_font, state->pixels, width, height, 4, 4, state->overlay_text,
-                       DEBUG_FONT_COLOR);
-    }
-}
-
 static bool frame(void* arg)
 {
     ProfilerToken frame_profile = PROFILE_BEGIN("frame", "Frame");
@@ -267,11 +241,7 @@ static bool frame(void* arg)
     const f64 dt = now - state->last_frame_time;
     state->last_frame_time = now;
 
-    if (dt > 0.0)
-    {
-        state->fps = 1.0 / dt;
-        state->frame_time_ms = dt * 1000.0;
-    }
+    fps_frame_tick(state->fps_counter);
 
     ProfilerToken poll_profile = PROFILE_BEGIN("platform", "Poll Events");
     window_poll_events(state->window);
@@ -380,6 +350,8 @@ static bool frame(void* arg)
     const f32 cell_h = inner_h / (f32)(grid_rows - 1);
     const f32 radius = fminf(cell_w, cell_h) * 0.80f;
 
+    fps_begin_render(state->fps_counter);
+
     ProfilerToken clear_profile = PROFILE_BEGIN("render", "Clear");
     // Byte-fill only works because all bytes of COLOR_DARK_GREY are equal (0x22).
     memset(state->pixels, COLOR_DARK_GREY & 0xFF, (usize)width * height * sizeof(u32));
@@ -413,12 +385,9 @@ static bool frame(void* arg)
     }
     PROFILE_END(triangles_profile);
 
-    if (state->show_fps)
-    {
-        ProfilerToken overlay_profile = PROFILE_BEGIN("render", "Overlay");
-        draw_debug_overlay(state, now, width, height);
-        PROFILE_END(overlay_profile);
-    }
+    ProfilerToken overlay_profile = PROFILE_BEGIN("render", "Overlay");
+    fps_show(state->fps_counter, state->pixels, width, height);
+    PROFILE_END(overlay_profile);
 
     ProfilerToken present_profile = PROFILE_BEGIN("platform", "Present");
 
@@ -470,7 +439,6 @@ int app_start(void)
 
     AppState state = { .window = window,
                        .pixels_arena = MEM_ARENA_INIT,
-                       .font_arena = MEM_ARENA_INIT,
                        .pixels = NULL,
                        .width = config.window_width,
                        .height = config.window_height,
@@ -478,8 +446,6 @@ int app_start(void)
                        .min_height = config.window_min_height,
                        .max_width = config.window_max_width,
                        .max_height = config.window_max_height,
-                       .debug_font = NULL,
-                       .show_fps = config.show_fps,
                        .grid_cols = GRID_COLS,
                        .grid_rows = GRID_ROWS,
                        .rot_speed = ROT_SPEED_INIT };
@@ -495,13 +461,10 @@ int app_start(void)
         return EXIT_FAILURE;
     }
 
-    long font_file_size = file_io_size(DEBUG_FONT_FAMILY);
-
-    usize font_arena_size = font_required_memory((usize)font_file_size, DEBUG_FONT_SIZE);
-    if (font_arena_size == 0 || !memory_arena_create(&state.font_arena, font_arena_size))
+    state.fps_counter = fps_create(config.show_fps);
+    if (state.fps_counter == NULL)
     {
-        LOG_ERROR("Failed to create font arena for \"%s\" (size %.1f, %zu bytes)",
-                  DEBUG_FONT_FAMILY, (double)DEBUG_FONT_SIZE, font_arena_size);
+        LOG_ERROR("Failed to create FPS counter");
         memory_arena_destroy(&state.pixels_arena);
         window_destroy(window);
         platform_shutdown();
@@ -514,7 +477,7 @@ int app_start(void)
     {
         LOG_ERROR("Failed to allocate framebuffer (%dx%d)", config.window_width,
                   config.window_height);
-        memory_arena_destroy(&state.font_arena);
+        fps_destroy(state.fps_counter);
         memory_arena_destroy(&state.pixels_arena);
         window_destroy(window);
         platform_shutdown();
@@ -522,15 +485,6 @@ int app_start(void)
     }
 
     state.last_frame_time = platform_get_time_seconds();
-
-    state.debug_font =
-        font_load(&state.font_arena, DEBUG_FONT_FAMILY, DEBUG_FONT_SIZE, (usize)font_file_size);
-
-    if (state.debug_font == NULL)
-    {
-        LOG_WARN("Failed to load debug font \"%s\" (size %.1f) — overlay disabled",
-                 DEBUG_FONT_FAMILY, (double)DEBUG_FONT_SIZE);
-    }
 
     PROFILE_INIT();
 
@@ -541,7 +495,7 @@ int app_start(void)
         LOG_ERROR("Failed to write profiling trace to \"trace.json\"");
     }
 
-    memory_arena_destroy(&state.font_arena);
+    fps_destroy(state.fps_counter);
     memory_arena_destroy(&state.pixels_arena);
     window_destroy(window);
     platform_shutdown();

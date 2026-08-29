@@ -185,3 +185,36 @@ void font_draw_text(Font* font, u32* pixels, i32 width, i32 height, i32 x, i32 y
         }
     }
 }
+
+i32 font_measure_text(const Font* font, const char* text)
+{
+    if (font == NULL || text == NULL)
+    {
+        return 0;
+    }
+
+    i32 cursor_x = 0;
+
+    for (const char* p = text; *p != '\0'; p++)
+    {
+        const int codepoint = (unsigned char)*p;
+
+        if (codepoint < GLYPH_CACHE_FIRST || codepoint > GLYPH_CACHE_LAST)
+        {
+            continue;
+        }
+
+        const GlyphEntry* g = &font->glyphs[codepoint - GLYPH_CACHE_FIRST];
+
+        cursor_x += g->advance;
+
+        if (*(p + 1) != '\0')
+        {
+            cursor_x += (i32)((f32)stbtt_GetCodepointKernAdvance(&font->info, codepoint,
+                                                                 (unsigned char)*(p + 1))
+                              * font->scale);
+        }
+    }
+
+    return cursor_x;
+}

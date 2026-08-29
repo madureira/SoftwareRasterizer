@@ -18,7 +18,6 @@ struct PlatformWindow
 };
 
 static PlatformWindow* g_window = NULL;
-static i32 g_display_fps = 0;
 
 bool platform_init(void)
 {
@@ -80,11 +79,6 @@ PlatformWindow* platform_window_create(const char* title, i32 width, i32 height,
     }
 
     SDL_SetWindowMinimumSize(win->window, min_width, min_height);
-
-    const SDL_DisplayID display = SDL_GetDisplayForWindow(win->window);
-    const SDL_DisplayMode* mode = SDL_GetCurrentDisplayMode(display);
-    g_display_fps =
-        (mode != NULL && mode->refresh_rate > 0.0f) ? (i32)(mode->refresh_rate + 0.5f) : 60;
 
     // Hint must be set before SDL_CreateRenderer so backends like Metal
     // create their swap chain with VSync enabled from the start.
@@ -236,10 +230,9 @@ static void platform_frame_sleep(f64 target_frame_time, f64 frame_start)
 
 void platform_run_main_loop(PlatformFrameCallback frame_cb, void* user_data, i32 target_fps)
 {
-    // When no explicit cap is set, fall back to the display refresh rate so
-    // the loop doesn't spin uncapped even if the backend VSync is unreliable.
-    const i32 effective_fps = (target_fps > 0) ? target_fps : g_display_fps;
-    const f64 target_frame_time = (effective_fps > 0) ? (1.0 / (f64)effective_fps) : 0.0;
+    // target_fps <= 0 means uncapped: the caller relies on VSync (if enabled)
+    // or wants the raw, unthrottled frame rate.
+    const f64 target_frame_time = (target_fps > 0) ? (1.0 / (f64)target_fps) : 0.0;
     for (;;)
     {
         const f64 frame_start = platform_get_time_seconds();

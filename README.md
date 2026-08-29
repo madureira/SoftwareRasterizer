@@ -140,6 +140,13 @@ After building with `./build.sh web`, serve the output via a local HTTP server (
 ./web_serve.sh 9000   # custom port
 ```
 
+## Format files
+
+```bash
+# macOS / Linux
+./format.sh
+```
+
 ## VS Code
 
 Two extensions are required. Install them when prompted, or manually via the links below:
