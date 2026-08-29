@@ -26,9 +26,10 @@ struct FpsCounter
     f64 render_fps;
     f64 render_time_ms;
     f64 render_time_accum;
-    f64 render_start;
     f64 last_overlay_update;
     f64 last_frame_time;
+    u64 render_start_counter;
+    u64 perf_frequency;
     i32 render_frame_count;
     bool enabled;
     char overlay_text[64];
@@ -45,7 +46,8 @@ FpsCounter* fps_create(bool enabled)
 
     *fps = (FpsCounter){ .enabled = enabled,
                          .font_arena = MEM_ARENA_INIT,
-                         .last_frame_time = platform_get_time_seconds() };
+                         .last_frame_time = platform_get_time_seconds(),
+                         .perf_frequency = platform_get_perf_frequency() };
 
     if (!enabled)
     {
@@ -113,7 +115,7 @@ void fps_begin_render(FpsCounter* fps)
         return;
     }
 
-    fps->render_start = platform_get_time_seconds();
+    fps->render_start_counter = platform_get_perf_counter();
 }
 
 static void draw_overlay_background(u32* pixels, i32 width, i32 height, i32 x, i32 y, i32 w, i32 h,
@@ -152,10 +154,12 @@ void fps_show(FpsCounter* fps, u32* pixels, i32 width, i32 height)
         return;
     }
 
-    const f64 now = platform_get_time_seconds();
-    const f64 render_dt = now - fps->render_start;
+    const u64 now_counter = platform_get_perf_counter();
+    const f64 render_dt = (f64)(now_counter - fps->render_start_counter) / (f64)fps->perf_frequency;
     fps->render_time_accum += render_dt;
     fps->render_frame_count++;
+
+    const f64 now = platform_get_time_seconds();
 
     if (now - fps->last_overlay_update >= 1.0)
     {
