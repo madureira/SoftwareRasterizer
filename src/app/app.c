@@ -33,10 +33,10 @@
 typedef struct AppState
 {
     Window* window;
+    FpsCounter* fps_counter;
     MemoryArena pixels_arena;
     u32* pixels;
     f64 last_frame_time;
-    FpsCounter* fps_counter;
     f64 rotation;
     i32 width;
     i32 height;

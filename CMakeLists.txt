@@ -145,7 +145,6 @@ elseif(ENABLE_PROFILING)
 endif()
 
 if(EMSCRIPTEN)
-
   set_target_properties(
     SoftwareRasterizer
     PROPERTIES
