@@ -7,13 +7,13 @@ Quatf quatf_normalize(Quatf quaternion)
 {
     assert(quatf_is_finite(quaternion));
 
-    const f32 length = quatf_len(quaternion);
+    const f32 length_squared = quatf_len_sq(quaternion);
 
-    assert(length > MATH_NORMALIZE_EPSILON);
+    assert(length_squared > MATH_NORMALIZE_EPSILON_SQUARED);
 
-    const f32 inverse = 1.0f / length;
+    const f32 inverse_length = 1.0f / sqrtf(length_squared);
 
-    const Quatf result = quatf_scale(quaternion, inverse);
+    const Quatf result = quatf_scale(quaternion, inverse_length);
 
     assert(quatf_is_finite(result));
 
@@ -182,67 +182,60 @@ void quatf_to_axis_angle(Quatf quaternion, Vec3f* axis, f32* angle_radians)
     assert(angle_radians != NULL);
     assert(quatf_is_finite(quaternion));
 
-    quaternion = quatf_normalize(quaternion);
-
     /*
-     *  q.w    = cos(angle / 2)
-     * |q.xyz| = sin(angle / 2)
+     *  q.w    = cos(angle / 2) * |q|
+     * |q.xyz| = sin(angle / 2) * |q|
      */
 
     // clang-format off
-    const f32 half_angle_sine = sqrtf(
+    const f32 axis_length_squared =
         quaternion.x * quaternion.x +
         quaternion.y * quaternion.y +
-        quaternion.z * quaternion.z
-    );
+        quaternion.z * quaternion.z;
     // clang-format on
+
+    const f32 length_squared = axis_length_squared + quaternion.w * quaternion.w;
 
     /*
      * For a zero rotation, the axis is arbitrary.
      * Use +X as the conventional default.
      */
-    if (half_angle_sine <= MATH_NORMALIZE_EPSILON)
+    if (axis_length_squared <= MATH_NORMALIZE_EPSILON_SQUARED * length_squared)
     {
         *axis = vec3f(1.0f, 0.0f, 0.0f);
         *angle_radians = 0.0f;
         return;
     }
 
-    const f32 inverse = 1.0f / half_angle_sine;
+    const f32 axis_length = sqrtf(axis_length_squared);
+    const f32 inverse = 1.0f / axis_length;
 
     *axis = vec3f(quaternion.x * inverse, quaternion.y * inverse, quaternion.z * inverse);
 
-    *angle_radians = 2.0f * atan2f(half_angle_sine, quaternion.w);
+    *angle_radians = 2.0f * atan2f(axis_length, quaternion.w);
 }
 
-Quatf quatf_look_rotation(Vec3f forward, Vec3f up)
+Quatf quatf_from_orthonormal_basis(Vec3f right, Vec3f up, Vec3f back)
 {
-    assert(vec3f_is_finite(forward));
+    assert(vec3f_is_finite(right));
     assert(vec3f_is_finite(up));
-    assert(vec3f_len_sq(forward) > MATH_NORMALIZE_EPSILON_SQUARED);
-
-    const Vec3f forward_axis = vec3f_normalize(forward);
-    const Vec3f right_unnormalized = vec3f_cross(forward_axis, up);
-
-    // forward and up must not be parallel: there is no unique right axis
-    assert(vec3f_len_sq(right_unnormalized) > MATH_NORMALIZE_EPSILON_SQUARED);
-
-    const Vec3f right_axis = vec3f_normalize(right_unnormalized);
-    const Vec3f up_axis = vec3f_cross(right_axis, forward_axis);
-    const Vec3f back_axis = vec3f_neg(forward_axis);
+    assert(vec3f_is_finite(back));
+    assert(fabsf(vec3f_len_sq(right) - 1.0f) <= MATH_COMPARISON_EPSILON);
+    assert(fabsf(vec3f_len_sq(up) - 1.0f) <= MATH_COMPARISON_EPSILON);
+    assert(fabsf(vec3f_len_sq(back) - 1.0f) <= MATH_COMPARISON_EPSILON);
 
     // Rotation matrix entries r{row}{col}, read from the (right, up, back) basis columns.
-    const f32 r00 = right_axis.x;
-    const f32 r01 = up_axis.x;
-    const f32 r02 = back_axis.x;
+    const f32 r00 = right.x;
+    const f32 r01 = up.x;
+    const f32 r02 = back.x;
 
-    const f32 r10 = right_axis.y;
-    const f32 r11 = up_axis.y;
-    const f32 r12 = back_axis.y;
+    const f32 r10 = right.y;
+    const f32 r11 = up.y;
+    const f32 r12 = back.y;
 
-    const f32 r20 = right_axis.z;
-    const f32 r21 = up_axis.z;
-    const f32 r22 = back_axis.z;
+    const f32 r20 = right.z;
+    const f32 r21 = up.z;
+    const f32 r22 = back.z;
 
     // Sum of the diagonal, picks which branch below is numerically stable.
     const f32 trace = r00 + r11 + r22;
@@ -305,6 +298,69 @@ Quatf quatf_look_rotation(Vec3f forward, Vec3f up)
         );
         // clang-format on
     }
+
+    assert(quatf_is_finite(result));
+
+    return result;
+}
+
+Quatf quatf_look_rotation(Vec3f forward, Vec3f up)
+{
+    assert(vec3f_is_finite(forward));
+    assert(vec3f_is_finite(up));
+    assert(vec3f_len_sq(forward) > MATH_NORMALIZE_EPSILON_SQUARED);
+
+    const Vec3f forward_axis = vec3f_normalize(forward);
+    const Vec3f right_unnormalized = vec3f_cross(forward_axis, up);
+
+    // forward and up must not be parallel: there is no unique right axis
+    assert(vec3f_len_sq(right_unnormalized) > MATH_NORMALIZE_EPSILON_SQUARED);
+
+    const Vec3f right_axis = vec3f_normalize(right_unnormalized);
+    const Vec3f up_axis = vec3f_cross(right_axis, forward_axis);
+    const Vec3f back_axis = vec3f_neg(forward_axis);
+
+    return quatf_from_orthonormal_basis(right_axis, up_axis, back_axis);
+}
+
+Quatf quatf_from_two_vectors(Vec3f from, Vec3f to)
+{
+    assert(vec3f_is_finite(from));
+    assert(vec3f_is_finite(to));
+    assert(vec3f_len_sq(from) > MATH_NORMALIZE_EPSILON_SQUARED);
+    assert(vec3f_len_sq(to) > MATH_NORMALIZE_EPSILON_SQUARED);
+
+    const Vec3f from_axis = vec3f_normalize(from);
+    const Vec3f to_axis = vec3f_normalize(to);
+
+    const f32 dot = vec3f_dot(from_axis, to_axis);
+
+    if (dot > 1.0f - MATH_COMPARISON_EPSILON)
+    {
+        return quatf_identity();
+    }
+
+    if (dot < -1.0f + MATH_COMPARISON_EPSILON)
+    {
+        /*
+         * from_axis and to_axis are antiparallel: their cross product degenerates
+         * to zero, so pick an arbitrary axis orthogonal to from_axis instead.
+         * The result is a 180 degree rotation around that axis.
+         */
+        const Vec3f fallback_axis =
+            fabsf(from_axis.x) < 0.9f ? vec3f(1.0f, 0.0f, 0.0f) : vec3f(0.0f, 1.0f, 0.0f);
+        const Vec3f axis = vec3f_normalize(vec3f_cross(from_axis, fallback_axis));
+
+        const Quatf result = quatf(axis.x, axis.y, axis.z, 0.0f);
+
+        assert(quatf_is_finite(result));
+
+        return result;
+    }
+
+    const Vec3f axis = vec3f_cross(from_axis, to_axis);
+
+    const Quatf result = quatf_normalize(quatf(axis.x, axis.y, axis.z, 1.0f + dot));
 
     assert(quatf_is_finite(result));
 

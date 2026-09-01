@@ -177,6 +177,14 @@ Quatf quatf_from_euler(f32 pitch, f32 yaw, f32 roll);
 void quatf_to_axis_angle(Quatf quaternion, Vec3f* axis, f32* angle_radians);
 
 /**
+ * Creates a quaternion from an orthonormal basis given as its (right, up, back)
+ * column vectors.
+ *
+ * "right", "up" and "back" must each be unit length and mutually orthogonal.
+ */
+Quatf quatf_from_orthonormal_basis(Vec3f right, Vec3f up, Vec3f back);
+
+/**
  * Creates a rotation that orients an object to face "forward",
  * using "up" as a reference for the up direction.
  *
@@ -189,6 +197,13 @@ void quatf_to_axis_angle(Quatf quaternion, Vec3f* axis, f32* angle_radians);
  * "forward" must be non-zero and must not be parallel to "up".
  */
 Quatf quatf_look_rotation(Vec3f forward, Vec3f up);
+
+/**
+ * Creates the shortest-arc rotation that maps direction "from" onto direction "to".
+ *
+ * "from" and "to" don't need to be normalized, but must be non-zero.
+ */
+Quatf quatf_from_two_vectors(Vec3f from, Vec3f to);
 
 /**
  * Rotates a vector using this quaternion.

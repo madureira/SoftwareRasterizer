@@ -315,6 +315,46 @@ static void test_to_axis_angle_zero_rotation_defaults_to_x_axis(TestContext* ctx
 }
 
 /*
+ * From orthonormal basis
+ */
+
+static void test_from_orthonormal_basis_identity(TestContext* ctx)
+{
+    Quatf q = quatf_from_orthonormal_basis(vec3f(1.0f, 0.0f, 0.0f), vec3f(0.0f, 1.0f, 0.0f),
+                                           vec3f(0.0f, 0.0f, 1.0f));
+    TEST_ASSERT_TRUE(ctx, quatf_eq_eps(q, quatf_identity(), EPS));
+}
+
+static void test_from_orthonormal_basis_quarter_turn_matches_axis_angle(TestContext* ctx)
+{
+    Quatf a = quatf_from_orthonormal_basis(vec3f(0.0f, 1.0f, 0.0f), vec3f(-1.0f, 0.0f, 0.0f),
+                                           vec3f(0.0f, 0.0f, 1.0f));
+    Quatf b = quatf_from_axis_angle(vec3f(0.0f, 0.0f, 1.0f), MATH_PI / 2.0f);
+    TEST_ASSERT_TRUE(ctx, quatf_eq_eps(a, b, EPS));
+}
+
+static void test_from_orthonormal_basis_round_trip_matches_source_rotation(TestContext* ctx)
+{
+    const Quatf q = quatf_from_axis_angle(vec3f_normalize(vec3f(1.0f, 2.0f, 3.0f)), 0.7f);
+
+    const Vec3f right = quatf_rotate_vec3f(q, vec3f(1.0f, 0.0f, 0.0f));
+    const Vec3f up = quatf_rotate_vec3f(q, vec3f(0.0f, 1.0f, 0.0f));
+    const Vec3f back = quatf_rotate_vec3f(q, vec3f(0.0f, 0.0f, 1.0f));
+
+    const Quatf r = quatf_from_orthonormal_basis(right, up, back);
+
+    TEST_ASSERT_TRUE(ctx, vec3f_eq_eps(quatf_rotate_vec3f(r, vec3f(1.0f, 0.0f, 0.0f)), right, EPS));
+    TEST_ASSERT_TRUE(ctx, vec3f_eq_eps(quatf_rotate_vec3f(r, vec3f(0.0f, 1.0f, 0.0f)), up, EPS));
+}
+
+static void test_from_orthonormal_basis_result_is_unit_length(TestContext* ctx)
+{
+    Quatf q = quatf_from_orthonormal_basis(vec3f(0.0f, 1.0f, 0.0f), vec3f(-1.0f, 0.0f, 0.0f),
+                                           vec3f(0.0f, 0.0f, 1.0f));
+    TEST_ASSERT_FLOAT_EQ(ctx, quatf_len(q), 1.0f, EPS);
+}
+
+/*
  * Look rotation
  */
 
@@ -362,6 +402,59 @@ static void test_look_rotation_quarter_turn_matches_axis_angle(TestContext* ctx)
     Quatf a = quatf_look_rotation(vec3f(1.0f, 0.0f, 0.0f), vec3f(0.0f, 1.0f, 0.0f));
     Quatf b = quatf_from_axis_angle(vec3f(0.0f, 1.0f, 0.0f), -MATH_PI / 2.0f);
     TEST_ASSERT_TRUE(ctx, quatf_eq_eps(a, b, EPS));
+}
+
+/*
+ * From two vectors
+ */
+
+static void test_from_two_vectors_identical_is_identity(TestContext* ctx)
+{
+    Quatf q = quatf_from_two_vectors(vec3f(1.0f, 2.0f, 3.0f), vec3f(2.0f, 4.0f, 6.0f));
+    TEST_ASSERT_TRUE(ctx, quatf_eq_eps(q, quatf_identity(), EPS));
+}
+
+static void test_from_two_vectors_quarter_turn_matches_axis_angle(TestContext* ctx)
+{
+    Quatf a = quatf_from_two_vectors(vec3f(1.0f, 0.0f, 0.0f), vec3f(0.0f, 1.0f, 0.0f));
+    Quatf b = quatf_from_axis_angle(vec3f(0.0f, 0.0f, 1.0f), MATH_PI / 2.0f);
+    TEST_ASSERT_TRUE(ctx, quatf_eq_eps(a, b, EPS));
+}
+
+static void test_from_two_vectors_rotates_from_onto_to(TestContext* ctx)
+{
+    const Vec3f from = vec3f(1.0f, 2.0f, 3.0f);
+    const Vec3f to = vec3f(4.0f, -1.0f, 2.0f);
+
+    Quatf q = quatf_from_two_vectors(from, to);
+
+    Vec3f rotated = quatf_rotate_vec3f(q, vec3f_normalize(from));
+
+    TEST_ASSERT_TRUE(ctx, vec3f_eq_eps(rotated, vec3f_normalize(to), EPS));
+}
+
+static void test_from_two_vectors_result_is_unit_length(TestContext* ctx)
+{
+    Quatf q = quatf_from_two_vectors(vec3f(1.0f, 2.0f, 3.0f), vec3f(4.0f, -1.0f, 2.0f));
+    TEST_ASSERT_FLOAT_EQ(ctx, quatf_len(q), 1.0f, EPS);
+}
+
+static void test_from_two_vectors_antiparallel_rotates_from_onto_to(TestContext* ctx)
+{
+    const Vec3f from = vec3f(1.0f, 0.0f, 0.0f);
+    const Vec3f to = vec3f(-1.0f, 0.0f, 0.0f);
+
+    Quatf q = quatf_from_two_vectors(from, to);
+
+    Vec3f rotated = quatf_rotate_vec3f(q, vec3f_normalize(from));
+
+    TEST_ASSERT_TRUE(ctx, vec3f_eq_eps(rotated, vec3f_normalize(to), EPS));
+}
+
+static void test_from_two_vectors_antiparallel_result_is_unit_length(TestContext* ctx)
+{
+    Quatf q = quatf_from_two_vectors(vec3f(0.0f, 1.0f, 0.0f), vec3f(0.0f, -1.0f, 0.0f));
+    TEST_ASSERT_FLOAT_EQ(ctx, quatf_len(q), 1.0f, EPS);
 }
 
 /*
@@ -653,6 +746,13 @@ static void setup(void)
         test(test_to_axis_angle_round_trip);
         test(test_to_axis_angle_zero_rotation_defaults_to_x_axis);
     }
+    describe("from_orthonormal_basis")
+    {
+        test(test_from_orthonormal_basis_identity);
+        test(test_from_orthonormal_basis_quarter_turn_matches_axis_angle);
+        test(test_from_orthonormal_basis_round_trip_matches_source_rotation);
+        test(test_from_orthonormal_basis_result_is_unit_length);
+    }
     describe("look_rotation")
     {
         test(test_look_rotation_default_forward_and_up_is_identity);
@@ -661,6 +761,15 @@ static void setup(void)
         test(test_look_rotation_rotated_up_is_orthogonal_to_forward);
         test(test_look_rotation_ignores_up_magnitude);
         test(test_look_rotation_quarter_turn_matches_axis_angle);
+    }
+    describe("from_two_vectors")
+    {
+        test(test_from_two_vectors_identical_is_identity);
+        test(test_from_two_vectors_quarter_turn_matches_axis_angle);
+        test(test_from_two_vectors_rotates_from_onto_to);
+        test(test_from_two_vectors_result_is_unit_length);
+        test(test_from_two_vectors_antiparallel_rotates_from_onto_to);
+        test(test_from_two_vectors_antiparallel_result_is_unit_length);
     }
     describe("rotate_vec3f")
     {
