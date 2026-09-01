@@ -3,6 +3,7 @@
 
 #include "math/math_common.h"
 #include "math/math_config.h"
+#include "math/vec2f.h"
 
 typedef struct Vec3f
 {
@@ -292,8 +293,30 @@ static inline bool vec3f_eq_eps(Vec3f a, Vec3f b, f32 epsilon)
     assert(isfinite(epsilon));
     assert(epsilon >= 0.0f);
 
-    return (fabsf(a.x - b.x) <= epsilon && fabsf(a.y - b.y) <= epsilon
-            && fabsf(a.z - b.z) <= epsilon);
+    // clang-format off
+    return fabsf(a.x - b.x) <= epsilon
+        && fabsf(a.y - b.y) <= epsilon
+        && fabsf(a.z - b.z) <= epsilon;
+    // clang-format on
+}
+
+/**
+ * Conversions
+ */
+
+static inline Vec3f vec3f_from_vec2f(Vec2f xy, f32 z)
+{
+    assert(vec2f_is_finite(xy));
+    assert(isfinite(z));
+
+    return vec3f(xy.x, xy.y, z);
+}
+
+static inline Vec2f vec3f_xy(Vec3f vector)
+{
+    assert(vec3f_is_finite(vector));
+
+    return vec2f(vector.x, vector.y);
 }
 
 /**

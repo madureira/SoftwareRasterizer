@@ -535,6 +535,31 @@ static void test_rotate_sincos_normalizes_axis(TestContext* ctx)
 }
 
 /*
+ * Conversions
+ */
+
+static void test_from_vec2f(TestContext* ctx)
+{
+    Vec3f v = vec3f_from_vec2f(vec2f(1.0f, 2.0f), 3.0f);
+    TEST_ASSERT(ctx, v.x == 1.0f);
+    TEST_ASSERT(ctx, v.y == 2.0f);
+    TEST_ASSERT(ctx, v.z == 3.0f);
+}
+
+static void test_xy(TestContext* ctx)
+{
+    Vec2f xy = vec3f_xy(vec3f(1.0f, 2.0f, 3.0f));
+    TEST_ASSERT(ctx, xy.x == 1.0f);
+    TEST_ASSERT(ctx, xy.y == 2.0f);
+}
+
+static void test_xy_from_vec2f_round_trip(TestContext* ctx)
+{
+    Vec2f xy = vec2f(4.0f, 5.0f);
+    TEST_ASSERT_TRUE(ctx, vec2f_eq(vec3f_xy(vec3f_from_vec2f(xy, 6.0f)), xy));
+}
+
+/*
  * Suite registration
  */
 
@@ -654,6 +679,12 @@ static void setup(void)
     {
         test(test_rotate_sincos_quarter_turn_around_z);
         test(test_rotate_sincos_normalizes_axis);
+    }
+    describe("conversions")
+    {
+        test(test_from_vec2f);
+        test(test_xy);
+        test(test_xy_from_vec2f_round_trip);
     }
 }
 
