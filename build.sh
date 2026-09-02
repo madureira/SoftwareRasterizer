@@ -22,14 +22,15 @@ print_usage() {
     cat <<EOF
 Usage:
   ./build.sh init
-  ./build.sh mac debug [--profile] [--simd]
+  ./build.sh mac debug [--profile]
   ./build.sh mac release [--profile] [--simd]
-  ./build.sh linux debug [--profile] [--simd]
+  ./build.sh linux debug [--profile]
   ./build.sh linux release [--profile] [--simd]
   ./build.sh web
 
 Examples:
   ./build.sh init
+  ./build.sh mac debug
   ./build.sh mac release
   ./build.sh mac release --simd
   ./build.sh mac release --simd --profile

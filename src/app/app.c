@@ -1,6 +1,5 @@
 #include "app/app.h"
 
-#include <math.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -368,8 +367,9 @@ static bool frame(void* arg)
             const Vec2f center = vec2f(padding + (f32)col * cell_w, padding + (f32)row * cell_h);
             const Vec2f base = vec2f(radius, 0.0f);
 
-            const f32 s0 = sinf(angle);
-            const f32 c0 = cosf(angle);
+            f32 s0;
+            f32 c0;
+            math_fast_sincos(math_radians_to_degree(angle), &s0, &c0);
             const f32 s1 = s0 * TRIANGLE_COS_120 + c0 * TRIANGLE_SIN_120;
             const f32 c1 = c0 * TRIANGLE_COS_120 - s0 * TRIANGLE_SIN_120;
             const f32 s2 = s0 * TRIANGLE_COS_240 + c0 * TRIANGLE_SIN_240;

@@ -1,5 +1,6 @@
 #include "platform/platform.h"
 
+#include "math/math_common.h"
 #include "platform/keyboard_mapping.h"
 
 #ifndef __EMSCRIPTEN__
@@ -21,6 +22,7 @@ static PlatformWindow* g_window = NULL;
 
 bool platform_init(void)
 {
+    math_build_sin_cos_tables();
     return SDL_Init(SDL_INIT_VIDEO);
 }
 
@@ -342,6 +344,8 @@ static EM_BOOL on_keyup(int type, const EmscriptenKeyboardEvent* e, void* ud)
 
 bool platform_init(void)
 {
+    math_build_sin_cos_tables();
+
     emscripten_set_keydown_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, NULL, 1, on_keydown);
     emscripten_set_keyup_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, NULL, 1, on_keyup);
     return true;

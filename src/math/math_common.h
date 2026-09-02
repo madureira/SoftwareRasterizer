@@ -11,6 +11,39 @@
 #define MATH_PI 3.14159265358979323846f
 
 /*
+ * Fast trigonometry
+ */
+
+/**
+ * Fast sin()/cos() backed by a 1-degree-resolution lookup table with
+ * linear interpolation between entries.
+ *
+ * Angles are in degrees, unlike the rest of the math library (which
+ * works in radians), because the table is indexed by integer degree.
+ *
+ * math_build_sin_cos_tables() must be called once (e.g. during
+ * platform/app startup) before the first call to math_fast_sin(),
+ * math_fast_cos(), or math_fast_sincos(). The tables have a single
+ * instance shared by every translation unit; they are defined in
+ * math_common.c.
+ */
+void math_build_sin_cos_tables(void);
+
+f32 math_fast_sin(f32 angle_degree);
+
+f32 math_fast_cos(f32 angle_degree);
+
+/**
+ * Computes sin and cos of the same angle in one call.
+ *
+ * Prefer this over calling math_fast_sin() and math_fast_cos()
+ * separately when both are needed (e.g. building a rotation): it
+ * reduces the angle and looks up the table index only once instead
+ * of twice.
+ */
+void math_fast_sincos(f32 angle_degree, f32* out_sin, f32* out_cos);
+
+/*
  * Scalar helpers
  */
 
