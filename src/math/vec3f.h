@@ -48,14 +48,41 @@ static inline Vec3f vec3f_add(Vec3f a, Vec3f b)
     return vec3f(a.x + b.x, a.y + b.y, a.z + b.z);
 }
 
+static inline void vec3f_add_inplace(Vec3f* vector, Vec3f value)
+{
+    assert(vector != NULL);
+
+    vector->x += value.x;
+    vector->y += value.y;
+    vector->z += value.z;
+}
+
 static inline Vec3f vec3f_sub(Vec3f a, Vec3f b)
 {
     return vec3f(a.x - b.x, a.y - b.y, a.z - b.z);
 }
 
+static inline void vec3f_sub_inplace(Vec3f* vector, Vec3f value)
+{
+    assert(vector != NULL);
+
+    vector->x -= value.x;
+    vector->y -= value.y;
+    vector->z -= value.z;
+}
+
 static inline Vec3f vec3f_scale(Vec3f vector, f32 scalar)
 {
     return vec3f(vector.x * scalar, vector.y * scalar, vector.z * scalar);
+}
+
+static inline void vec3f_scale_inplace(Vec3f* vector, f32 scalar)
+{
+    assert(vector != NULL);
+
+    vector->x *= scalar;
+    vector->y *= scalar;
+    vector->z *= scalar;
 }
 
 /**
@@ -78,9 +105,41 @@ static inline Vec3f vec3f_div(Vec3f vector, f32 scalar)
     return vec3f_scale(vector, inverse);
 }
 
+/**
+ * Divides a vector by a scalar in place.
+ *
+ * Preconditions:
+ * - vector must have finite components;
+ * - scalar must be finite and non-zero;
+ *
+ * Use vec3f_try_div() for untrusted or dynamically computed values.
+ */
+static inline void vec3f_div_inplace(Vec3f* vector, f32 scalar)
+{
+    assert(vector != NULL);
+    assert(vec3f_is_finite(*vector));
+    assert(isfinite(scalar));
+    assert(scalar != 0.0f);
+
+    const f32 inverse = 1.0f / scalar;
+
+    vector->x *= inverse;
+    vector->y *= inverse;
+    vector->z *= inverse;
+}
+
 static inline Vec3f vec3f_neg(Vec3f vector)
 {
     return vec3f(-vector.x, -vector.y, -vector.z);
+}
+
+static inline void vec3f_neg_inplace(Vec3f* vector)
+{
+    assert(vector != NULL);
+
+    vector->x = -vector->x;
+    vector->y = -vector->y;
+    vector->z = -vector->z;
 }
 
 /**
@@ -150,69 +209,6 @@ static inline Vec3f vec3f_lerp(Vec3f from, Vec3f to, f32 amount)
 static inline Vec3f vec3f_lerp_clamp(Vec3f from, Vec3f to, f32 amount)
 {
     return vec3f_lerp(from, to, math_clamp_f32(amount, 0.0f, 1.0f));
-}
-
-/**
- * In-place operations
- */
-
-static inline void vec3f_add_inplace(Vec3f* vector, Vec3f value)
-{
-    assert(vector != NULL);
-
-    vector->x += value.x;
-    vector->y += value.y;
-    vector->z += value.z;
-}
-
-static inline void vec3f_sub_inplace(Vec3f* vector, Vec3f value)
-{
-    assert(vector != NULL);
-
-    vector->x -= value.x;
-    vector->y -= value.y;
-    vector->z -= value.z;
-}
-
-static inline void vec3f_scale_inplace(Vec3f* vector, f32 scalar)
-{
-    assert(vector != NULL);
-
-    vector->x *= scalar;
-    vector->y *= scalar;
-    vector->z *= scalar;
-}
-
-/**
- * Divides a vector by a scalar in place.
- *
- * Preconditions:
- * - vector must have finite components;
- * - scalar must be finite and non-zero;
- *
- * Use vec3f_try_div() for untrusted or dynamically computed values.
- */
-static inline void vec3f_div_inplace(Vec3f* vector, f32 scalar)
-{
-    assert(vector != NULL);
-    assert(vec3f_is_finite(*vector));
-    assert(isfinite(scalar));
-    assert(scalar != 0.0f);
-
-    const f32 inverse = 1.0f / scalar;
-
-    vector->x *= inverse;
-    vector->y *= inverse;
-    vector->z *= inverse;
-}
-
-static inline void vec3f_neg_inplace(Vec3f* vector)
-{
-    assert(vector != NULL);
-
-    vector->x = -vector->x;
-    vector->y = -vector->y;
-    vector->z = -vector->z;
 }
 
 /**

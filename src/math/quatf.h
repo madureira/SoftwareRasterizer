@@ -132,8 +132,12 @@ static inline bool quatf_eq_eps(Quatf a, Quatf b, f32 epsilon)
     assert(isfinite(epsilon));
     assert(epsilon >= 0.0f);
 
-    return (fabsf(a.x - b.x) <= epsilon && fabsf(a.y - b.y) <= epsilon
-            && fabsf(a.z - b.z) <= epsilon && fabsf(a.w - b.w) <= epsilon);
+    // clang-format off
+    return fabsf(a.x - b.x) <= epsilon
+        && fabsf(a.y - b.y) <= epsilon
+        && fabsf(a.z - b.z) <= epsilon
+        && fabsf(a.w - b.w) <= epsilon;
+    // clang-format on
 }
 
 Quatf quatf_normalize(Quatf quaternion);

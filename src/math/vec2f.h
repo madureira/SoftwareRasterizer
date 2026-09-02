@@ -46,14 +46,38 @@ static inline Vec2f vec2f_add(Vec2f a, Vec2f b)
     return vec2f(a.x + b.x, a.y + b.y);
 }
 
+static inline void vec2f_add_inplace(Vec2f* vector, Vec2f value)
+{
+    assert(vector != NULL);
+
+    vector->x += value.x;
+    vector->y += value.y;
+}
+
 static inline Vec2f vec2f_sub(Vec2f a, Vec2f b)
 {
     return vec2f(a.x - b.x, a.y - b.y);
 }
 
+static inline void vec2f_sub_inplace(Vec2f* vector, Vec2f value)
+{
+    assert(vector != NULL);
+
+    vector->x -= value.x;
+    vector->y -= value.y;
+}
+
 static inline Vec2f vec2f_scale(Vec2f vector, f32 scalar)
 {
     return vec2f(vector.x * scalar, vector.y * scalar);
+}
+
+static inline void vec2f_scale_inplace(Vec2f* vector, f32 scalar)
+{
+    assert(vector != NULL);
+
+    vector->x *= scalar;
+    vector->y *= scalar;
 }
 
 static inline Vec2f vec2f_rotate_sincos(Vec2f vector, f32 sine, f32 cosine)
@@ -85,9 +109,39 @@ static inline Vec2f vec2f_div(Vec2f vector, f32 scalar)
     return vec2f_scale(vector, inverse);
 }
 
+/**
+ * Divides a vector by a scalar in place.
+ *
+ * Preconditions:
+ * - vector must have finite components;
+ * - scalar must be finite and non-zero.
+ *
+ * Use vec2f_try_div() for untrusted or dynamically computed values.
+ */
+static inline void vec2f_div_inplace(Vec2f* vector, f32 scalar)
+{
+    assert(vector != NULL);
+    assert(vec2f_is_finite(*vector));
+    assert(isfinite(scalar));
+    assert(scalar != 0.0f);
+
+    const f32 inverse = 1.0f / scalar;
+
+    vector->x *= inverse;
+    vector->y *= inverse;
+}
+
 static inline Vec2f vec2f_neg(Vec2f vector)
 {
     return vec2f(-vector.x, -vector.y);
+}
+
+static inline void vec2f_neg_inplace(Vec2f* vector)
+{
+    assert(vector != NULL);
+
+    vector->x = -vector->x;
+    vector->y = -vector->y;
 }
 
 /**
@@ -156,64 +210,6 @@ static inline Vec2f vec2f_lerp(Vec2f from, Vec2f to, f32 amount)
 static inline Vec2f vec2f_lerp_clamp(Vec2f from, Vec2f to, f32 amount)
 {
     return vec2f_lerp(from, to, math_clamp_f32(amount, 0.0f, 1.0f));
-}
-
-/**
- * In-place operations
- */
-
-static inline void vec2f_add_inplace(Vec2f* vector, Vec2f value)
-{
-    assert(vector != NULL);
-
-    vector->x += value.x;
-    vector->y += value.y;
-}
-
-static inline void vec2f_sub_inplace(Vec2f* vector, Vec2f value)
-{
-    assert(vector != NULL);
-
-    vector->x -= value.x;
-    vector->y -= value.y;
-}
-
-static inline void vec2f_scale_inplace(Vec2f* vector, f32 scalar)
-{
-    assert(vector != NULL);
-
-    vector->x *= scalar;
-    vector->y *= scalar;
-}
-
-/**
- * Divides a vector by a scalar in place.
- *
- * Preconditions:
- * - vector must have finite components;
- * - scalar must be finite and non-zero.
- *
- * Use vec2f_try_div() for untrusted or dynamically computed values.
- */
-static inline void vec2f_div_inplace(Vec2f* vector, f32 scalar)
-{
-    assert(vector != NULL);
-    assert(vec2f_is_finite(*vector));
-    assert(isfinite(scalar));
-    assert(scalar != 0.0f);
-
-    const f32 inverse = 1.0f / scalar;
-
-    vector->x *= inverse;
-    vector->y *= inverse;
-}
-
-static inline void vec2f_neg_inplace(Vec2f* vector)
-{
-    assert(vector != NULL);
-
-    vector->x = -vector->x;
-    vector->y = -vector->y;
 }
 
 /**
