@@ -11,7 +11,7 @@ typedef struct Quatf
     f32 w;
 } Quatf;
 
-/**
+/*
  * Contruction
  */
 
@@ -29,7 +29,7 @@ static inline Quatf quatf_identity(void)
     return quatf(0.0f, 0.0f, 0.0f, 1.0f);
 }
 
-/**
+/*
  * Helpers
  */
 
@@ -39,7 +39,7 @@ static inline bool quatf_is_finite(Quatf quaternion)
            && isfinite(quaternion.w);
 }
 
-/**
+/*
  * Arithmetic
  */
 
@@ -64,7 +64,7 @@ static inline Quatf quatf_neg(Quatf quaternion)
     return quatf(-quaternion.x, -quaternion.y, -quaternion.z, -quaternion.w);
 }
 
-/**
+/*
  * Quaternion operations
  */
 
@@ -113,9 +113,10 @@ static inline Quatf quatf_multiply(Quatf a, Quatf b)
     // clang-format on
 }
 
-/**
+/*
  * Comparison
  */
+
 static inline bool quatf_eq(Quatf a, Quatf b)
 {
     return a.x == b.x && a.y == b.y && a.z == b.z && a.w == b.w;

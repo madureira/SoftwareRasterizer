@@ -40,6 +40,11 @@ typedef ptrdiff_t isize;
 typedef uintptr_t uptr;
 typedef intptr_t iptr;
 
+/*
+ * Fixed-point types.
+ */
+typedef int32_t fixp16; // 32-bit integer with 16 fractional bits
+
 #ifndef EXIT_SUCCESS
 #define EXIT_SUCCESS 0
 #endif

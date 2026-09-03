@@ -13,7 +13,7 @@ typedef struct Vec4f
     f32 w;
 } Vec4f;
 
-/**
+/*
  * Construction
  */
 
@@ -31,7 +31,7 @@ static inline Vec4f vec4f_one(void)
     return vec4f(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
-/**
+/*
  * Homogeneous coordinates
  */
 
@@ -55,7 +55,7 @@ static inline Vec4f vec4f_vector(f32 x, f32 y, f32 z)
     return vec4f(x, y, z, 0.0f);
 }
 
-/**
+/*
  * Helpers
  */
 
@@ -64,7 +64,7 @@ static inline bool vec4f_is_finite(Vec4f vector)
     return isfinite(vector.x) && isfinite(vector.y) && isfinite(vector.z) && isfinite(vector.w);
 }
 
-/**
+/*
  * Arithmetic
  */
 
@@ -172,7 +172,7 @@ static inline void vec4f_neg_inplace(Vec4f* vector)
     vector->w = -vector->w;
 }
 
-/**
+/*
  * Vector operations
  */
 
@@ -219,7 +219,7 @@ static inline Vec4f vec4f_lerp_clamp(Vec4f from, Vec4f to, f32 amount)
     return vec4f_lerp(from, to, math_clamp_f32(amount, 0.0f, 1.0f));
 }
 
-/**
+/*
  * Homogeneous operations
  */
 
@@ -247,7 +247,7 @@ static inline bool vec4f_is_vector(Vec4f vector)
     return fabsf(vector.w) <= MATH_COMPARISON_EPSILON;
 }
 
-/**
+/*
  * Comparison
  */
 
@@ -311,9 +311,10 @@ static inline bool vec4f_near_sq(Vec4f a, Vec4f b, f32 maximum_distance_squared)
     return actual_distance_squared <= maximum_distance_squared;
 }
 
-/**
+/*
  * Length
  */
+
 static inline f32 vec4f_len(Vec4f vector)
 {
     assert(vec4f_is_finite(vector));
@@ -337,7 +338,7 @@ static inline f32 vec4f_dist(Vec4f a, Vec4f b)
     return sqrtf(distance_squared);
 }
 
-/**
+/*
  * Conversions
  */
 
@@ -356,7 +357,7 @@ static inline Vec3f vec4f_xyz(Vec4f vector)
     return vec3f(vector.x, vector.y, vector.z);
 }
 
-/**
+/*
  * Operations implemented in vec4f.c
  */
 

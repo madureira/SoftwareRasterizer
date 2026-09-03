@@ -6,6 +6,7 @@
 #ifndef __EMSCRIPTEN__
 
 #include <stdlib.h>
+#include <time.h>
 
 #include <SDL3/SDL.h>
 
@@ -22,6 +23,7 @@ static PlatformWindow* g_window = NULL;
 
 bool platform_init(void)
 {
+    srand((unsigned)time(NULL)); // NOLINT(cert-msc32-c, cert-msc51-cpp)
     math_build_sin_cos_tables();
     return SDL_Init(SDL_INIT_VIDEO);
 }
@@ -268,6 +270,7 @@ u64 platform_get_perf_frequency(void)
 
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include <emscripten.h>
 #include <emscripten/html5.h>
@@ -344,6 +347,7 @@ static EM_BOOL on_keyup(int type, const EmscriptenKeyboardEvent* e, void* ud)
 
 bool platform_init(void)
 {
+    srand((unsigned)time(NULL)); // NOLINT(cert-msc32-c, cert-msc51-cpp)
     math_build_sin_cos_tables();
 
     emscripten_set_keydown_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, NULL, 1, on_keydown);

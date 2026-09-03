@@ -10,7 +10,7 @@ typedef struct Vec2f
     f32 y;
 } Vec2f;
 
-/**
+/*
  * Construction
  */
 
@@ -28,7 +28,7 @@ static inline Vec2f vec2f_one(void)
     return vec2f(1.0f, 1.0f);
 }
 
-/**
+/*
  * Helpers
  */
 
@@ -37,7 +37,7 @@ static inline bool vec2f_is_finite(Vec2f vector)
     return isfinite(vector.x) && isfinite(vector.y);
 }
 
-/**
+/*
  * Arithmetic
  */
 
@@ -144,7 +144,7 @@ static inline void vec2f_neg_inplace(Vec2f* vector)
     vector->y = -vector->y;
 }
 
-/**
+/*
  * Vector operations
  */
 
@@ -212,7 +212,7 @@ static inline Vec2f vec2f_lerp_clamp(Vec2f from, Vec2f to, f32 amount)
     return vec2f_lerp(from, to, math_clamp_f32(amount, 0.0f, 1.0f));
 }
 
-/**
+/*
  * Comparison
  */
 
@@ -294,7 +294,7 @@ static inline bool vec2f_eq_eps(Vec2f a, Vec2f b, f32 epsilon)
     return (fabsf(a.x - b.x) <= epsilon && fabsf(a.y - b.y) <= epsilon);
 }
 
-/**
+/*
  * Operations implemented in vec2f.c
  */
 

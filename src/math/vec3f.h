@@ -12,7 +12,7 @@ typedef struct Vec3f
     f32 z;
 } Vec3f;
 
-/**
+/*
  * Construction
  */
 
@@ -30,7 +30,7 @@ static inline Vec3f vec3f_one(void)
     return vec3f(1.0f, 1.0f, 1.0f);
 }
 
-/**
+/*
  * Helpers
  */
 
@@ -39,7 +39,7 @@ static inline bool vec3f_is_finite(Vec3f vector)
     return isfinite(vector.x) && isfinite(vector.y) && isfinite(vector.z);
 }
 
-/**
+/*
  * Arithmetic
  */
 
@@ -142,7 +142,7 @@ static inline void vec3f_neg_inplace(Vec3f* vector)
     vector->z = -vector->z;
 }
 
-/**
+/*
  * Vector operations
  */
 
@@ -211,9 +211,10 @@ static inline Vec3f vec3f_lerp_clamp(Vec3f from, Vec3f to, f32 amount)
     return vec3f_lerp(from, to, math_clamp_f32(amount, 0.0f, 1.0f));
 }
 
-/**
+/*
  * Comparison
  */
+
 static inline bool vec3f_eq(Vec3f a, Vec3f b)
 {
     return a.x == b.x && a.y == b.y && a.z == b.z;
@@ -296,7 +297,7 @@ static inline bool vec3f_eq_eps(Vec3f a, Vec3f b, f32 epsilon)
     // clang-format on
 }
 
-/**
+/*
  * Conversions
  */
 
@@ -315,7 +316,7 @@ static inline Vec2f vec3f_xy(Vec3f vector)
     return vec2f(vector.x, vector.y);
 }
 
-/**
+/*
  * Operations implemented in vec3f.c
  */
 

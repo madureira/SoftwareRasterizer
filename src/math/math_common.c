@@ -7,6 +7,45 @@ static f32 cos_table[MATH_SIN_COS_TABLE_SIZE];
 
 static bool sin_cos_tables_built = false;
 
+bool math_fixp16_try_mul(fixp16 a, fixp16 b, fixp16* result)
+{
+    if (result == NULL)
+    {
+        return false;
+    }
+
+    i64 product = (i64)a * (i64)b;
+    i64 shifted = (product + FIXP16_ROUND_UP) >> FIXP16_SHIFT;
+
+    if (shifted > INT32_MAX || shifted < INT32_MIN)
+    {
+        return false;
+    }
+
+    *result = (fixp16)shifted;
+
+    return true;
+}
+
+bool math_fixp16_try_div(fixp16 a, fixp16 b, fixp16* result)
+{
+    if (result == NULL || b == 0)
+    {
+        return false;
+    }
+
+    i64 quotient = math_fixp16_div_i64(a, b);
+
+    if (quotient > INT32_MAX || quotient < INT32_MIN)
+    {
+        return false;
+    }
+
+    *result = (fixp16)quotient;
+
+    return true;
+}
+
 static void math_sin_cos_table_index(f32 angle_degree, i32* theta_int, f32* theta_frac)
 {
     angle_degree = fmodf(angle_degree, 360.0f);
