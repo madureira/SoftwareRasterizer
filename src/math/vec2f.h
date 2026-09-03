@@ -328,4 +328,6 @@ Vec2f vec2f_rotate_around(Vec2f vector, Vec2f pivot, f32 angle_radians);
 
 void vec2f_rotate_around_inplace(Vec2f* vector, Vec2f pivot, f32 angle_radians);
 
+void vec2f_print(Vec2f vector);
+
 #endif // MATH_VEC2F_H

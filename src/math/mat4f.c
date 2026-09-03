@@ -1,5 +1,7 @@
 #include "math/mat4f.h"
 
+#include <stdio.h>
+
 Mat4f mat4f_rotation_x(f32 angle_radians)
 {
     assert(isfinite(angle_radians));
@@ -242,4 +244,22 @@ bool mat4f_try_normal_matrix(Mat4f matrix, Mat4f* result)
     *result = mat4f_transpose(inverse);
 
     return true;
+}
+
+void mat4f_print(Mat4f matrix)
+{
+    // clang-format off
+    printf(
+        "Mat4f(\n"
+        "  [%.6f, %.6f, %.6f, %.6f]\n"
+        "  [%.6f, %.6f, %.6f, %.6f]\n"
+        "  [%.6f, %.6f, %.6f, %.6f]\n"
+        "  [%.6f, %.6f, %.6f, %.6f]\n"
+        ")\n",
+        matrix.m00, matrix.m01, matrix.m02, matrix.m03,
+        matrix.m10, matrix.m11, matrix.m12, matrix.m13,
+        matrix.m20, matrix.m21, matrix.m22, matrix.m23,
+        matrix.m30, matrix.m31, matrix.m32, matrix.m33
+    );
+    // clang-format on
 }

@@ -1,5 +1,7 @@
 #include "math/vec2f.h"
 
+#include <stdio.h>
+
 bool vec2f_try_div(Vec2f vector, f32 scalar, Vec2f* result)
 {
     if (result == NULL || !vec2f_is_finite(vector) || !isfinite(scalar)
@@ -97,4 +99,9 @@ void vec2f_rotate_around_inplace(Vec2f* vector, Vec2f pivot, f32 angle_radians)
     assert(vector != NULL);
 
     *vector = vec2f_rotate_around(*vector, pivot, angle_radians);
+}
+
+void vec2f_print(Vec2f vector)
+{
+    printf("Vec2f(x: %.6f, y: %.6f)\n", vector.x, vector.y);
 }

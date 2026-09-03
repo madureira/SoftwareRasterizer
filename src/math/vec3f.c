@@ -1,5 +1,7 @@
 #include "math/vec3f.h"
 
+#include <stdio.h>
+
 bool vec3f_try_div(Vec3f vector, f32 scalar, Vec3f* result)
 {
     if (result == NULL || !vec3f_is_finite(vector) || !isfinite(scalar)
@@ -118,4 +120,9 @@ void vec3f_rotate_around_inplace(Vec3f* vector, Vec3f pivot, Vec3f axis, f32 ang
     const Vec3f rotated = vec3f_rotate(translated, axis, angle_radians);
 
     *vector = vec3f_add(rotated, pivot);
+}
+
+void vec3f_print(Vec3f vector)
+{
+    printf("Vec3f(x: %.6f, y: %.6f, z: %.6f)\n", vector.x, vector.y, vector.z);
 }

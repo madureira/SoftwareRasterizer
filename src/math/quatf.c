@@ -1,5 +1,7 @@
 #include "math/quatf.h"
 
+#include <stdio.h>
+
 #include "math/math_common.h"
 #include "math/math_config.h"
 
@@ -565,6 +567,16 @@ Quatf quatf_nlerp_clamp(Quatf from, Quatf to, f32 amount)
         from,
         to,
         math_clamp_f32(amount, 0.0f, 1.0f)
+    );
+    // clang-format on
+}
+
+void quatf_print(Quatf quaternion)
+{
+    // clang-format off
+    printf(
+        "Quatf(x: %.6f, y: %.6f, z: %.6f, w: %.6f)\n",
+        quaternion.x, quaternion.y, quaternion.z, quaternion.w
     );
     // clang-format on
 }

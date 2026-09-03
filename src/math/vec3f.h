@@ -364,4 +364,6 @@ Vec3f vec3f_rotate_around(Vec3f vector, Vec3f pivot, Vec3f axis, f32 angle_radia
 
 void vec3f_rotate_around_inplace(Vec3f* vector, Vec3f pivot, Vec3f axis, f32 angle_radians);
 
+void vec3f_print(Vec3f vector);
+
 #endif // MATH_VEC3F_H

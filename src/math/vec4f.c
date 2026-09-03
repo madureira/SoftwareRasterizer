@@ -1,5 +1,7 @@
 #include "math/vec4f.h"
 
+#include <stdio.h>
+
 bool vec4f_try_div(Vec4f vector, f32 scalar, Vec4f* result)
 {
     if (result == NULL)
@@ -123,4 +125,9 @@ bool vec4f_try_perspective_divide(Vec4f vector, Vec4f* result)
     *result = divide;
 
     return true;
+}
+
+void vec4f_print(Vec4f vector)
+{
+    printf("Vec4f(x: %.6f, y: %.6f, z: %.6f, w: %.6f)\n", vector.x, vector.y, vector.z, vector.w);
 }

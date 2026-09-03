@@ -644,4 +644,6 @@ bool mat4f_try_mul_vec3_perspective(Mat4f matrix, Vec3f point, Vec3f* result);
  */
 Mat4f mat4f_look_at(Vec3f eye, Vec3f target, Vec3f up);
 
+void mat4f_print(Mat4f matrix);
+
 #endif // MATH_MAT4F_H

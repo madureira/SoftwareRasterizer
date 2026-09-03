@@ -268,4 +268,6 @@ Quatf quatf_nlerp(Quatf from, Quatf to, f32 amount);
  */
 Quatf quatf_nlerp_clamp(Quatf from, Quatf to, f32 amount);
 
+void quatf_print(Quatf quaternion);
+
 #endif // MATH_QUATF_H

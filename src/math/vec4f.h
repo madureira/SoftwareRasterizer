@@ -406,4 +406,6 @@ bool vec4f_try_normalize(Vec4f vector, Vec4f* result);
  */
 bool vec4f_try_perspective_divide(Vec4f vector, Vec4f* result);
 
+void vec4f_print(Vec4f vector);
+
 #endif // MATH_VEC4F_H
