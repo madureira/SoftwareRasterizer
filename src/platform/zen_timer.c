@@ -178,18 +178,26 @@ static void ZTimerInitializeFrequency(void)
 /*
  * Converts QueryPerformanceCounter() counts to nanoseconds.
  *
- * Use 128-bit arithmetic so that the multiplication cannot overflow for
- * large counter values.
+ * MSVC has no 128-bit integer type (unlike the __uint128_t used by
+ * Clang/GCC on the other platforms' equivalent conversion), so the
+ * multiply-then-divide is split into whole seconds and a sub-second
+ * remainder instead: ticks = seconds * freq + remainder, with
+ * remainder < freq, so remainder * 1e9 cannot overflow 64 bits for any
+ * realistic QueryPerformanceCounter() frequency. This is mathematically
+ * exact, not an approximation -- it produces the same truncated result
+ * as a single 128-bit division would.
  */
 static uint64_t ZTimerTicksToNanoseconds(uint64_t ticks)
 {
-    __uint128_t nanoseconds;
+    uint64_t seconds;
+    uint64_t remainder;
 
     ZTimerInitializeFrequency();
 
-    nanoseconds = ((__uint128_t)ticks * 1000000000ull) / ZTimerFrequency;
+    seconds = ticks / ZTimerFrequency;
+    remainder = ticks % ZTimerFrequency;
 
-    return (uint64_t)nanoseconds;
+    return seconds * 1000000000ull + (remainder * 1000000000ull) / ZTimerFrequency;
 }
 
 #elif defined(__EMSCRIPTEN__)

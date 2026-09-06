@@ -60,7 +60,8 @@ bool memory_arena_create(MemoryArena* arena, usize capacity)
         return false;
     }
 
-    usize offset = (usize)(-(uptr)allocation & alignment_mask);
+    usize offset =
+        (usize)(((alignment_mask + 1) - ((uptr)allocation & alignment_mask)) & alignment_mask);
 
     arena->allocation = allocation;
     arena->base = allocation + offset;
