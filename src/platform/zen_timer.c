@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#if defined(__APPLE__)
+#if defined(__APPLE__) && !defined(__aarch64__)
 #include <mach/mach_time.h>
 #elif defined(_WIN32)
 #include <windows.h>
@@ -56,7 +56,7 @@ uint64_t ReferenceCount = 0;
  */
 uint8_t OverflowFlag = 0;
 
-#if defined(__APPLE__)
+#if defined(__APPLE__) && !defined(__aarch64__)
 
 /*
  * mach_absolute_time() returns hardware-dependent time units.
@@ -94,18 +94,63 @@ static uint64_t ZTimerTicksToNanoseconds(uint64_t ticks)
     return (uint64_t)nanoseconds;
 }
 
-#elif defined(__linux__)
+#elif defined(__linux__) && !defined(__aarch64__)
 
 /*
- * On Linux, zen_timer_read_clock() (in the src/platform/linux/
+ * On Linux/x86_64, zen_timer_read_clock() (in the src/platform/linux/
  * assembly) already combines clock_gettime(CLOCK_MONOTONIC)'s tv_sec and
  * tv_nsec into a single nanosecond count, so no conversion is needed.
  * This is an identity function, kept only for symmetry with the other
- * two platforms.
+ * platforms.
  */
 static uint64_t ZTimerTicksToNanoseconds(uint64_t ticks)
 {
     return ticks;
+}
+
+#elif defined(__aarch64__) && (defined(__APPLE__) || defined(__linux__))
+
+/*
+ * On both Apple Silicon and Linux/ARM64, ZTimerOn()/ZTimerOff() (in the
+ * platform-specific assembly) read the ARMv8 generic timer directly via
+ * CNTVCT_EL0, instead of calling mach_absolute_time()/clock_gettime().
+ * On Apple Silicon this can't reuse mach_timebase_info()'s ratio:
+ * mach_absolute_time() runs off its own ~24 MHz timebase there
+ * (numer=125/denom=3), not the ARM generic timer.
+ *
+ * The counter's tick rate isn't architecturally fixed, so it's read
+ * once via zen_timer_read_frequency() (CNTFRQ_EL0, exported by the same
+ * assembly file) and cached, analogous to mach_timebase_info() above
+ * and QueryPerformanceFrequency() below.
+ */
+
+extern uint64_t zen_timer_read_frequency(void);
+
+static uint64_t ZTimerFrequency = 0;
+
+static void ZTimerInitializeFrequency(void)
+{
+    if (ZTimerFrequency == 0)
+    {
+        ZTimerFrequency = zen_timer_read_frequency();
+    }
+}
+
+/*
+ * Converts CNTVCT_EL0 ticks to nanoseconds.
+ *
+ * Use 128-bit arithmetic so that the multiplication cannot overflow for
+ * large counter values.
+ */
+static uint64_t ZTimerTicksToNanoseconds(uint64_t ticks)
+{
+    __uint128_t nanoseconds;
+
+    ZTimerInitializeFrequency();
+
+    nanoseconds = ((__uint128_t)ticks * 1000000000ull) / ZTimerFrequency;
+
+    return (uint64_t)nanoseconds;
 }
 
 #elif defined(_WIN32)
@@ -157,10 +202,11 @@ static uint64_t ZTimerTicksToNanoseconds(uint64_t ticks)
  * same monotonic clock source platform_get_perf_counter() already uses
  * for this platform in platform.c.
  *
- * ReferenceZTimerOn()/ReferenceZTimerOff() are file-local helpers here:
- * on the other platforms they're separate assembly procedures only
- * because that's how one procedure calls another within the same
- * assembly file; there's no such constraint in C.
+ * ReferenceZTimerOn()/ReferenceZTimerOff() are file-local helpers here,
+ * inlined by the compiler at the loop's single call site in ZTimerOff()
+ * below -- the same outcome the hand-written assembly on the other
+ * platforms achieves manually, by inlining the equivalent reference
+ * measurement directly into their own ZTimerOff().
  */
 
 static uint64_t ZTimerReadClockNanoseconds(void)

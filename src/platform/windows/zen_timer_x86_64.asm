@@ -41,8 +41,8 @@
 ;      addition to the usual 16-byte stack alignment. The SysV ABI used
 ;      by macOS/Linux has no equivalent requirement.
 ;
-; To keep ZTimerOn/ZTimerOff/ReferenceZTimerOn/ReferenceZTimerOff
-; identical in shape to the macOS/Linux ports, this file wraps the
+; To keep ZTimerOn/ZTimerOff's calls to the underlying clock identical in
+; shape to the macOS/Linux ports, this file wraps the
 ; QueryPerformanceCounter() call in a small file-local helper,
 ; zen_timer_read_clock, which marshals the output pointer and shadow
 ; space and returns a single 64-bit raw counter value in RAX, just like
@@ -174,7 +174,7 @@ ZTimerOn ENDP
 ;     TimedCount = elapsed;
 ;
 ; After the main measurement, the overhead of the timer mechanism itself is
-; measured 16 times using ReferenceZTimerOn() and ReferenceZTimerOff().
+; measured 16 times and averaged (see the reference-measurement loop below).
 ;
 ;==============================================================================
 
@@ -238,18 +238,24 @@ ZTimerOff PROC FRAME
 
 
     ; -------------------------------------------------------------------------
-    ; Measure timer overhead
+    ; Measure timer overhead: 16 back-to-back reads, averaged.
     ; -------------------------------------------------------------------------
     ;
-    ; The original Zen Timer measures a nearly empty interval to determine
-    ; the overhead introduced by the timer itself. We perform the
-    ; measurement 16 times and accumulate the results.
+    ; R12 is free to reuse as scratch here (its earlier value,
+    ; ZTimerStartCount, was already consumed above), holding each
+    ; iteration's start timestamp in a register instead of memory. The
+    ; 32 bytes of shadow space from this function's prologue are reused
+    ; by both calls below.
     xor r13, r13            ; total = 0
     mov r14d, 16            ; loop counter
 
 ZTimerReferenceLoop:
-    call ReferenceZTimerOn
-    call ReferenceZTimerOff     ; returns the elapsed counter value in RAX
+    call zen_timer_read_clock
+    mov r12, rax                ; start (R12 free: ZTimerStartCount already consumed above)
+
+    call zen_timer_read_clock
+    sub rax, r12                ; elapsed = current - start
+
     add r13, rax
     dec r14
     jnz ZTimerReferenceLoop
@@ -278,82 +284,5 @@ ZTimerReferenceLoop:
     pop r12
     ret
 ZTimerOff ENDP
-
-
-;==============================================================================
-; ReferenceZTimerOn
-;==============================================================================
-;
-; Starts a reference measurement.
-;
-; The reference measurement is used to determine the overhead introduced
-; by the timer mechanism itself.
-;
-; Equivalent C:
-;
-;     ZTimerStartCount = zen_timer_read_clock();
-;
-; The main measurement has already been completed before this function is
-; called from ZTimerOff(), so reusing ZTimerStartCount here is safe.
-;
-;==============================================================================
-
-PUBLIC ReferenceZTimerOn
-ReferenceZTimerOn PROC FRAME
-    sub rsp, 40
-    .ALLOCSTACK 40
-    .ENDPROLOG
-
-    call zen_timer_read_clock
-    mov ZTimerStartCount, rax
-
-    add rsp, 40
-    ret
-ReferenceZTimerOn ENDP
-
-
-;==============================================================================
-; ReferenceZTimerOff
-;==============================================================================
-;
-; Ends a reference measurement.
-;
-; Returns:
-;
-;     current - start
-;
-; in RAX.
-;
-; Equivalent C:
-;
-;     return zen_timer_read_clock() - ZTimerStartCount;
-;
-;==============================================================================
-
-PUBLIC ReferenceZTimerOff
-ReferenceZTimerOff PROC FRAME
-    sub rsp, 40
-    .ALLOCSTACK 40
-    .ENDPROLOG
-
-    call zen_timer_read_clock
-
-    ; RDX is caller-saved, so no preservation is required.
-    mov rdx, rax
-    mov rax, ZTimerStartCount
-
-    ; Calculate:
-    ;
-    ;     current - start
-    ;
-    ; RDX contains current, RAX contains start.
-    sub rdx, rax
-
-    ; RAX is the standard integer return register in the x86_64 ABI.
-    mov rax, rdx
-
-    add rsp, 40
-    ret
-ReferenceZTimerOff ENDP
 
 END
