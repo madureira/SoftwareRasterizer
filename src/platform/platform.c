@@ -466,7 +466,7 @@ bool platform_poll_event(PlatformEvent* event)
 static void emscripten_frame_wrapper(void)
 {
     // Snapshot time once at rAF entry so every platform_get_time_seconds()
-    // call within a frame returns the same value — no intra-frame drift.
+    // call within a frame returns the same value - no intra-frame drift.
     g_frame_time_sec = emscripten_get_now() / 1000.0;
     if (!g_loop_state.cb(g_loop_state.user_data))
     {

@@ -218,7 +218,7 @@ static inline void mat4f_transpose_inplace(Mat4f* matrix)
  *
  * A zero (or near-zero) determinant means the matrix is singular/too close to
  * singular to invert (see mat4f_try_inverse()). A negative determinant means
- * the matrix flips orientation (mirrored/negative scale) — the case
+ * the matrix flips orientation (mirrored/negative scale) - the case
  * mat4f_get_scale() can't detect on its own.
  */
 static inline f32 mat4f_determinant(Mat4f matrix)

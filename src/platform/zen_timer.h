@@ -1,3 +1,32 @@
+/*
+ * ============================================================================
+ * Zen Timer
+ * ============================================================================
+ *
+ * High-resolution interval timer for code performance measurement.
+ * Wraps routines with ZTimerOn()/ZTimerOff(), then call ZTimerReport()
+ * to print elapsed time. Used to benchmark and compare rasterizer routines.
+ *
+ * Based on Michael Abrash's Zen Timer from "Zen of Assembly Language"
+ * and "Graphics Programming Black Book". Original version ran on DOS,
+ * using Intel 8253 PIT directly since no OS clock API existed yet.
+ *
+ * ============================================================================
+ * Why hand-written assembly?
+ * ============================================================================
+ *
+ * ARM64 (Linux, macOS): Read CNTVCT_EL0 directly with MRS instruction.
+ * No C99 equivalent exists; alternatives like clock_gettime() add overhead.
+ *
+ * x86_64 (Linux, macOS, Windows): Same OS API calls used across platforms.
+ * Assembly ensures fixed instruction count around clock reads, avoiding
+ * instability in timing overhead measurements.
+ *
+ * Keeps all platforms consistent with Abrash's original DOS implementation,
+ * which had no choice but to use assembly.
+ * ============================================================================
+ */
+
 #ifndef ZEN_TIMER_H
 #define ZEN_TIMER_H
 
@@ -11,22 +40,22 @@ extern "C"
     /*
      * Starts the Zen timer.
      *
-     * Equivalent public API to Abrash's original ZTimerOn().
+     * Public API equivalent to Abrash's original ZTimerOn().
      *
      * On the original DOS implementation, interrupts were manipulated
      * to guarantee a precise measurement.
      *
-     * Normal user-space code cannot do that on macOS, Linux, or Windows,
-     * so ZTimerOn() is implemented in dedicated assembly per platform
-     * (src/platform/<os>/zen_timer_<arch>.S or .asm), using each OS's
-     * own monotonic clock API instead: mach_absolute_time() on macOS,
-     * clock_gettime(CLOCK_MONOTONIC) on Linux, and
-     * QueryPerformanceCounter() on Windows (via MASM, since MSVC's
-     * cl.exe cannot assemble the GAS-syntax .S files used elsewhere).
+     * User-space code cannot do this on modern OSes, so platform-specific
+     * assembly implementations exist in:
+     *   src/platform/<os>/zen_timer_<arch>.S or .asm
      *
-     * WebAssembly has no equivalent hand-written assembly, so the
-     * Emscripten build implements ZTimerOn() in plain C instead,
-     * directly in zen_timer.c, using emscripten_get_now().
+     * Uses each OS's monotonic clock API:
+     *   macOS: mach_absolute_time()
+     *   Linux: clock_gettime(CLOCK_MONOTONIC)
+     *   Windows: QueryPerformanceCounter() (via MASM, as MSVC cannot
+     *            process GAS-syntax .S files)
+     *
+     * WebAssembly version implemented in C using emscripten_get_now().
      */
     void ZTimerOn(void);
 

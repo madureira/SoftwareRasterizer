@@ -111,17 +111,17 @@ static uint64_t ZTimerTicksToNanoseconds(uint64_t ticks)
 #elif defined(__aarch64__) && (defined(__APPLE__) || defined(__linux__))
 
 /*
- * On both Apple Silicon and Linux/ARM64, ZTimerOn()/ZTimerOff() (in the
- * platform-specific assembly) read the ARMv8 generic timer directly via
- * CNTVCT_EL0, instead of calling mach_absolute_time()/clock_gettime().
- * On Apple Silicon this can't reuse mach_timebase_info()'s ratio:
- * mach_absolute_time() runs off its own ~24 MHz timebase there
- * (numer=125/denom=3), not the ARM generic timer.
+ * On Apple Silicon and Linux/ARM64 systems, the ZTimerOn()/ZTimerOff() functions
+ * (implemented in platform-specific assembly) directly access the ARMv8 generic
+ * timer through CNTVCT_EL0 rather than using mach_absolute_time()/clock_gettime().
+ * On Apple Silicon, this approach cannot leverage mach_timebase_info()'s conversion
+ * ratio since mach_absolute_time() operates on its own ~24 MHz clock source
+ * (numer=125/denom=3) rather than the ARM timer.
  *
- * The counter's tick rate isn't architecturally fixed, so it's read
- * once via zen_timer_read_frequency() (CNTFRQ_EL0, exported by the same
- * assembly file) and cached, analogous to mach_timebase_info() above
- * and QueryPerformanceFrequency() below.
+ * Since the counter's frequency isn't standardized, it's determined once via
+ * zen_timer_read_frequency() (accessing CNTFRQ_EL0 from the same assembly file)
+ * and stored for reuse, similar to how mach_timebase_info() and QueryPerformanceFrequency()
+ * work.
  */
 
 extern uint64_t zen_timer_read_frequency(void);
@@ -176,16 +176,17 @@ static void ZTimerInitializeFrequency(void)
 }
 
 /*
- * Converts QueryPerformanceCounter() counts to nanoseconds.
+ * Translates QueryPerformanceCounter() measurements into nanosecond units.
  *
- * MSVC has no 128-bit integer type (unlike the __uint128_t used by
- * Clang/GCC on the other platforms' equivalent conversion), so the
- * multiply-then-divide is split into whole seconds and a sub-second
- * remainder instead: ticks = seconds * freq + remainder, with
- * remainder < freq, so remainder * 1e9 cannot overflow 64 bits for any
- * realistic QueryPerformanceCounter() frequency. This is mathematically
- * exact, not an approximation -- it produces the same truncated result
- * as a single 128-bit division would.
+ * Since MSVC lacks support for 128-bit integers (unlike Clang/GCC which use
+ * __uint128_t on other platforms), the multiplication followed by division
+ * operation is broken down into two parts: handling whole seconds and
+ * processing the fractional part separately. This approach computes:
+ * ticks = seconds * freq + remainder, where remainder is less than freq.
+ * Given this constraint, the product remainder * 1e9 will never exceed
+ * 64 bits for any practical QueryPerformanceCounter() frequency values.
+ * This method delivers mathematically precise results rather than approximations,
+ * yielding identical truncated outputs as a single 128-bit calculation would produce.
  */
 static uint64_t ZTimerTicksToNanoseconds(uint64_t ticks)
 {
@@ -203,18 +204,18 @@ static uint64_t ZTimerTicksToNanoseconds(uint64_t ticks)
 #elif defined(__EMSCRIPTEN__)
 
 /*
- * WebAssembly has no equivalent to the hand-written per-OS assembly
- * used on macOS/Linux/Windows, so ZTimerOn()/ZTimerOff() (declared in
- * zen_timer.h) are implemented here in plain C instead, using
- * emscripten_get_now() — JS performance.now(), in milliseconds, the
- * same monotonic clock source platform_get_perf_counter() already uses
- * for this platform in platform.c.
+ * Since WebAssembly doesn't have platform-specific assembly code like
+ * macOS/Linux/Windows versions do, the ZTimerOn()/ZTimerOff() functions
+ * (declared in zen_timer.h) are implemented here using standard C code,
+ * utilizing emscripten_get_now() - which accesses JavaScript's performance.now()
+ * in milliseconds. This uses the same monotonic time source that
+ * platform_get_perf_counter() employs for this platform in platform.c.
  *
- * ReferenceZTimerOn()/ReferenceZTimerOff() are file-local helpers here,
- * inlined by the compiler at the loop's single call site in ZTimerOff()
- * below -- the same outcome the hand-written assembly on the other
- * platforms achieves manually, by inlining the equivalent reference
- * measurement directly into their own ZTimerOff().
+ * ReferenceZTimerOn()/ReferenceZTimerOff() are local helper functions defined
+ * here, which get inlined by the compiler at their sole usage site within
+ * ZTimerOff() below - achieving the same result as the manual assembly
+ * inlining used on other platforms, where reference measurements are
+ * directly embedded into the ZTimerOff() implementation.
  */
 
 static uint64_t ZTimerReadClockNanoseconds(void)
@@ -258,7 +259,7 @@ void ZTimerOff(void)
 }
 
 /*
- * The clock above already reports nanoseconds directly — there's no
+ * The clock above already reports nanoseconds directly - there's no
  * coarser "ticks" unit to convert from, so this is an identity
  * function, exactly like the Linux path.
  */
@@ -270,8 +271,8 @@ static uint64_t ZTimerTicksToNanoseconds(uint64_t ticks)
 #endif
 
 /*
- * Converts the raw timer interval into nanoseconds — the highest
- * precision common to all three platform clocks — and prints it at
+ * Converts the raw timer interval into nanoseconds - the highest
+ * precision common to all three platform clocks - and prints it at
  * three scales (nanoseconds, microseconds, milliseconds) so the value
  * reads naturally regardless of how long the interval was.
  *

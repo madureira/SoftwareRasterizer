@@ -70,7 +70,7 @@ FpsCounter* fps_create(bool enabled)
 
     if (fps->debug_font == NULL)
     {
-        LOG_WARN("Failed to load debug font \"%s\" (size %.1f) — overlay disabled",
+        LOG_WARN("Failed to load debug font \"%s\" (size %.1f) - overlay disabled",
                  DEBUG_FONT_FAMILY, (double)DEBUG_FONT_SIZE);
     }
 
