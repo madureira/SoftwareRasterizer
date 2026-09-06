@@ -32,53 +32,44 @@
 
 #include <stdio.h>
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
+/*
+ * Starts the Zen timer.
+ *
+ * Public API equivalent to Abrash's original ZTimerOn().
+ *
+ * On the original DOS implementation, interrupts were manipulated
+ * to guarantee a precise measurement.
+ *
+ * User-space code cannot do this on modern OSes, so platform-specific
+ * assembly implementations exist in:
+ *   src/platform/<os>/zen_timer_<arch>.S or .asm
+ *
+ * Uses each OS's monotonic clock API:
+ *   macOS: mach_absolute_time()
+ *   Linux: clock_gettime(CLOCK_MONOTONIC)
+ *   Windows: QueryPerformanceCounter() (via MASM, as MSVC cannot
+ *            process GAS-syntax .S files)
+ *
+ * WebAssembly version implemented in C using emscripten_get_now().
+ */
+void ZTimerOn(void);
 
-    /*
-     * Starts the Zen timer.
-     *
-     * Public API equivalent to Abrash's original ZTimerOn().
-     *
-     * On the original DOS implementation, interrupts were manipulated
-     * to guarantee a precise measurement.
-     *
-     * User-space code cannot do this on modern OSes, so platform-specific
-     * assembly implementations exist in:
-     *   src/platform/<os>/zen_timer_<arch>.S or .asm
-     *
-     * Uses each OS's monotonic clock API:
-     *   macOS: mach_absolute_time()
-     *   Linux: clock_gettime(CLOCK_MONOTONIC)
-     *   Windows: QueryPerformanceCounter() (via MASM, as MSVC cannot
-     *            process GAS-syntax .S files)
-     *
-     * WebAssembly version implemented in C using emscripten_get_now().
-     */
-    void ZTimerOn(void);
+/*
+ * Stops the Zen timer and stores the measured interval.
+ *
+ * Equivalent public API to Abrash's original ZTimerOff().
+ *
+ * Implemented in the same OS-specific assembly files as ZTimerOn()
+ * (and, on Emscripten, the same plain-C fallback in zen_timer.c).
+ */
+void ZTimerOff(void);
 
-    /*
-     * Stops the Zen timer and stores the measured interval.
-     *
-     * Equivalent public API to Abrash's original ZTimerOff().
-     *
-     * Implemented in the same OS-specific assembly files as ZTimerOn()
-     * (and, on Emscripten, the same plain-C fallback in zen_timer.c).
-     */
-    void ZTimerOff(void);
-
-    /*
-     * Reports the measured time in nanoseconds, microseconds, and
-     * milliseconds.
-     *
-     * Equivalent public API to Abrash's original ZTimerReport().
-     */
-    void ZTimerReport(void);
-
-#ifdef __cplusplus
-}
-#endif
+/*
+ * Reports the measured time in nanoseconds, microseconds, and
+ * milliseconds.
+ *
+ * Equivalent public API to Abrash's original ZTimerReport().
+ */
+void ZTimerReport(void);
 
 #endif // ZEN_TIMER_H
