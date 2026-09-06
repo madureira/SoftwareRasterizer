@@ -1,19 +1,24 @@
 /*
  * ============================================================================
- * Zen Timer - x86_64
+ * Zen Timer - macOS x86_64
  * ============================================================================
  *
- * Modern port of Michael Abrash's Zen Timer for macOS x86_64.
+ * Original concept:
+ *    Michael Abrash
+ *    Graphics Programming Black Book
  *
- * The original implementation uses:
+ * Original implementation:
  *
  *     - Intel 8253 Programmable Interval Timer
  *     - Intel 8259 Programmable Interrupt Controller
  *     - CLI / STI
  *     - DOS INT 21h
  *
- * Those mechanisms are not available to a normal user-space application on
- * macOS.
+ * This implementation:
+ *
+ *     x86_64
+ *     macOS
+ *     mach_absolute_time()
  *
  * This version therefore preserves:
  *
@@ -23,11 +28,12 @@
  *     - reference measurements;
  *     - the 16-sample overhead average;
  *
- * while using:
+ * IMPORTANT:
  *
- *     mach_absolute_time()
- *
- * as the monotonic high-resolution timer source.
+ * The original Zen Timer disabled interrupts with CLI and restored the
+ * original interrupts flag with POPF. Normal macOS user-space apps cannot
+ * manipulate the CPU interrupt mask this way, so this implementation
+ * preserves the API and timing model but does not disable interrupts.
  *
  * Architecture:
  *

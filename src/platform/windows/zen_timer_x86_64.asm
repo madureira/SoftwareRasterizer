@@ -1,18 +1,23 @@
 ;==============================================================================
-; Zen Timer - x86_64 (Windows / MASM)
+; Zen Timer - Windows x86_64
 ;==============================================================================
 ;
-; Modern port of Michael Abrash's Zen Timer for Windows x86_64.
+; Original concept:
+;    Michael Abrash
+;    Graphics Programming Black Book
 ;
-; The original implementation uses:
+; Original implementation:
 ;
 ;     - Intel 8253 Programmable Interval Timer
 ;     - Intel 8259 Programmable Interrupt Controller
 ;     - CLI / STI
 ;     - DOS INT 21h
 ;
-; Those mechanisms are not available to a normal user-space application on
-; Windows.
+; This implementation:
+;
+;     x86_64
+;     Windows
+;     QueryPerformanceCounter(&counter)
 ;
 ; This version therefore preserves:
 ;
@@ -22,11 +27,15 @@
 ;     - reference measurements;
 ;     - the 16-sample overhead average;
 ;
-; while using:
+; IMPORTANT:
 ;
-;     QueryPerformanceCounter(&counter)
+; The original Zen Timer disabled interrupts with CLI and restored the
+; original interrupts flag with POPF. Normal Windows user-space apps
+; cannot manipulate the CPU interrupt mask this way, so this
+; implementation preserves the API and timing model but does not
+; disable interrupts.
 ;
-; as the monotonic high-resolution timer source.
+; ----------------------------------------------------------------------------
 ;
 ; Two things make this file different from the macOS/Linux ports:
 ;
@@ -52,6 +61,8 @@
 ; QueryPerformanceFrequency(), which is handled on the C side in
 ; zen_timer.c (the same way the macOS port converts mach_absolute_time()
 ; ticks using mach_timebase_info there).
+;
+; ----------------------------------------------------------------------------
 ;
 ; Architecture:
 ;
@@ -81,7 +92,7 @@ EXTERN OverflowFlag:BYTE
 
 
 ;==============================================================================
-; zen_timer_read_clock (internal helper, not part of the public C API)
+; zen_timer_read_clock (file-local helper, not part of the public API)
 ;==============================================================================
 ;
 ; Not declared PUBLIC, and not called from anywhere outside this file.
@@ -120,14 +131,11 @@ zen_timer_read_clock ENDP
 ; ZTimerOn
 ;==============================================================================
 ;
-; Starts a timing measurement.
-;
-; Conceptually equivalent to:
+; Starts a timing measurement:
 ;
 ;     ZTimerStartCount = zen_timer_read_clock();
 ;
 ; The original Abrash implementation programs the 8253 timer here.
-; The modern Windows implementation simply captures the current timestamp.
 ;
 ;==============================================================================
 
@@ -153,16 +161,13 @@ ZTimerOn ENDP
 ; ZTimerOff
 ;==============================================================================
 ;
-; Stops the timing measurement and calculates the elapsed counter value.
+; Stops the timing measurement:
 ;
-; Conceptually:
-;
-;     current = zen_timer_read_clock();
-;     elapsed = current - ZTimerStartCount;
+;     elapsed = zen_timer_read_clock() - ZTimerStartCount;
 ;     TimedCount = elapsed;
 ;
-; After the main measurement, the overhead of the timer mechanism itself is
-; measured 16 times and averaged (see the reference-measurement loop below).
+; then measures the ZTimerOn/ZTimerOff overhead 16 times and averages
+; the result.
 ;
 ;==============================================================================
 

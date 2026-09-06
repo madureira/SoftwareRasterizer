@@ -36,6 +36,7 @@ set(TEST_SOURCES
   main.c
   ${TEST_IMPL_FILES}
   ${SRC_FILES}
+  ${PROJECT_ASM_SOURCES}
   "${CMAKE_CURRENT_BINARY_DIR}/generated_suites.c"
 )
 

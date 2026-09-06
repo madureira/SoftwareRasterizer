@@ -1,19 +1,24 @@
 /*
  * ============================================================================
- * Zen Timer - x86_64
+ * Zen Timer - Linux x86_64
  * ============================================================================
  *
- * Modern port of Michael Abrash's Zen Timer for Linux x86_64.
+ * Original concept:
+ *    Michael Abrash
+ *    Graphics Programming Black Book
  *
- * The original implementation uses:
+ * Original implementation:
  *
  *     - Intel 8253 Programmable Interval Timer
  *     - Intel 8259 Programmable Interrupt Controller
  *     - CLI / STI
  *     - DOS INT 21h
  *
- * Those mechanisms are not available to a normal user-space application on
- * Linux.
+ * This implementation:
+ *
+ *     x86_64
+ *     Linux
+ *     clock_gettime(CLOCK_MONOTONIC, &ts)
  *
  * This version therefore preserves:
  *
@@ -23,14 +28,21 @@
  *     - reference measurements;
  *     - the 16-sample overhead average;
  *
- * while using:
+ * IMPORTANT:
  *
- *     clock_gettime(CLOCK_MONOTONIC, &ts)
+ * The original Zen Timer disabled interrupts with CLI and restored the
+ * original interrupts flag with POPF. Normal Linux user-space apps cannot
+ * manipulate the CPU interrupt mask this way, so this implementation
+ * preserves the API and timing model but does not disable interrupts.
  *
- * as the monotonic high-resolution timer source. Unlike mach_absolute_time()
- * (used by the macOS port), clock_gettime() takes its arguments in registers
- * and writes its result through an output pointer (struct timespec), rather
- * than returning a single value in RAX
+ * ----------------------------------------------------------------------------
+ *
+ * Unlike mach_absolute_time() (used by the macOS port), clock_gettime()
+ * takes its arguments in registers and writes its result through an
+ * output pointer (struct timespec), rather than returning a single value
+ * in RAX.
+ *
+ * ----------------------------------------------------------------------------
  *
  * Architecture:
  *

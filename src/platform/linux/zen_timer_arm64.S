@@ -1,6 +1,6 @@
 //
 // ============================================================================
-// Zen Timer - Linux ARM64 implementation
+// Zen Timer - Linux ARM64
 // ============================================================================
 //
 // Original concept:
@@ -9,16 +9,24 @@
 //
 // Original implementation:
 //
-//    8253 programmable inverval timer
-//    8259 programmable interrupt controller
-//    DOS
-//    x86
+//     - Intel 8253 Programmable Interval Timer
+//     - Intel 8259 Programmable Interrupt Controller
+//     - CLI / STI
+//     - DOS INT 21h
 //
 // This implementation:
 //
 //    ARM64 (AArch64)
 //    Linux
 //    CNTVCT_EL0 (ARMv8 generic timer, read directly -- see below)
+//
+// This version therefore preserves:
+//
+//     - the original function names;
+//     - the original C interface;
+//     - the ZTimerOn/ZTimerOff measurement model;
+//     - reference measurements;
+//     - the 16-sample overhead average;
 //
 // IMPORTANT:
 //
@@ -56,6 +64,16 @@
 // observe them.
 //
 // ----------------------------------------------------------------------------
+//
+// Architecture:
+//
+//    ARM64 (AArch64)
+//
+// Syntax:
+//
+//    GAS (ARM64)
+//
+// ============================================================================
 
 .text
 
@@ -69,9 +87,11 @@
 // ZTimerOn
 // ============================================================================
 //
-// Starts timing:
+// Starts a timing measurement:
 //
 //    ZTimerStartCount = <read CNTVCT_EL0>;
+//
+// The original Abrash implementation programs the 8253 timer here.
 //
 // ============================================================================
 //
@@ -101,11 +121,15 @@ ZTimerOn:
 // ZTimerOff
 // ============================================================================
 //
-// Stops timing, then measures the ZTimerOn/ZTimerOff overhead 16 times
-// and averages the result. The reference measurement loop keeps its
-// start/current timestamps in registers rather than round-tripping
-// through memory, since there's no separate procedure call boundary to
-// cross here.
+// Stops the timing measurement:
+//
+//    elapsed = <read CNTVCT_EL0> - ZTimerStartCount;
+//    TimedCount = elapsed;
+//
+// then measures the ZTimerOn/ZTimerOff overhead 16 times and averages
+// the result. The reference measurement loop keeps its start/current
+// timestamps in registers rather than round-tripping through memory,
+// since there's no separate procedure call boundary to cross here.
 //
 // ============================================================================
 //
@@ -128,13 +152,14 @@ ZTimerOff:
     add     x1, x1, :lo12:TimedCount
     str     x9, [x1]                        // TimedCount = elapsed
 
-    // No 8259-style overflow detection exists here.
+    // No 16-bit hardware counter here, so no overflow condition exists.
     adrp    x1, OverflowFlag
     add     x1, x1, :lo12:OverflowFlag
-    mov     w0, wzr
+    mov     w0, wzr                         // w0 = 0
     strb    w0, [x1]                        // OverflowFlag = 0
 
-    // Measure timer overhead: 16 back-to-back reads, averaged.
+    // Measure timer overhead: 16 back-to-back reads, averaged. x9/x10 are
+    // free to reuse as scratch (their earlier values were already consumed).
     mov     x11, xzr                        // total = 0
     mov     w12, #16                        // loop counter
 
