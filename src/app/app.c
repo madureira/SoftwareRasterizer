@@ -12,6 +12,7 @@
 #include "core/window.h"
 #include "math/vec2f.h"
 #include "platform/platform.h"
+#include "platform/zen_timer.h"
 
 #define COLOR_DARK_GREY  0x22222222
 #define COLOR_BLUE       0x0000AAFF
@@ -402,6 +403,8 @@ static bool frame(void* arg)
 
 int app_start(void)
 {
+    ZTimerOn();
+
     Config config;
 
     if (!config_load(&config, "config.ini"))
@@ -487,6 +490,10 @@ int app_start(void)
     state.last_frame_time = platform_get_time_seconds();
 
     PROFILE_INIT();
+
+    ZTimerOff();
+
+    ZTimerReport();
 
     platform_run_main_loop(frame, &state, config.target_fps);
 

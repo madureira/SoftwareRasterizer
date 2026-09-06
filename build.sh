@@ -35,6 +35,9 @@ Examples:
   ./build.sh mac release --simd
   ./build.sh mac release --simd --profile
   ./build.sh web
+
+Note:
+  Windows builds use build.bat (MSVC / Visual Studio), not this script.
 EOF
 }
 

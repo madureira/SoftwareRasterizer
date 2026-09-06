@@ -6,6 +6,20 @@ project(
   LANGUAGES C
 )
 
+# Hand-written assembly in this project uses GAS/AT&T syntax (.S) on
+# macOS and Linux, assembled by clang/gcc's GNU-compatible assembler
+# under CMake's "ASM" language. On Windows this project builds with
+# MSVC (see CMakePresets.json's "windows-debug"/"windows-release",
+# which use the "Visual Studio 17 2022" generator), and cl.exe cannot
+# assemble GAS syntax -- so Windows assembly is written in Intel/MASM
+# syntax (.asm) instead, assembled via CMake's "ASM_MASM" language
+# (ml64.exe).
+if(WIN32)
+  enable_language(ASM_MASM)
+else()
+  enable_language(ASM)
+endif()
+
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
@@ -36,9 +50,44 @@ file(
   "${CMAKE_CURRENT_SOURCE_DIR}/src/*.h"
 )
 
+# Per-OS/per-architecture assembly is grouped by OS under
+# src/platform/<os>/ (e.g. src/platform/macos/, src/platform/linux/,
+# src/platform/windows/), with the architecture encoded in the file
+# name (<name>_arm64 / <name>_x86_64). Selection must key off both OS
+# and architecture together -- a glob keyed on OS alone would match
+# multiple architectures' files and duplicate symbols at link time.
+# The file extension also differs by OS: .S (GAS) on macOS/Linux,
+# .asm (MASM) on Windows.
+if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+  set(ASM_OS "macos")
+  set(ASM_EXT "S")
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  set(ASM_OS "linux")
+  set(ASM_EXT "S")
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+  set(ASM_OS "windows")
+  set(ASM_EXT "asm")
+endif()
+
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(arm64|aarch64|ARM64)$")
+  set(ASM_ARCH "arm64")
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64")
+  set(ASM_ARCH "x86_64")
+endif()
+
+set(PROJECT_ASM_SOURCES "")
+if(ASM_OS AND ASM_ARCH)
+  file(
+    GLOB PROJECT_ASM_SOURCES
+    CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/platform/${ASM_OS}/*_${ASM_ARCH}.${ASM_EXT}"
+  )
+endif()
+
 add_executable(
   SoftwareRasterizer
   ${PROJECT_SOURCES}
+  ${PROJECT_ASM_SOURCES}
   ${PROJECT_HEADERS}
 )
 
