@@ -136,12 +136,16 @@ set_target_properties(
 )
 
 if(MSVC)
+  # Scoped to C only: ml64.exe (ASM_MASM) is a separate tool from cl.exe
+  # and does not understand these flags -- passing them unscoped produces
+  # "MASM : warning A4008: invalid command-line option value" noise when
+  # PROJECT_ASM_SOURCES (the .asm file) is part of this target.
   target_compile_options(
     SoftwareRasterizer
     PRIVATE
-    /W4
-    /arch:SSE2
-    "/d1trimfile:${CMAKE_SOURCE_DIR}\\"
+    $<$<COMPILE_LANGUAGE:C>:/W4>
+    $<$<COMPILE_LANGUAGE:C>:/arch:SSE2>
+    "$<$<COMPILE_LANGUAGE:C>:/d1trimfile:${CMAKE_SOURCE_DIR}\\>"
   )
 else()
   target_compile_options(

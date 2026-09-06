@@ -71,7 +71,11 @@ target_compile_definitions(SoftwareRasterizerTests
 )
 
 if(MSVC)
-  target_compile_options(SoftwareRasterizerTests PRIVATE /W4)
+  # Scoped to C only: ml64.exe (ASM_MASM) is a separate tool from cl.exe
+  # and does not understand /W4 -- passing it unscoped produces
+  # "MASM : warning A4008: invalid command-line option value" noise now
+  # that PROJECT_ASM_SOURCES (the .asm file) is part of this target.
+  target_compile_options(SoftwareRasterizerTests PRIVATE $<$<COMPILE_LANGUAGE:C>:/W4>)
 else()
   target_compile_options(SoftwareRasterizerTests PRIVATE
     -Wall

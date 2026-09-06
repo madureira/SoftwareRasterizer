@@ -206,3 +206,12 @@ zen_timer_read_frequency:
 
     mrs     x0, CNTFRQ_EL0                  // x0 = CNTFRQ_EL0
     ret
+
+//
+// Marks the stack as non-executable. Hand-written .S files don't get
+// this section automatically the way compiler-generated object files
+// do, and its absence makes the linker conservatively mark the whole
+// executable's stack as executable -- undesirable, and the source of
+// the "missing .note.GNU-stack section" linker warning.
+//
+.section .note.GNU-stack,"",%progbits

@@ -5,7 +5,9 @@
 static f32 sin_table[MATH_SIN_COS_TABLE_SIZE];
 static f32 cos_table[MATH_SIN_COS_TABLE_SIZE];
 
+#ifndef NDEBUG
 static bool sin_cos_tables_built = false;
+#endif
 
 bool math_fixp16_try_mul(fixp16 a, fixp16 b, fixp16* result)
 {
@@ -71,7 +73,9 @@ void math_build_sin_cos_tables(void)
         cos_table[degree] = cosf(radians);
     }
 
+#ifndef NDEBUG
     sin_cos_tables_built = true;
+#endif
 }
 
 f32 math_fast_sin(f32 angle_degree)
