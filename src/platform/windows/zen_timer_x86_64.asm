@@ -106,10 +106,10 @@ zen_timer_read_clock PROC FRAME
     .ALLOCSTACK 40
     .ENDPROLOG
 
-    lea rcx, [rsp+32]           ; &counter, placed above the shadow space
-    call QueryPerformanceCounter
+    lea rcx, [rsp+32]             ; rcx = &counter
+    call QueryPerformanceCounter  ; writes the count through rcx
 
-    mov rax, [rsp+32]           ; raw QueryPerformanceCounter count
+    mov rax, [rsp+32]             ; rax = counter
 
     add rsp, 40
     ret
@@ -127,8 +127,7 @@ zen_timer_read_clock ENDP
 ;     ZTimerStartCount = zen_timer_read_clock();
 ;
 ; The original Abrash implementation programs the 8253 timer here.
-; The modern Windows implementation simply captures the current
-; timestamp.
+; The modern Windows implementation simply captures the current timestamp.
 ;
 ;==============================================================================
 
@@ -139,22 +138,11 @@ ZTimerOn PROC FRAME
     .ALLOCSTACK 40
     .ENDPROLOG
 
-    call zen_timer_read_clock
+    call zen_timer_read_clock     ; rax = zen_timer_read_clock()
+    mov ZTimerStartCount, rax     ; ZTimerStartCount = rax
 
-    ; Store the starting timestamp.
-    ;
-    ; Equivalent C:
-    ;
-    ;     ZTimerStartCount = value;
-    mov ZTimerStartCount, rax
-
-    ; The modern implementation does not use a 16-bit hardware counter,
-    ; so there is no equivalent overflow condition.
-    ;
-    ; Equivalent C:
-    ;
-    ;     OverflowFlag = 0;
-    mov OverflowFlag, 0
+    ; No 16-bit hardware counter here, so no overflow condition exists.
+    mov OverflowFlag, 0           ; OverflowFlag = 0
 
     add rsp, 40
     ret
@@ -180,11 +168,7 @@ ZTimerOn ENDP
 
 PUBLIC ZTimerOff
 ZTimerOff PROC FRAME
-    ; -------------------------------------------------------------------------
-    ; Function prologue
-    ; -------------------------------------------------------------------------
-    ;
-    ; R12-R15 are callee-saved registers in the Microsoft x64 ABI.
+    ; R12-R14 are callee-saved registers in the Microsoft x64 ABI.
     ; We use them during the measurement, so they must be preserved.
     push r12
     .PUSHREG r12
@@ -192,93 +176,45 @@ ZTimerOff PROC FRAME
     .PUSHREG r13
     push r14
     .PUSHREG r14
-    push r15
-    .PUSHREG r15
 
-    ; 32 bytes of shadow space, reused across all three CALLs below (the
-    ; shadow space does not need to persist between calls, only to exist
-    ; at the moment of each one).
-    sub rsp, 40
-    .ALLOCSTACK 40
+    ; 32 bytes of mandatory shadow space, reused across all three CALLs
+    ; below. Three pushes (24 bytes) plus 32 keeps RSP 16-byte aligned,
+    ; so no extra padding is needed.
+    sub rsp, 32
+    .ALLOCSTACK 32
     .ENDPROLOG
 
+    call zen_timer_read_clock     ; rax = zen_timer_read_clock()
+    mov r12, ZTimerStartCount     ; r12 = start
+    sub rax, r12                  ; rax = elapsed = current - start
 
-    ; -------------------------------------------------------------------------
-    ; Capture the final timestamp
-    ; -------------------------------------------------------------------------
-    call zen_timer_read_clock
-    mov r15, rax
+    mov TimedCount, rax           ; TimedCount = elapsed
 
+    ; No 16-bit hardware counter here, so no overflow condition exists.
+    mov OverflowFlag, 0           ; OverflowFlag = 0
 
-    ; -------------------------------------------------------------------------
-    ; Load the starting timestamp
-    ; -------------------------------------------------------------------------
-    mov r12, ZTimerStartCount
-
-    ; Calculate:
-    ;
-    ;     current - start
-    ;
-    ; Equivalent C:
-    ;
-    ;     elapsed = current - ZTimerStartCount;
-    sub r15, r12
-
-
-    ; -------------------------------------------------------------------------
-    ; Store the measured interval
-    ; -------------------------------------------------------------------------
-    mov TimedCount, r15
-
-    ; QueryPerformanceCounter() uses a 64-bit monotonic counter.
-    ;
-    ; Unlike the original 8253 implementation, we do not have a 16-bit
-    ; countdown timer that can wrap during the measurement.
-    mov OverflowFlag, 0
-
-
-    ; -------------------------------------------------------------------------
-    ; Measure timer overhead: 16 back-to-back reads, averaged.
-    ; -------------------------------------------------------------------------
-    ;
-    ; R12 is free to reuse as scratch here (its earlier value,
-    ; ZTimerStartCount, was already consumed above), holding each
-    ; iteration's start timestamp in a register instead of memory. The
-    ; 32 bytes of shadow space from this function's prologue are reused
-    ; by both calls below.
-    xor r13, r13            ; total = 0
-    mov r14d, 16            ; loop counter
+    ; Measure timer overhead: 16 back-to-back reads, averaged. R12 is
+    ; free to reuse as scratch (its earlier value was already consumed).
+    xor r13, r13                  ; total = 0
+    mov r14d, 16                  ; loop counter
 
 ZTimerReferenceLoop:
-    call zen_timer_read_clock
-    mov r12, rax                ; start (R12 free: ZTimerStartCount already consumed above)
+    call zen_timer_read_clock     ; rax = start
+    mov r12, rax                  ; r12 = start
 
-    call zen_timer_read_clock
-    sub rax, r12                ; elapsed = current - start
+    call zen_timer_read_clock     ; rax = current
+    sub rax, r12                  ; rax = elapsed = current - start
 
-    add r13, rax
-    dec r14
-    jnz ZTimerReferenceLoop
+    add r13, rax                  ; total += elapsed
+    dec r14                       ; r14--
+    jnz ZTimerReferenceLoop       ; while (r14 != 0)
 
-
-    ; -------------------------------------------------------------------------
-    ; Calculate the average overhead
-    ; -------------------------------------------------------------------------
-    ;
-    ;     average = (total + 8) / 16
-    ;
-    ; Since 16 is a power of two, division by 16 is a four-bit right
-    ; shift.
+    ; average = (total + 8) / 16
     add r13, 8
     shr r13, 4
-    mov ReferenceCount, r13
+    mov ReferenceCount, r13       ; ReferenceCount = average
 
-
-    ; -------------------------------------------------------------------------
-    ; Function epilogue
-    ; -------------------------------------------------------------------------
-    add rsp, 40
-    pop r15
+    add rsp, 32
     pop r14
     pop r13
     pop r12

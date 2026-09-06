@@ -49,10 +49,11 @@
 // CNTFRQ_EL0 (also EL0-readable). Converting raw ticks to nanoseconds
 // using that frequency is handled in zen_timer.c, not here.
 //
-// None of the functions below perform a BL, so none need to save
-// x29/x30 or maintain a frame -- AAPCS64 guarantees SP arrives already
-// 16-byte aligned, and it's only touched where a function has its own
-// callee-saved registers to preserve (ZTimerOff).
+// None of the functions below perform a BL, so none of them touch SP
+// or any callee-saved register (x19-x28) at all -- everything runs in
+// temporary registers, which AAPCS64 lets a callee clobber freely
+// without saving, since nothing is ever called out to that could
+// observe them.
 //
 // ----------------------------------------------------------------------------
 
@@ -80,17 +81,17 @@
 ZTimerOn:
 
     isb
-    mrs     x0, CNTVCT_EL0
+    mrs     x0, CNTVCT_EL0                  // x0 = CNTVCT_EL0
 
-    adrp    x1, ZTimerStartCount
-    add     x1, x1, :lo12:ZTimerStartCount
-    str     x0, [x1]                        // ZTimerStartCount = timestamp
+    adrp    x1, ZTimerStartCount            // x1 = page(ZTimerStartCount)
+    add     x1, x1, :lo12:ZTimerStartCount  // x1 = &ZTimerStartCount
+    str     x0, [x1]                        // ZTimerStartCount = x0
 
     // No 16-bit hardware counter here, so no overflow condition exists.
     adrp    x1, OverflowFlag
     add     x1, x1, :lo12:OverflowFlag
-    mov     w0, wzr
-    strb    w0, [x1]
+    mov     w0, wzr                         // w0 = 0
+    strb    w0, [x1]                        // OverflowFlag = 0
 
     ret
 
@@ -113,57 +114,50 @@ ZTimerOn:
 .p2align 2
 ZTimerOff:
 
-    // x19-x22 are the only callee-saved registers this function uses;
-    // no BL happens here, so x29/x30 need no saving.
-    stp     x19, x20, [sp, #-32]!
-    stp     x21, x22, [sp, #16]
-
+    // No stack frame: nothing here is called out to, so x9-x12 need no saving.
     isb
-    mrs     x19, CNTVCT_EL0                 // current
+    mrs     x9, CNTVCT_EL0                  // current
 
     adrp    x1, ZTimerStartCount
     add     x1, x1, :lo12:ZTimerStartCount
-    ldr     x20, [x1]                       // start
+    ldr     x10, [x1]                       // start
 
-    sub     x19, x19, x20                   // elapsed = current - start
+    sub     x9, x9, x10                     // elapsed = current - start
 
     adrp    x1, TimedCount
     add     x1, x1, :lo12:TimedCount
-    str     x19, [x1]
+    str     x9, [x1]                        // TimedCount = elapsed
 
     // No 8259-style overflow detection exists here.
     adrp    x1, OverflowFlag
     add     x1, x1, :lo12:OverflowFlag
     mov     w0, wzr
-    strb    w0, [x1]
+    strb    w0, [x1]                        // OverflowFlag = 0
 
     // Measure timer overhead: 16 back-to-back reads, averaged.
-    mov     x21, xzr                        // total = 0
-    mov     w22, #16                        // loop counter
+    mov     x11, xzr                        // total = 0
+    mov     w12, #16                        // loop counter
 
 ZTimerReferenceLoop:
 
     isb
-    mrs     x0, CNTVCT_EL0                  // start
+    mrs     x9, CNTVCT_EL0                  // start
     isb
-    mrs     x1, CNTVCT_EL0                  // current
+    mrs     x10, CNTVCT_EL0                 // current
 
-    sub     x0, x1, x0                      // elapsed = current - start
-    add     x21, x21, x0                    // total += elapsed
+    sub     x9, x10, x9                     // elapsed = current - start
+    add     x11, x11, x9                    // total += elapsed
 
-    subs    w22, w22, #1
-    b.ne    ZTimerReferenceLoop
+    subs    w12, w12, #1                    // w12--
+    b.ne    ZTimerReferenceLoop             // while (w12 != 0)
 
     // average = (total + 8) / 16
-    add     x21, x21, #8
-    lsr     x21, x21, #4
+    add     x11, x11, #8
+    lsr     x11, x11, #4
 
     adrp    x1, ReferenceCount
     add     x1, x1, :lo12:ReferenceCount
-    str     x21, [x1]
-
-    ldp     x21, x22, [sp, #16]
-    ldp     x19, x20, [sp], #32
+    str     x11, [x1]                       // ReferenceCount = average
 
     ret
 
@@ -185,5 +179,5 @@ ZTimerReferenceLoop:
 .p2align 2
 zen_timer_read_frequency:
 
-    mrs     x0, CNTFRQ_EL0
+    mrs     x0, CNTFRQ_EL0                  // x0 = CNTFRQ_EL0
     ret

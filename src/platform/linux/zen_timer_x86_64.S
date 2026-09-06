@@ -92,19 +92,19 @@
 
 zen_timer_read_clock:
 
-    subq $24, %rsp
+    subq $24, %rsp                     // struct timespec + padding
 
-    movl $1, %edi          /* CLOCK_MONOTONIC */
-    movq %rsp, %rsi        /* &ts */
+    movl $1, %edi                      // CLOCK_MONOTONIC
+    movq %rsp, %rsi                    // &ts
     call clock_gettime
 
-    movq (%rsp), %rax      /* ts.tv_sec */
-    movq 8(%rsp), %rdx     /* ts.tv_nsec */
+    movq (%rsp), %rax                  // ts.tv_sec
+    movq 8(%rsp), %rdx                 // ts.tv_nsec
 
-    imulq $1000000000, %rax, %rax
-    addq %rdx, %rax        /* RAX = tv_sec * 1e9 + tv_nsec */
+    imulq $1000000000, %rax, %rax      // rax *= 1e9
+    addq %rdx, %rax                    // rax += tv_nsec
 
-    addq $24, %rsp
+    addq $24, %rsp                     // release struct timespec + padding
     ret
 
 
@@ -128,23 +128,17 @@ zen_timer_read_clock:
 ZTimerOn:
 
     /*
-     * The x86-64 ABI requires RSP 16-byte aligned before a CALL. On
-     * entry RSP is 8 mod 16 (the caller's CALL pushed a return
-     * address), so an 8-byte reservation restores alignment. RBP is
-     * never dereferenced here, so a plain SUB/ADD does this in one
-     * instruction each instead of PUSH/MOV %rbp, without touching the
-     * caller's RBP.
+     * On entry RSP is 8 mod 16; an 8-byte reservation restores the
+     * 16-byte alignment a CALL requires, without a PUSH/MOV %rbp (RBP
+     * is never dereferenced here).
      */
     subq $8, %rsp
 
-    call zen_timer_read_clock
-    movq %rax, ZTimerStartCount(%rip)
+    call zen_timer_read_clock          // rax = zen_timer_read_clock()
+    movq %rax, ZTimerStartCount(%rip)  // ZTimerStartCount = rax
 
-    /*
-     * No 16-bit hardware counter here, so no overflow condition
-     * exists.
-     */
-    movb $0, OverflowFlag(%rip)
+    // No 16-bit hardware counter here, so no overflow condition exists.
+    movb $0, OverflowFlag(%rip)        // OverflowFlag = 0
 
     addq $8, %rsp
     ret
@@ -171,69 +165,44 @@ ZTimerOn:
 
 ZTimerOff:
 
-    /*
-     * R12-R15 are callee-saved and hold values live across the CALLs
-     * below, so they must be preserved.
-     */
+    // Save R12-R14 (callee-saved, used below); three pushes (24 bytes)
+    // already restore 16-byte alignment from entry's 8-mod-16 state.
     pushq %r12
     pushq %r13
     pushq %r14
-    pushq %r15
 
-    /*
-     * On entry RSP is 8 mod 16; the four pushes above move a multiple
-     * of 16 bytes, so it's still 8 mod 16 here. This padding restores
-     * alignment for the CALLs below.
-     */
-    subq $8, %rsp
+    call zen_timer_read_clock          // rax = zen_timer_read_clock()
+    movq ZTimerStartCount(%rip), %r12  // r12 = start
+    subq %r12, %rax                    // rax = elapsed = current - start
 
-    call zen_timer_read_clock
-    movq %rax, %r15                     // current
+    movq %rax, TimedCount(%rip)        // TimedCount = elapsed
 
-    movq ZTimerStartCount(%rip), %r12   // start
-    subq %r12, %r15                     // elapsed = current - start
+    // No 16-bit hardware counter here, so no overflow condition exists.
+    movb $0, OverflowFlag(%rip)        // OverflowFlag = 0
 
-    movq %r15, TimedCount(%rip)
-
-    /*
-     * clock_gettime(CLOCK_MONOTONIC) uses a 64-bit monotonic counter,
-     * so there's no 16-bit countdown timer that can wrap during the
-     * measurement.
-     */
-    movb $0, OverflowFlag(%rip)
-
-    /*
-     * Measure timer overhead: 16 back-to-back reads, averaged. R12 is
-     * free to reuse as scratch here (its earlier value, ZTimerStartCount,
-     * was already consumed above), holding each iteration's start
-     * timestamp in a register instead of memory.
-     */
-    xorq %r13, %r13          // total = 0
-    movl $16, %r14d          // loop counter
+    // Measure timer overhead: 16 back-to-back reads, averaged. R12 is
+    // free to reuse as scratch (its earlier value was already consumed).
+    xorq %r13, %r13                    // total = 0
+    movl $16, %r14d                    // loop counter
 
 .LReferenceLoop:
 
-    call zen_timer_read_clock
-    movq %rax, %r12                     // start
+    call zen_timer_read_clock          // rax = start
+    movq %rax, %r12                    // r12 = start
 
-    call zen_timer_read_clock
-    subq %r12, %rax                     // elapsed = current - start
+    call zen_timer_read_clock          // rax = current
+    subq %r12, %rax                    // rax = elapsed = current - start
 
-    addq %rax, %r13                     // total += elapsed
+    addq %rax, %r13                    // total += elapsed
 
-    decq %r14
-    jne .LReferenceLoop
+    decq %r14                          // r14--
+    jne .LReferenceLoop                // while (r14 != 0)
 
-    /*
-     * average = (total + 8) / 16, using a shift since 16 is a power
-     * of two.
-     */
+    // average = (total + 8) / 16
     addq $8, %r13
     shrq $4, %r13
-    movq %r13, ReferenceCount(%rip)
+    movq %r13, ReferenceCount(%rip)    // ReferenceCount = average
 
-    addq $8, %rsp
-    popq %r15
     popq %r14
     popq %r13
     popq %r12

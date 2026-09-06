@@ -80,23 +80,17 @@
 _ZTimerOn:
 
     /*
-     * The x86-64 ABI requires RSP 16-byte aligned before a CALL. On
-     * entry RSP is 8 mod 16 (the caller's CALL pushed a return
-     * address), so an 8-byte reservation restores alignment. RBP is
-     * never dereferenced here, so a plain SUB/ADD does this in one
-     * instruction each instead of PUSH/MOV %rbp, without touching the
-     * caller's RBP.
+     * On entry RSP is 8 mod 16; an 8-byte reservation restores the
+     * 16-byte alignment a CALL requires, without a PUSH/MOV %rbp (RBP
+     * is never dereferenced here).
      */
     subq $8, %rsp
 
-    call _mach_absolute_time
-    movq %rax, _ZTimerStartCount(%rip)
+    call _mach_absolute_time            // rax = mach_absolute_time()
+    movq %rax, _ZTimerStartCount(%rip)  // ZTimerStartCount = rax
 
-    /*
-     * No 16-bit hardware counter here, so no overflow condition
-     * exists.
-     */
-    movb $0, _OverflowFlag(%rip)
+    // No 16-bit hardware counter here, so no overflow condition exists.
+    movb $0, _OverflowFlag(%rip)        // OverflowFlag = 0
 
     addq $8, %rsp
     ret
@@ -123,68 +117,44 @@ _ZTimerOn:
 
 _ZTimerOff:
 
-    /*
-     * R12-R15 are callee-saved and hold values live across the CALLs
-     * below, so they must be preserved.
-     */
+    // Save R12-R14 (callee-saved, used below); three pushes (24 bytes)
+    // already restore 16-byte alignment from entry's 8-mod-16 state.
     pushq %r12
     pushq %r13
     pushq %r14
-    pushq %r15
 
-    /*
-     * On entry RSP is 8 mod 16; the four pushes above move a multiple
-     * of 16 bytes, so it's still 8 mod 16 here. This padding restores
-     * alignment for the CALLs below.
-     */
-    subq $8, %rsp
+    call _mach_absolute_time            // rax = mach_absolute_time()
+    movq _ZTimerStartCount(%rip), %r12  // r12 = start
+    subq %r12, %rax                     // rax = elapsed = current - start
 
-    call _mach_absolute_time
-    movq %rax, %r15                     // current
+    movq %rax, _TimedCount(%rip)        // TimedCount = elapsed
 
-    movq _ZTimerStartCount(%rip), %r12  // start
-    subq %r12, %r15                     // elapsed = current - start
+    // No 16-bit hardware counter here, so no overflow condition exists.
+    movb $0, _OverflowFlag(%rip)        // OverflowFlag = 0
 
-    movq %r15, _TimedCount(%rip)
-
-    /*
-     * mach_absolute_time() uses a 64-bit monotonic counter, so there's
-     * no 16-bit countdown timer that can wrap during the measurement.
-     */
-    movb $0, _OverflowFlag(%rip)
-
-    /*
-     * Measure timer overhead: 16 back-to-back reads, averaged. R12 is
-     * free to reuse as scratch here (its earlier value, ZTimerStartCount,
-     * was already consumed above), holding each iteration's start
-     * timestamp in a register instead of memory.
-     */
-    xorq %r13, %r13          // total = 0
-    movl $16, %r14d          // loop counter
+    // Measure timer overhead: 16 back-to-back reads, averaged. R12 is
+    // free to reuse as scratch (its earlier value was already consumed).
+    xorq %r13, %r13                     // total = 0
+    movl $16, %r14d                     // loop counter
 
 .LReferenceLoop:
 
-    call _mach_absolute_time
-    movq %rax, %r12                     // start
+    call _mach_absolute_time            // rax = start
+    movq %rax, %r12                     // r12 = start
 
-    call _mach_absolute_time
-    subq %r12, %rax                     // elapsed = current - start
+    call _mach_absolute_time            // rax = current
+    subq %r12, %rax                     // rax = elapsed = current - start
 
     addq %rax, %r13                     // total += elapsed
 
-    decq %r14
-    jne .LReferenceLoop
+    decq %r14                           // r14--
+    jne .LReferenceLoop                 // while (r14 != 0)
 
-    /*
-     * average = (total + 8) / 16, using a shift since 16 is a power
-     * of two.
-     */
+    // average = (total + 8) / 16
     addq $8, %r13
     shrq $4, %r13
-    movq %r13, _ReferenceCount(%rip)
+    movq %r13, _ReferenceCount(%rip)    // ReferenceCount = average
 
-    addq $8, %rsp
-    popq %r15
     popq %r14
     popq %r13
     popq %r12
